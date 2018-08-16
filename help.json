@@ -1,0 +1,6 @@
+{
+  "default": [
+    "help=Displays this menu.",
+    "thanks | thank <user>=Thank a user."
+  ]
+}
