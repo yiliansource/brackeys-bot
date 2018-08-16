@@ -6,6 +6,9 @@
 # Exclude config file from build to prevent bot token from being exposed
 appsettings.json
 
+# Exclude .vscode folder
+.vscode/
+
 # User-specific files
 *.suo
 *.user
