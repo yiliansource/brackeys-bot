@@ -25,6 +25,8 @@ namespace BrackeysBot
         private DiscordSocketClient _client;
         private CommandService _commandService;
 
+        private UnityDocs _unityDocs;
+
         public BrackeysBot ()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
@@ -40,8 +42,11 @@ namespace BrackeysBot
 
             _commandService = new CommandService();
 
+            _unityDocs = new UnityDocs (File.ReadAllText ("manualReference.json"), File.ReadAllText ("scriptReference.json"));
+
             _services = new ServiceCollection()
                 .AddSingleton(_commandService)
+                .AddSingleton (_unityDocs)
                 .BuildServiceProvider();
 
             await InstallCommands();

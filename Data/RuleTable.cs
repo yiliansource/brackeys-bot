@@ -54,5 +54,7 @@ namespace BrackeysBot
             Lookup.Remove(id);
             SaveData();
         }
+
+        public Dictionary<int, string> GetAllRules() => Lookup;
     }
 }
