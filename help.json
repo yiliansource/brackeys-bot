@@ -1,6 +1,16 @@
 {
   "default": [
-    "help=Displays this menu.",
-    "thanks | thank <user>=Thank a user."
+    "thanks <user> | thank <user>=Thank a user.",
+    "leaderboard=Displays the karma leaderboard.",
+    "points | points <user>=Check your own points, or the points of another user.",
+    "help=Displays this menu."
+  ],
+  "mod": [
+    "setting <id> <value>=Updates a setting.",
+    "karma (add / remove / set) <value> <user>=Modifies a user's karma points.",
+    "rule <id>=Quotes a rule.",
+    "setrule <id> <content>=Creates or updates a rule.",
+    "modhaste <message_id>=Hastebin a specific message.",
+    "modhelp=Displays this menu"
   ]
 }

@@ -13,11 +13,15 @@ namespace BrackeysBot.Commands
         /// </summary>
         public static void EnsureStaff (IGuildUser user)
         {
-            var staff = user.Guild.Roles.First(r => r.Name == "Staff");
-            if(!user.RoleIds.Any(id => id == staff.Id))
+            if (!HasStaffRole(user))
             {
                 throw new Exception("Insufficient permissions.");
             }
+        }
+        public static bool HasStaffRole (IGuildUser user)
+        {
+            var staffRole = user.Guild.Roles.First(r => r.Name == "Staff");
+            return user.RoleIds.Any(id => id == staffRole.Id);
         }
     }
 }

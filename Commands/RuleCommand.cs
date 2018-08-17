@@ -28,10 +28,30 @@ namespace BrackeysBot.Commands
                     .WithTitle($"Rule { id }")
                     .WithDescription(ruleTable[id])
                     .WithFooter("To see all the rules go to #info.");
+
+                await ReplyAsync(string.Empty, false, eb);
             }
             else
             {
                 await ReplyAsync("Invalid rule ID.");
+            }
+        }
+
+        [Command("setrule")]
+        public async Task SetRule (int id, [Remainder]string contents)
+        {
+            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+
+            RuleTable ruleTable = BrackeysBot.Rules;
+            if (ruleTable.HasRule(id))
+            {
+                ruleTable[id] = contents;
+                await ReplyAsync("Rule updated.");
+            }
+            else
+            {
+                ruleTable[id] = contents;
+                await ReplyAsync("Rule created.");
             }
         }
     }

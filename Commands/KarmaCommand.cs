@@ -30,12 +30,13 @@ namespace BrackeysBot.Commands
             KarmaTable table = BrackeysBot.Karma;
 
             int remainingMinutes;
-            if (table.CheckThanksCooldownExpired(source, target, out remainingMinutes))
+            if (KarmaTable.CheckThanksCooldownExpired(source, target, out remainingMinutes))
             {
                 table.ThankUser(source, target);
 
                 int total = table.GetKarma(target);
-                await ReplyAsync($"{ user.Mention } has { total } point{ (total != 1 ? "s" : "") }.");
+                string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
+                await ReplyAsync($"{ user.Mention } has { pointsDisplay }.");
             }
             else
             {

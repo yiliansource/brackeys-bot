@@ -49,7 +49,9 @@ namespace BrackeysBot
                 .BuildServiceProvider();
 
             await InstallCommands();
+
             RegisterMassiveCodeblockHandle();
+            RegisterLeaderboardNavigationHandle();
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -96,6 +98,11 @@ namespace BrackeysBot
             if (!(s is SocketUserMessage msg)) return;
 
             await Commands.HasteCommand.HasteIfMassiveCodeblock(s);
+        }
+        
+        private void RegisterLeaderboardNavigationHandle()
+        {
+            _client.ReactionAdded += Commands.LeaderboardCommand.HandleLeaderboardNavigation;
         }
     }
 }
