@@ -1,10 +1,5 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Collections.Generic;
-using System.Text;
-
-using Newtonsoft.Json;
 
 namespace BrackeysBot
 {

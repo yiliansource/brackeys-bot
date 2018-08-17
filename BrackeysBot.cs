@@ -7,12 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-
-using Newtonsoft.Json;
 
 namespace BrackeysBot 
 {

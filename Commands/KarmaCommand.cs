@@ -1,9 +1,8 @@
-﻿using Discord;
-using Discord.Commands;
-using System.Linq;
-using System.Collections.Generic;
+﻿using Discord.WebSocket;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+
+using Discord;
+using Discord.Commands;
 
 namespace BrackeysBot.Commands
 {

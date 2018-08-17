@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+
 using Discord;
 using Discord.Commands;
-using System.Linq;
 using Discord.WebSocket;
 
 namespace BrackeysBot.Commands
