@@ -3,7 +3,9 @@
     "thanks <user> | thank <user>=Thank a user.",
     "leaderboard=Displays the karma leaderboard.",
     "points | points <user>=Check your own points, or the points of another user.",
-    "help=Displays this menu."
+    "help=Displays this menu.",
+    "manual <search> | manual -m <search> = Searches the Unity manual.",
+    "scriptapi <search> | scriptapi -m <search> = Searches the Unity Scripting API."
   ],
   "mod": [
     "setting <id> <value>=Updates a setting.",
