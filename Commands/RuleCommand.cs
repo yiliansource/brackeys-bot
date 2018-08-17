@@ -78,14 +78,12 @@ namespace BrackeysBot.Commands
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
 
-            RuleTable ruleTable = BrackeysBot.Rules;
-
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("**Welcome to the official Brackeys discord server!**");
             builder.AppendLine();
             builder.AppendLine("Please take a moment to read the rules.");
 
-            Dictionary<int, string> rules = ruleTable.GetAllRules();
+            Dictionary<int, string> rules = BrackeysBot.Rules.Rules;
             foreach (int id in rules.Keys.OrderBy(k => k))
             {
                 builder.AppendLine();

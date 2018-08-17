@@ -49,5 +49,32 @@ namespace BrackeysBot.Commands
                 await ReplyAsync($"{ source.Mention }, you can't thank that user yet, please wait { displayhours }{ (minutes > 0 ? $" and { displayminutes }" : "") }.");
             }
         }
+
+        [Command("karma")]
+        public async Task ModifyKarmaCommand (string operation, SocketGuildUser user, int amount)
+        {
+            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+
+            KarmaTable table = BrackeysBot.Karma;
+
+            switch(operation.ToLower())
+            {
+                case "set":
+                    table.SetKarma(user, amount);
+                    break;
+                case "add":
+                    table.AddKarma(user, amount);
+                    break;
+                case "remove":
+                    table.RemoveKarma(user, amount);
+                    break;
+
+                default:
+                    await ReplyAsync("Unknown karma operation.");
+                    return;
+            }
+
+            await ReplyAsync($"{ user.Username } has { table.GetKarma(user) } points.");
+        }
     }
 }

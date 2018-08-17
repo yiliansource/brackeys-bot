@@ -25,7 +25,7 @@ namespace BrackeysBot.Commands
         {
             var user = Context.User;
             int karma = BrackeysBot.Karma.GetKarma(user);
-            await ReplyAsync($"{ user.Mention }, you have { karma } karma.");
+            await ReplyAsync($"{ user.Mention }, you have { karma } points.");
         }
 
         [Command("points")]
@@ -38,7 +38,11 @@ namespace BrackeysBot.Commands
                 string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
                 await ReplyAsync($"{ user.Username } has { pointsDisplay }.");
 
-                KarmaTable.AddPointsUserCooldown(Context.User);
+                // Make sure that staff doesn't have cooldowns
+                if (!StaffCommandHelper.HasStaffRole(Context.User as IGuildUser))
+                {
+                    KarmaTable.AddPointsUserCooldown(Context.User);
+                }
             }
             else
             {

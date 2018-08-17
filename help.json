@@ -7,9 +7,10 @@
   ],
   "mod": [
     "setting <id> <value>=Updates a setting.",
-    "karma (add / remove / set) <value> <user>=Modifies a user's karma points.",
+    "karma (add / remove / set) <user> <value>=Modifies a user's karma points.",
     "rule <id>=Quotes a rule.",
     "setrule <id> <content>=Creates or updates a rule.",
+    "removerule <id>=Removes a rule.",
     "modhaste <message_id>=Hastebin a specific message.",
     "modhelp=Displays this menu"
   ]

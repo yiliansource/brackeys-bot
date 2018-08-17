@@ -58,6 +58,30 @@ namespace BrackeysBot
 
             SaveData();
         }
+        /// <summary>
+        /// Removes a specific amount of karma from the specified user.
+        /// </summary>
+        public void RemoveKarma (IUser user, int count)
+        {
+            AddKarma(user, -count);
+        }
+        /// <summary>
+        /// Sets the users karma to a specific amount.
+        /// </summary>
+        public void SetKarma (IUser user, int amount)
+        {
+            ulong id = user.Id;
+            if (Lookup.ContainsKey(id))
+            {
+                Lookup[id] = amount;
+            }
+            else
+            {
+                Lookup.Add(id, amount);
+            }
+
+            SaveData();
+        }
         
         /// <summary>
         /// Returns the karma for a specified user.
