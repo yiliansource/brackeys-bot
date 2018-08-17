@@ -81,6 +81,11 @@ namespace BrackeysBot
             IResult result = await _commandService.ExecuteAsync(context, argPos, _services);
             if (!result.IsSuccess)
             {
+                if (result.Error == CommandError.UnknownCommand)
+                {
+                    return;
+                }
+
                 EmbedBuilder builder = new EmbedBuilder()
                     .WithTitle("Error")
                     .WithDescription(result.ErrorReason)

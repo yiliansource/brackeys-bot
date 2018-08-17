@@ -39,6 +39,25 @@ namespace BrackeysBot.Commands
             }
         }
 
+        [Command("addrule")]
+        public async Task AddRule (int id, [Remainder]string contents)
+        {
+            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+
+            RuleTable ruleTable = BrackeysBot.Rules;
+            if (ruleTable.HasRule(id))
+            {
+                await ReplyAsync("Rule already exists.");
+            }
+            else
+            {
+                ruleTable.AddRule(id, contents);
+                await ReplyAsync("Rule created.");
+            }
+
+            await UpdateOriginRuleMessage(Context.Guild);
+        }
+
         [Command("setrule")]
         public async Task SetRule (int id, [Remainder]string contents)
         {
@@ -52,9 +71,10 @@ namespace BrackeysBot.Commands
             }
             else
             {
-                ruleTable.AddRule(id, contents);
-                await ReplyAsync("Rule created.");
+                await ReplyAsync("Invalid rule ID.");
             }
+
+            await UpdateOriginRuleMessage(Context.Guild);
         }
 
         [Command("removerule")]
@@ -72,6 +92,8 @@ namespace BrackeysBot.Commands
             {
                 await ReplyAsync("Rule doesn't exist.");
             }
+
+            await UpdateOriginRuleMessage(Context.Guild);
         }
 
         [Command("allrules")]
@@ -79,6 +101,12 @@ namespace BrackeysBot.Commands
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
 
+            string rules = GetRulesMessage();
+            await ReplyAsync(rules);
+        }
+
+        private static string GetRulesMessage ()
+        {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("**Welcome to the official Brackeys discord server!**");
             builder.AppendLine();
@@ -92,7 +120,29 @@ namespace BrackeysBot.Commands
                 builder.AppendLine(rules[id]);
             }
 
-            await ReplyAsync(builder.ToString());
+            return builder.ToString();
+        }
+
+        private static async Task UpdateOriginRuleMessage (IGuild guild)
+        {
+            var message = await GetOriginMessage(guild);
+            await UpdateOriginRuleMessage(message);
+        }
+        private static async Task<IUserMessage> GetOriginMessage (IGuild guild)
+        {
+            ulong id = ulong.Parse(BrackeysBot.Settings["rulemessage-id"]);
+            var channels = await guild.GetChannelsAsync();
+            var infoChannel = channels.First(c => c.Name.ToLower() == "info");
+            var message = await (infoChannel as IMessageChannel).GetMessageAsync(id);
+
+            return message as IUserMessage;
+        }
+        private static async Task UpdateOriginRuleMessage(IUserMessage originMessage)
+        {
+            // Get the origin message ID
+            string rules = GetRulesMessage();
+
+            await originMessage.ModifyAsync(m => m.Content = rules);
         }
     }
 }
