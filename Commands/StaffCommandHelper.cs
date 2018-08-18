@@ -5,6 +5,9 @@ using Discord;
 
 namespace BrackeysBot.Commands
 {
+    /// <summary>
+    /// Provides methods to verify Staff.
+    /// </summary>
     public static class StaffCommandHelper
     {
         /// <summary>
@@ -17,6 +20,10 @@ namespace BrackeysBot.Commands
                 throw new Exception("Insufficient permissions.");
             }
         }
+
+        /// <summary>
+        /// Checks if a specified user has the Staff role.
+        /// </summary>
         public static bool HasStaffRole (IGuildUser user)
         {
             var staffRole = user.Guild.Roles.First(r => r.Name == "Staff");

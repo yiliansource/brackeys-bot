@@ -7,22 +7,29 @@ namespace BrackeysBot.Commands
 {
     public class StaffCommands : ModuleBase
     {
-        private readonly CommandService commands;
+        private readonly SettingsTable _settings;
 
-        public StaffCommands(CommandService commands)
+        public StaffCommands(SettingsTable settings)
         {
-            this.commands = commands;
+            _settings = settings;
         }
 
         [Command("set")]
+        [HelpData("set <name> <value>", "Updates a setting.", HelpMode = "mod")]
         public async Task ApplySetting(string name, string value)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
 
-            SettingsTable settings = BrackeysBot.Settings;
-            settings[name] = value;
+            if (_settings.Has(name))
+            {
+                _settings.Set(name, value);
+            }
+            else
+            {
+                _settings.Add(name, value);
+            }
 
-            await ReplyAsync("Settings have been applied.");
+            await ReplyAsync("Setting has been applied.");
         }
     }
 }

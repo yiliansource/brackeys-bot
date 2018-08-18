@@ -14,18 +14,18 @@ namespace BrackeysBot
 {
     public sealed class BrackeysBot 
     {
-        public static IConfiguration Configuration { get; set; }
-
-        public static KarmaTable Karma { get; set; }
-        public static SettingsTable Settings { get; set; }
-        public static RuleTable Rules { get; set; }
-        public static HelpTable Help { get; set; }
+        public IConfiguration Configuration { get; set; }
 
         private IServiceProvider _services;
         private DiscordSocketClient _client;
         private CommandService _commandService;
 
+        private KarmaTable _karma;
+        private SettingsTable _settings;
+        private RuleTable _rules;
         private UnityDocs _unityDocs;
+
+        private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
 
         public BrackeysBot ()
         {
@@ -42,11 +42,27 @@ namespace BrackeysBot
 
             _commandService = new CommandService();
 
-            _unityDocs = new UnityDocs (File.ReadAllText ("manualReference.json"), File.ReadAllText ("scriptReference.json"));
+            _karma = new KarmaTable("karma.json");
+            _settings = new SettingsTable("settings.json");
+            _rules = new RuleTable("rules.json");
+            _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
+
+            _leaderboardNavigator = new Commands.LeaderboardCommand.LeaderboardNavigator(_karma, _settings);
 
             _services = new ServiceCollection()
+
+                // Add the command service
                 .AddSingleton(_commandService)
-                .AddSingleton (_unityDocs)
+
+                // Add the singletons for the databases
+                .AddSingleton(_karma)
+                .AddSingleton(_settings)
+                .AddSingleton(_rules)
+                .AddSingleton(_unityDocs)
+
+                .AddSingleton(_leaderboardNavigator)
+
+                // Finally, build the provider
                 .BuildServiceProvider();
 
             await InstallCommands();
@@ -57,18 +73,20 @@ namespace BrackeysBot
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
             await _client.StartAsync();
-
-            Karma = new KarmaTable();
-            Settings = new SettingsTable();
-            Rules = new RuleTable();
-            Help = new HelpTable();
         }
 
+        /// <summary>
+        /// Installs the command handling to the client.
+        /// </summary>
         private async Task InstallCommands ()
         {
             _client.MessageReceived += HandleCommand;
             await _commandService.AddModulesAsync(Assembly.GetEntryAssembly());
         }
+
+        /// <summary>
+        /// Handles a command, represented in the given message.
+        /// </summary>
         private async Task HandleCommand(SocketMessage s)
         {
             if (!(s is SocketUserMessage msg)) return;
@@ -98,20 +116,28 @@ namespace BrackeysBot
             }
         }
 
+        /// <summary>
+        /// Registers a method to handle massive codeblocks.
+        /// </summary>
         private void RegisterMassiveCodeblockHandle ()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
         }
+        /// <summary>
+        /// Handles a massive codeblock.
+        /// </summary>
         private async Task HandleMassiveCodeblock (SocketMessage s)
         {
             if (!(s is SocketUserMessage msg)) return;
 
             await Commands.HasteCommand.HasteIfMassiveCodeblock(s);
         }
-        
+        /// <summary>
+        /// Handles a leaderboard navigation event.
+        /// </summary>
         private void RegisterLeaderboardNavigationHandle()
         {
-            _client.ReactionAdded += Commands.LeaderboardCommand.HandleLeaderboardNavigation;
+            _client.ReactionAdded += _leaderboardNavigator.HandleLeaderboardNavigation;
         }
     }
 }

@@ -19,14 +19,14 @@ namespace BrackeysBot.Commands
         }
 
         [Command ("manual")]
-        [Summary ("Retrieves information from the Unity Manual.")]
+        [HelpData("manual <search>", "Retrieves information from the Unity Manual.")]
         public async Task UnityManual ([Remainder] string search)
         {
             await Search (_docs.ManualEntries, search);
         }
 
         [Command ("scriptapi")]
-        [Summary ("Retrieves information from the Unity Scripting API Reference.")]
+        [HelpData("scriptapi <search>", "Retrieves information from the Unity Scripting API Reference.")]
         public async Task UnityScriptingReference ([Remainder] string search)
         {
             await Search (_docs.ScriptReferenceEntries, search);

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using Discord;
@@ -8,14 +9,15 @@ namespace BrackeysBot.Commands
 {
     public class HelpCommand : ModuleBase
     {
-        private readonly CommandService commands;
+        private readonly CommandService _commands;
 
         public HelpCommand(CommandService commands)
         {
-            this.commands = commands;
+            _commands = commands;
         }
 
         [Command ("help")]
+        [HelpData("help", "Displays this menu.")]
         public async Task Help ()
         {
             EmbedBuilder helpDialog = GetHelpDialog("default");
@@ -23,6 +25,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("modhelp")]
+        [HelpData("modhelp", "Displays this menu.", HelpMode = "mod")]
         public async Task ModHelp ()
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
@@ -31,6 +34,9 @@ namespace BrackeysBot.Commands
             await ReplyAsync(string.Empty, false, helpDialog);
         }
 
+        /// <summary>
+        /// Returns the help dialog for a specific mode.
+        /// </summary>
         private EmbedBuilder GetHelpDialog(string mode)
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -38,15 +44,42 @@ namespace BrackeysBot.Commands
                 .WithTitle("BrackeysBot")
                 .WithDescription("The official Brackeys server bot. Commands are:");
 
-            string prefix = BrackeysBot.Configuration["prefix"];
+            string prefix = "[]";
 
-            List<KeyValuePair<string, string>> commands = BrackeysBot.Help.GetCommands(mode);
-            foreach (KeyValuePair<string, string> command in commands)
+            var commands = GetCommandDatas(mode);
+            foreach (var command in commands)
             {
-                eb.AddField(prefix + command.Key, command.Value);
+                string title = prefix + command.Usage;
+                string content = command.Description;
+                eb.AddField(title, content);
             }
 
             return eb;
+        }
+
+        /// <summary>
+        /// Gathers the data for all commands found in the command modules.
+        /// </summary>
+        private IEnumerable<HelpDataAttribute> GetCommandDatas (string mode)
+        {
+            var commandList = new List<HelpDataAttribute>();
+
+            foreach (ModuleInfo module in _commands.Modules)
+                foreach (CommandInfo command in module.Commands)
+                {
+                    var data = command.Attributes.FirstOrDefault(a => a is HelpDataAttribute);
+                    if (data != default(HelpDataAttribute))
+                    {
+                        var helpData = data as HelpDataAttribute;
+                        if (mode.ToLower() == helpData.HelpMode.ToLower())
+                        {
+                            commandList.Add(data as HelpDataAttribute);
+                        }
+                    }
+                }
+
+            var ordered = commandList.OrderBy(data => data.ListOrder);
+            return ordered;
         }
     }
 }

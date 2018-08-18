@@ -23,6 +23,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("modhaste")]
+        [HelpData("modhaste <message_id>", "Haste a specific message.", HelpMode = "mod")]
         public async Task ModHasteMessage(ulong messageId)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
@@ -35,6 +36,9 @@ namespace BrackeysBot.Commands
             await message.DeleteAsync();
         }
 
+        /// <summary>
+        /// Hastes a string and returns the URL of the hastebin page.
+        /// </summary>
         public static async Task<string> HasteMessage(string message)
         {
             using (WebClient client = new WebClient())
@@ -53,6 +57,9 @@ namespace BrackeysBot.Commands
             }
         }
 
+        /// <summary>
+        /// Hastes the specified message, given that it meets the massive codeblock requirements.
+        /// </summary>
         public static async Task HasteIfMassiveCodeblock (IMessage message)
         {
             string content = message.Content;
