@@ -74,14 +74,17 @@ namespace BrackeysBot
             if (!(s is SocketUserMessage msg)) return;
 
             int argPos = 0;
-            if (!msg.HasStringPrefix(Configuration["prefix"], ref argPos)) return;
+            
+            if (!msg.HasStringPrefix(Configuration["prefix"], ref argPos)
+                && !msg.Content.ToLower().StartsWith("thanks")) return;
 
             CommandContext context = new CommandContext(_client, msg);
 
             IResult result = await _commandService.ExecuteAsync(context, argPos, _services);
             if (!result.IsSuccess)
             {
-                if (result.Error == CommandError.UnknownCommand)
+                if (result.Error == CommandError.UnknownCommand
+                    || result.Error == CommandError.BadArgCount)
                 {
                     return;
                 }

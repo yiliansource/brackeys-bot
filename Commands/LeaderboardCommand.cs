@@ -118,11 +118,18 @@ namespace BrackeysBot.Commands
                 // If a change should be made, modify the leaderboard
                 if (modification != 0)
                 {
-                    data.DisplayIndex += modification;
-
-                    // Clamp the index so it cant be negative and cant exceed the total users
                     int min = 0, max = BrackeysBot.Karma.TotalLeaderboardUsers - 1;
-                    data.DisplayIndex = Math.Clamp(data.DisplayIndex, min, max);
+
+                    if (data.DisplayIndex + modification < min)
+                    {
+                        data.DisplayIndex = min;
+                    }
+                    if (data.DisplayIndex + modification > max)
+                    {
+                        return;
+                    }
+
+                    data.DisplayIndex += modification;
 
                     // Build the new content and modify the message
                     EmbedBuilder newContent = await BuildForNextPlaces(data.DisplayIndex, data.Guild);
