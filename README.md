@@ -13,3 +13,7 @@ To be able to run the bot, add a new file to the folder before building.
 ```
 
 ---
+
+The `[]manual` and `[]scriptapi` commands for searching the Unity Documentation uses the generator (written in D) from [CodeMyst](https://github.com/CodeMyst) found here: https://github.com/CodeMyst/UnityDocumentationGenerator
+
+---
