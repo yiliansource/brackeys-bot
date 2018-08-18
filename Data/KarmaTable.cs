@@ -208,21 +208,20 @@ namespace BrackeysBot
         /// <summary>
         /// Returns the leaderboard, sorted by points.
         /// </summary>
-        public IEnumerable<Tuple<ulong, int>> GetSortedLeaderboard ()
+        public IEnumerable<KeyValuePair<ulong, int>> GetSortedLeaderboard ()
         {
             return _lookup
-                .Select(k => new Tuple<ulong, int>(k.Key, k.Value))
-                .OrderByDescending(t => t.Item2);
+                .OrderByDescending(t => t.Value);
         }
 
         /// <summary>
         /// Returns the leaderboard, starting from the startIndex, including a specific number of places.
         /// </summary>
-        public IEnumerable<Tuple<ulong, int>> GetLeaderboardPlaces (int startIndex, int count)
+        public IEnumerable<KeyValuePair<ulong, int>> GetLeaderboardPlaces (int startIndex, int count)
         {
             var leaderboard = GetSortedLeaderboard();
 
-            if (leaderboard.Count() < startIndex) return Enumerable.Empty<Tuple<ulong, int>>();
+            if (leaderboard.Count() < startIndex) return Enumerable.Empty<KeyValuePair<ulong, int>>();
             var skippedToIndex = leaderboard.Skip(startIndex);
 
             if (skippedToIndex.Count() < count) return skippedToIndex;

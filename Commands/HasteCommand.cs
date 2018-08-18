@@ -10,16 +10,13 @@ namespace BrackeysBot.Commands
 {
     public class HasteCommand : ModuleBase
     {
-        private readonly CommandService commands;
-        
         private static readonly Regex _HasteKeyRegex = new Regex(@"{""key"":""(?<key>[a-z].*)""}", RegexOptions.Compiled);
         private const string DEFAULT_URL = "https://hastebin.com";
         private const string CODEBLOCK_IDENTIFIER = "```";
         private const int MASSIVE_THRESHOLD = 300;
 
-        public HasteCommand(CommandService commands)
+        public HasteCommand()
         {
-            this.commands = commands;
         }
 
         [Command("modhaste")]
@@ -78,8 +75,6 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Removes the ``` formatting from a string.
         /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public static string RemoveCodeblockFormat (string message)
         {
             if (message.StartsWith(CODEBLOCK_IDENTIFIER)

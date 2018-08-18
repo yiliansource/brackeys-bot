@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -129,6 +130,10 @@ namespace BrackeysBot
         private async Task HandleMassiveCodeblock (SocketMessage s)
         {
             if (!(s is SocketUserMessage msg)) return;
+
+            // Ignore specific channels
+            ulong[] ignoreChannelIds = _settings["massivecodeblock-ignore"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
+            if (ignoreChannelIds.Any(id => id == s.Channel.Id)) return;
 
             await Commands.HasteCommand.HasteIfMassiveCodeblock(s);
         }

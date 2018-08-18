@@ -46,7 +46,7 @@ namespace BrackeysBot.Commands
 
             string prefix = "[]";
 
-            var commands = GetCommandDatas(mode);
+            var commands = GetCommandDataCollection(mode);
             foreach (var command in commands)
             {
                 string title = prefix + command.Usage;
@@ -60,18 +60,16 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Gathers the data for all commands found in the command modules.
         /// </summary>
-        private IEnumerable<HelpDataAttribute> GetCommandDatas (string mode)
+        private IEnumerable<HelpDataAttribute> GetCommandDataCollection (string mode)
         {
             var commandList = new List<HelpDataAttribute>();
 
             foreach (ModuleInfo module in _commands.Modules)
                 foreach (CommandInfo command in module.Commands)
                 {
-                    var data = command.Attributes.FirstOrDefault(a => a is HelpDataAttribute);
-                    if (data != default(HelpDataAttribute))
+                    if (command.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
                     {
-                        var helpData = data as HelpDataAttribute;
-                        if (mode.ToLower() == helpData.HelpMode.ToLower())
+                        if (mode.ToLower() == data.HelpMode.ToLower())
                         {
                             commandList.Add(data as HelpDataAttribute);
                         }
