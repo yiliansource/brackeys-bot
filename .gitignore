@@ -3,8 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Exclude config file from build to prevent bot token from being exposed
+# Exclude specific data files
 appsettings.json
+karma.json
 
 # Exclude .vscode folder
 .vscode/
