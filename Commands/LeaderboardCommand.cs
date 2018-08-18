@@ -42,7 +42,7 @@ namespace BrackeysBot.Commands
 
         private static async Task<EmbedBuilder> BuildForNextPlaces(KarmaTable table, IGuild guild, int startIndex, int pagesize)
         {
-            Dictionary<ulong, int> places = table.GetLeaderboardPlaces(startIndex, pagesize);
+            IEnumerable<KeyValuePair<ulong, int>> places = table.GetLeaderboardPlaces(startIndex, pagesize);
 
             EmbedBuilder eb = new EmbedBuilder()
                 .WithColor(new Color(0, 255, 255))
@@ -51,12 +51,11 @@ namespace BrackeysBot.Commands
             int count = places.Count();
             for(int i = 0; i < count; i++)
             {
-                ulong userId = places.Keys.ElementAt(i);
-                int points = places[userId];
+                KeyValuePair<ulong, int> place = places.ElementAt(i);
 
-                IGuildUser user = await guild.GetUserAsync(place.Item1);
+                IGuildUser user = await guild.GetUserAsync(place.Key);
 
-                string pointsDisplay = $"{ place.Item2 } point{ (place.Item2 != 1 ? "s" : "") }";
+                string pointsDisplay = $"{ place.Value } point{ (place.Value != 1 ? "s" : "") }";
 
                 string title = GetPlaceStringRepresentation(startIndex + i);
                 string content = $"{ UserHelper.GetDisplayName(user) } with { pointsDisplay }.";

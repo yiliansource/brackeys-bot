@@ -5,15 +5,19 @@ using System.Collections.Generic;
 using Discord;
 using Discord.Commands;
 
+using Microsoft.Extensions.Configuration;
+
 namespace BrackeysBot.Commands
 {
     public class HelpCommand : ModuleBase
     {
         private readonly CommandService _commands;
+        private readonly IConfiguration _configuration;
 
-        public HelpCommand(CommandService commands)
+        public HelpCommand(CommandService commands, IConfiguration configuration)
         {
             _commands = commands;
+            _configuration = configuration;
         }
 
         [Command ("help")]
@@ -44,7 +48,7 @@ namespace BrackeysBot.Commands
                 .WithTitle("BrackeysBot")
                 .WithDescription("The official Brackeys server bot. Commands are:");
 
-            string prefix = "[]";
+            string prefix = _configuration["prefix"];
 
             var commands = GetCommandDataCollection(mode);
             foreach (var command in commands)

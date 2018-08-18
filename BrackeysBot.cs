@@ -55,6 +55,8 @@ namespace BrackeysBot
                 // Add the command service
                 .AddSingleton(_commandService)
 
+                .AddSingleton(Configuration)
+
                 // Add the singletons for the databases
                 .AddSingleton(_karma)
                 .AddSingleton(_settings)
