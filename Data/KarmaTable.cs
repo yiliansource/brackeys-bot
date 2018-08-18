@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -9,30 +8,36 @@ using Newtonsoft.Json;
 
 namespace BrackeysBot
 {
-    public sealed class KarmaTable : LookupTable<Dictionary<ulong, int>>
+    public sealed class KarmaTable : LookupTable<ulong, int>
     {
-        [JsonProperty("Karma")]
-        protected override Dictionary<ulong, int> Lookup { get; set; }
-        
-        public static Dictionary<ulong, Dictionary<ulong, DateTime>> ThankCooldowns { get; set; } = new Dictionary<ulong, Dictionary<ulong, DateTime>>();
-        public static Dictionary<ulong, DateTime> PointsUserUsageCooldown { get; set; } = new Dictionary<ulong, DateTime>();
+        /// <summary>
+        /// Stores the cooldowns that a user has before he can thank another user again.
+        /// </summary>
+        [JsonIgnore]
+        private Dictionary<ulong, Dictionary<ulong, DateTime>> _thankCooldowns { get; set; } = new Dictionary<ulong, Dictionary<ulong, DateTime>>();
 
-        public int TotalLeaderboardUsers => Lookup.Keys.Count;
+        /// <summary>
+        /// Stores the cooldown that a user has before he can use the []points user command again.
+        /// </summary>
+        [JsonIgnore]
+        private Dictionary<ulong, DateTime> _pointsUserUsageCooldown { get; set; } = new Dictionary<ulong, DateTime>();
 
-        public KarmaTable ()
+        /// <summary>
+        /// Returns the total number of leaderboard users.
+        /// </summary>
+        public int TotalLeaderboardUsers => _lookup.Keys.Count;
+
+        public KarmaTable(string path) : base(path)
         {
         }
-
-        protected override string GetFilePath()
-            => Path.Combine(Directory.GetCurrentDirectory(), "karmatable.json");
 
         /// <summary>
         /// Performs the standard thank routine by adding one karma to the target and refreshing the cooldown.
         /// </summary>
-        public void ThankUser (IUser source, IUser target)
+        public void ThankUser (IUser source, IUser target, int cooldownSeconds)
         {
             AddKarma(target);
-            AddThanksCooldown(source, target);
+            AddThanksCooldown(source, target, cooldownSeconds);
         }
 
         /// <summary>
@@ -45,43 +50,33 @@ namespace BrackeysBot
         /// <summary>
         /// Adds a specific amount of karma to the specified user.
         /// </summary>
-        public void AddKarma (IUser user, int count)
+        public void AddKarma (IUser user, int value)
         {
             ulong id = user.Id;
-            if (Lookup.ContainsKey(id))
+            if (Has(id))
             {
-                Lookup[id] += count;
+                SetKarma(user, this[id] + value);
             }
             else
             {
-                Lookup.Add(id, count);
+                Add(id, value);
             }
-
-            SaveData();
         }
         /// <summary>
         /// Removes a specific amount of karma from the specified user.
         /// </summary>
-        public void RemoveKarma (IUser user, int count)
+        public void RemoveKarma (IUser user, int value)
         {
-            AddKarma(user, -count);
+            AddKarma(user, -value);
         }
         /// <summary>
         /// Sets the users karma to a specific amount.
         /// </summary>
-        public void SetKarma (IUser user, int amount)
+        public void SetKarma (IUser user, int value)
         {
             ulong id = user.Id;
-            if (Lookup.ContainsKey(id))
-            {
-                Lookup[id] = amount;
-            }
-            else
-            {
-                Lookup.Add(id, amount);
-            }
-
-            SaveData();
+            if (Has(id)) Set(id, value);
+            else Add(id, value);
         }
         
         /// <summary>
@@ -89,17 +84,16 @@ namespace BrackeysBot
         /// </summary>
         public int GetKarma (IUser user)
         {
-            int karma = 0;
-            Lookup.TryGetValue(user.Id, out karma);
-            return karma;
+            ulong id = user.Id;
+            if (Has(id)) return Get(id);
+            else return 0;
         }
 
         /// <summary>
         /// Adds the thanks cooldown to the lookup.
         /// </summary>
-        public static void AddThanksCooldown (IUser source, IUser target)
+        public void AddThanksCooldown (IUser source, IUser target, int cooldownSeconds)
         {
-            int.TryParse(BrackeysBot.Settings["thanks"], out int cooldownSeconds);
             if (cooldownSeconds <= 0) return;
 
             DateTime now = DateTime.Now;
@@ -107,30 +101,30 @@ namespace BrackeysBot
 
             ulong s = source.Id, t = target.Id;
 
-            if (ThankCooldowns.ContainsKey(s))
+            if (_thankCooldowns.ContainsKey(s))
             {
-                if (ThankCooldowns[s].ContainsKey(t))
-                    ThankCooldowns[s][t] = reEnable;
+                if (_thankCooldowns[s].ContainsKey(t))
+                    _thankCooldowns[s][t] = reEnable;
                 else
-                    ThankCooldowns[s].Add(t, reEnable);
+                    _thankCooldowns[s].Add(t, reEnable);
             }
             else
             {
-                ThankCooldowns.Add(s, new Dictionary<ulong, DateTime>() { { t, reEnable } });
+                _thankCooldowns.Add(s, new Dictionary<ulong, DateTime>() { { t, reEnable } });
             }
         }
         /// <summary>
         /// Checks if a cooldown for a thanks operation from source to target has already expired.
         /// </summary>
-        public static bool CheckThanksCooldownExpired (IUser source, IUser target, out int remainingMinutes)
+        public bool CheckThanksCooldownExpired (IUser source, IUser target, out int remainingMinutes)
         {
             ulong s = source.Id, t = target.Id;
             remainingMinutes = 0;
 
-            if (!ThankCooldowns.ContainsKey(s)) return true;
-            if (!ThankCooldowns[s].ContainsKey(t)) return true;
+            if (!_thankCooldowns.ContainsKey(s)) return true;
+            if (!_thankCooldowns[s].ContainsKey(t)) return true;
 
-            DateTime limit = ThankCooldowns[s][t];
+            DateTime limit = _thankCooldowns[s][t];
             DateTime now = DateTime.Now;
             if (limit <= now)
             {
@@ -145,51 +139,50 @@ namespace BrackeysBot
         /// <summary>
         /// Cleans all thanks cooldowns that are no longer needed.
         /// </summary>
-        public static void CleanThanksCooldowns ()
+        public void CleanThanksCooldowns ()
         {
             var now = DateTime.Now;
 
             // Iterate over each element in the dictionary, checking if the limit time is still greater than the current time.
             // Remove elements that are already above the threshold
-            foreach (ulong key in ThankCooldowns.Keys)
-                ThankCooldowns[key] = ThankCooldowns[key].Where(k => k.Value <= now).ToDictionary(d => d.Key, d => d.Value);
+            foreach (ulong key in _thankCooldowns.Keys)
+                _thankCooldowns[key] = _thankCooldowns[key].Where(k => k.Value <= now).ToDictionary(d => d.Key, d => d.Value);
 
             // Clean the base dictionary, keeping only values that still have valid dictionaries
-            ThankCooldowns = ThankCooldowns.Where(k => k.Value.Keys.Count > 0).ToDictionary(d => d.Key, d => d.Value);
+            _thankCooldowns = _thankCooldowns.Where(k => k.Value.Keys.Count > 0).ToDictionary(d => d.Key, d => d.Value);
         }
 
         /// <summary>
         /// Adds the points user cooldown to the lookup.
         /// </summary>
-        public static void AddPointsUserCooldown (IUser source)
+        public void AddPointsUserCooldown (IUser source, int cooldownSeconds)
         {
-            int.TryParse(BrackeysBot.Settings["points-user"], out int cooldownSeconds);
             if (cooldownSeconds <= 0) return;
 
             DateTime now = DateTime.Now;
             DateTime reEnable = now.AddSeconds(cooldownSeconds);
 
             ulong s = source.Id;
-            if (PointsUserUsageCooldown.ContainsKey(s))
+            if (_pointsUserUsageCooldown.ContainsKey(s))
             {
-                PointsUserUsageCooldown[s] = reEnable;
+                _pointsUserUsageCooldown[s] = reEnable;
             }
             else
             {
-                PointsUserUsageCooldown.Add(s, reEnable);
+                _pointsUserUsageCooldown.Add(s, reEnable);
             }
         }
         /// <summary>
         /// Checks if a cooldown for the command usage from the source user has already expired.
         /// </summary>
-        public static bool CheckPointsUserCooldownExpired (IUser source, out int remainingSeconds)
+        public bool CheckPointsUserCooldownExpired (IUser source, out int remainingSeconds)
         {
             ulong s = source.Id;
             remainingSeconds = 0;
 
-            if (!PointsUserUsageCooldown.ContainsKey(s)) return true;
+            if (!_pointsUserUsageCooldown.ContainsKey(s)) return true;
 
-            DateTime limit = PointsUserUsageCooldown[s];
+            DateTime limit = _pointsUserUsageCooldown[s];
             DateTime now = DateTime.Now;
             if (limit <= now)
             {
@@ -204,32 +197,31 @@ namespace BrackeysBot
         /// <summary>
         /// Cleans all points user cooldowns that are no longer needed.
         /// </summary>
-        public static void CleanPointsUserCooldowns ()
+        public void CleanPointsUserCooldowns ()
         {
             var now = DateTime.Now;
 
             // Clean the base dictionary, keeping only values that havent expired yet
-            PointsUserUsageCooldown = PointsUserUsageCooldown.Where(k => k.Value <= now).ToDictionary(d => d.Key, d => d.Value);
+            _pointsUserUsageCooldown = _pointsUserUsageCooldown.Where(k => k.Value <= now).ToDictionary(d => d.Key, d => d.Value);
         }
 
         /// <summary>
         /// Returns the leaderboard, sorted by points.
         /// </summary>
-        public IEnumerable<Tuple<ulong, int>> GetSortedLeaderboard ()
+        public IEnumerable<KeyValuePair<ulong, int>> GetSortedLeaderboard ()
         {
-            return Lookup
-                .Select(k => new Tuple<ulong, int>(k.Key, k.Value))
-                .OrderByDescending(t => t.Item2);
+            return _lookup
+                .OrderByDescending(t => t.Value);
         }
 
         /// <summary>
         /// Returns the leaderboard, starting from the startIndex, including a specific number of places.
         /// </summary>
-        public IEnumerable<Tuple<ulong, int>> GetLeaderboardPlaces (int startIndex, int count)
+        public IEnumerable<KeyValuePair<ulong, int>> GetLeaderboardPlaces (int startIndex, int count)
         {
             var leaderboard = GetSortedLeaderboard();
 
-            if (leaderboard.Count() < startIndex) return Enumerable.Empty<Tuple<ulong, int>>();
+            if (leaderboard.Count() < startIndex) return Enumerable.Empty<KeyValuePair<ulong, int>>();
             var skippedToIndex = leaderboard.Skip(startIndex);
 
             if (skippedToIndex.Count() < count) return skippedToIndex;

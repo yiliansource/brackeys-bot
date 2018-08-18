@@ -3,58 +3,18 @@ using System.Collections.Generic;
 
 namespace BrackeysBot
 {
-    public class RuleTable : LookupTable<Dictionary<int, string>>
+    /// <summary>
+    /// Provides a table to store the rules for a server.
+    /// </summary>
+    public class RuleTable : LookupTable<int, string>
     {
-        protected override Dictionary<int, string> Lookup { get; set; }
-        public Dictionary<int, string> Rules => Lookup;
+        /// <summary>
+        /// Returns the rules from the table.
+        /// </summary>
+        public Dictionary<int, string> Rules => _lookup;
 
-        public RuleTable()
+        public RuleTable(string path) : base(path)
         {
         }
-
-        protected override string GetFilePath()
-            => Path.Combine(Directory.GetCurrentDirectory(), "rules.json");
-
-        /// <summary>
-        /// Returns a rule by its id.
-        /// </summary>
-        public string this[int id]
-        {
-            get
-            {
-                return Lookup[id];
-            }
-            set
-            {
-                Lookup[id] = value;
-                SaveData();
-            }
-        }
-
-        /// <summary>
-        /// Checks if the rule table contains a rule with the specified id.
-        /// </summary>
-        public bool HasRule(int id)
-            => Lookup.ContainsKey(id);
-
-        /// <summary>
-        /// Adds a rule to the table.
-        /// </summary>
-        public void AddRule (int id, string content)
-        {
-            Lookup.Add(id, content);
-            SaveData();
-        }
-
-        /// <summary>
-        /// Deletes the rule with the specified id.
-        /// </summary>
-        public void DeleteRule(int id)
-        { 
-            Lookup.Remove(id);
-            SaveData();
-        }
-
-        public Dictionary<int, string> GetAllRules() => Lookup;
     }
 }

@@ -3,32 +3,13 @@ using System.Collections.Generic;
 
 namespace BrackeysBot
 {
-    public class SettingsTable : LookupTable<Dictionary<string, string>>
+    /// <summary>
+    /// Provides a table to store and change settings.
+    /// </summary>
+    public class SettingsTable : LookupTable<string, string>
     {
-        protected override Dictionary<string, string> Lookup { get; set; }
-
-        public SettingsTable()
+        public SettingsTable(string path) : base(path)
         {
-        }
-
-        protected override string GetFilePath()
-            => Path.Combine(Directory.GetCurrentDirectory(), "settings.json");
-
-        public string this[string id]
-        {
-            get
-            {
-                string value = "";
-                Lookup.TryGetValue(id, out value);
-                return value;
-            }
-            set
-            {
-                if (!Lookup.TryAdd(id, value))
-                    Lookup[id] = value;
-
-                SaveData();
-            }
         }
     }
 }

@@ -10,19 +10,17 @@ namespace BrackeysBot.Commands
 {
     public class HasteCommand : ModuleBase
     {
-        private readonly CommandService commands;
-        
         private static readonly Regex _HasteKeyRegex = new Regex(@"{""key"":""(?<key>[a-z].*)""}", RegexOptions.Compiled);
         private const string DEFAULT_URL = "https://hastebin.com";
         private const string CODEBLOCK_IDENTIFIER = "```";
         private const int MASSIVE_THRESHOLD = 300;
 
-        public HasteCommand(CommandService commands)
+        public HasteCommand()
         {
-            this.commands = commands;
         }
 
         [Command("modhaste")]
+        [HelpData("modhaste <message_id>", "Haste a specific message.", HelpMode = "mod")]
         public async Task ModHasteMessage(ulong messageId)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
@@ -35,6 +33,9 @@ namespace BrackeysBot.Commands
             await message.DeleteAsync();
         }
 
+        /// <summary>
+        /// Hastes a string and returns the URL of the hastebin page.
+        /// </summary>
         public static async Task<string> HasteMessage(string message)
         {
             using (WebClient client = new WebClient())
@@ -53,6 +54,9 @@ namespace BrackeysBot.Commands
             }
         }
 
+        /// <summary>
+        /// Hastes the specified message, given that it meets the massive codeblock requirements.
+        /// </summary>
         public static async Task HasteIfMassiveCodeblock (IMessage message)
         {
             string content = message.Content;
@@ -71,8 +75,6 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Removes the ``` formatting from a string.
         /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public static string RemoveCodeblockFormat (string message)
         {
             if (message.StartsWith(CODEBLOCK_IDENTIFIER)

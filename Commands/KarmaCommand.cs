@@ -8,11 +8,13 @@ namespace BrackeysBot.Commands
 {
     public class KarmaCommand : ModuleBase
     {
-        private readonly CommandService commands;
+        private readonly KarmaTable _karmaTable;
+        private readonly SettingsTable _settings;
 
-        public KarmaCommand(CommandService commands)
+        public KarmaCommand(KarmaTable karmaTable, SettingsTable settings)
         {
-            this.commands = commands;
+            _karmaTable = karmaTable;
+            _settings = settings;
         }
         
         [Command("thanks"), Alias("thank")]
@@ -26,6 +28,7 @@ namespace BrackeysBot.Commands
             await ReplyAsync(string.Empty, false, eb);
         }
         [Command("thanks"), Alias("thank")]
+        [HelpData("thanks <user>", "Thank a user.")]
         public async Task ThankUserCommand ([Remainder]IGuildUser user)
         {
             IUser source = Context.User, target = user;
@@ -35,14 +38,12 @@ namespace BrackeysBot.Commands
                 return;
             }
 
-            KarmaTable table = BrackeysBot.Karma;
-
-            int remainingMinutes;
-            if (KarmaTable.CheckThanksCooldownExpired(source, target, out remainingMinutes))
+            if (_karmaTable.CheckThanksCooldownExpired(source, target, out int remainingMinutes))
             {
-                table.ThankUser(source, target);
+                int.TryParse(_settings["thanks"], out int cooldown);
+                _karmaTable.ThankUser(source, target, cooldown);
 
-                int total = table.GetKarma(target);
+                int total = _karmaTable.GetKarma(target);
                 string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
                 await ReplyAsync($"{ user.Mention } has { pointsDisplay }.");
             }
@@ -59,22 +60,21 @@ namespace BrackeysBot.Commands
         }
 
         [Command("karma")]
+        [HelpData("karma (add / remove / set) <user> <value>", "Modifies a user's karma points.", HelpMode = "mod")]
         public async Task ModifyKarmaCommand (string operation, SocketGuildUser user, int amount)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
 
-            KarmaTable table = BrackeysBot.Karma;
-
             switch(operation.ToLower())
             {
                 case "set":
-                    table.SetKarma(user, amount);
+                    _karmaTable.SetKarma(user, amount);
                     break;
                 case "add":
-                    table.AddKarma(user, amount);
+                    _karmaTable.AddKarma(user, amount);
                     break;
                 case "remove":
-                    table.RemoveKarma(user, amount);
+                    _karmaTable.RemoveKarma(user, amount);
                     break;
 
                 default:
@@ -82,7 +82,7 @@ namespace BrackeysBot.Commands
                     return;
             }
 
-            await ReplyAsync($"{ user.Username } has { table.GetKarma(user) } points.");
+            await ReplyAsync($"{ UserHelper.GetDisplayName(user) } has { _karmaTable.GetKarma(user) } points.");
         }
     }
 }

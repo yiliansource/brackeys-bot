@@ -10,25 +10,27 @@ namespace BrackeysBot.Commands
 {
     public class RuleCommand : ModuleBase
     {
-        private readonly CommandService commands;
+        private readonly RuleTable _ruleTable;
+        private readonly SettingsTable _settings;
 
-        public RuleCommand(CommandService commands)
+        public RuleCommand(RuleTable ruleTable, SettingsTable settings)
         {
-            this.commands = commands;
+            _ruleTable = ruleTable;
+            _settings = settings;
         }
 
         [Command("rule")]
+        [HelpData("rule <id>", "Quotes a rule.", HelpMode = "mod")]
         public async Task PrintRule (int id)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
-
-            RuleTable ruleTable = BrackeysBot.Rules;
-            if (ruleTable.HasRule(id))
+            
+            if (_ruleTable.Has(id))
             {
                 EmbedBuilder eb = new EmbedBuilder()
                     .WithColor(new Color(0, 255, 255))
                     .WithTitle($"Rule { id }")
-                    .WithDescription(ruleTable[id])
+                    .WithDescription(_ruleTable.Get(id))
                     .WithFooter("To see all the rules go to #info.");
 
                 await ReplyAsync(string.Empty, false, eb);
@@ -40,18 +42,18 @@ namespace BrackeysBot.Commands
         }
 
         [Command("addrule")]
+        [HelpData("addrule <id> <content>", "Creates a rule.", HelpMode = "mod")]
         public async Task AddRule (int id, [Remainder]string contents)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
-
-            RuleTable ruleTable = BrackeysBot.Rules;
-            if (ruleTable.HasRule(id))
+            
+            if (_ruleTable.Has(id))
             {
                 await ReplyAsync("Rule already exists.");
             }
             else
             {
-                ruleTable.AddRule(id, contents);
+                _ruleTable.Add(id, contents);
                 await ReplyAsync("Rule created.");
             }
 
@@ -59,14 +61,14 @@ namespace BrackeysBot.Commands
         }
 
         [Command("setrule")]
+        [HelpData("setrule <id> <content>", "Updates a rule.", HelpMode = "mod")]
         public async Task SetRule (int id, [Remainder]string contents)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
-
-            RuleTable ruleTable = BrackeysBot.Rules;
-            if (ruleTable.HasRule(id))
+            
+            if (_ruleTable.Has(id))
             {
-                ruleTable[id] = contents;
+                _ruleTable.Set(id, contents);
                 await ReplyAsync("Rule updated.");
             }
             else
@@ -78,14 +80,14 @@ namespace BrackeysBot.Commands
         }
 
         [Command("removerule")]
+        [HelpData("removerule <id>", "Removes a rule.", HelpMode = "mod")]
         public async Task RemoveRule (int id)
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
-
-            RuleTable ruleTable = BrackeysBot.Rules;
-            if (ruleTable.HasRule(id))
+            
+            if (_ruleTable.Has(id))
             {
-                ruleTable.DeleteRule(id);
+                _ruleTable.Remove(id);
                 await ReplyAsync("Rule deleted.");
             }
             else
@@ -97,22 +99,25 @@ namespace BrackeysBot.Commands
         }
 
         [Command("allrules")]
+        [HelpData("allrules", "Prints all the rules.", HelpMode = "mod")]
         public async Task PrintAllRules ()
         {
             StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
-
-            string rules = GetRulesMessage();
-            await ReplyAsync(rules);
+            
+            await ReplyAsync(BuildRuleMessage());
         }
 
-        private static string GetRulesMessage ()
+        /// <summary>
+        /// Builds the rule message.
+        /// </summary>
+        private string BuildRuleMessage ()
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine("**Welcome to the official Brackeys discord server!**");
             builder.AppendLine();
             builder.AppendLine("Please take a moment to read the rules.");
 
-            Dictionary<int, string> rules = BrackeysBot.Rules.Rules;
+            Dictionary<int, string> rules = _ruleTable.Rules;
             foreach (int id in rules.Keys.OrderBy(k => k))
             {
                 builder.AppendLine();
@@ -122,27 +127,28 @@ namespace BrackeysBot.Commands
 
             return builder.ToString();
         }
-
-        private static async Task UpdateOriginRuleMessage (IGuild guild)
+        /// <summary>
+        /// Gets the origin rule message.
+        /// </summary>
+        private async Task<IUserMessage> GetOriginMessage(IGuild guild)
         {
-            var message = await GetOriginMessage(guild);
-            await UpdateOriginRuleMessage(message);
-        }
-        private static async Task<IUserMessage> GetOriginMessage (IGuild guild)
-        {
-            ulong id = ulong.Parse(BrackeysBot.Settings["rulemessage-id"]);
+            ulong id = ulong.Parse(_settings["rulemessage-id"]);
             var channels = await guild.GetChannelsAsync();
             var infoChannel = channels.First(c => c.Name.ToLower() == "info");
             var message = await (infoChannel as IMessageChannel).GetMessageAsync(id);
 
             return message as IUserMessage;
         }
-        private static async Task UpdateOriginRuleMessage(IUserMessage originMessage)
-        {
-            // Get the origin message ID
-            string rules = GetRulesMessage();
 
-            await originMessage.ModifyAsync(m => m.Content = rules);
+        /// <summary>
+        /// Updates the origin rule message with the rules from the rule table.
+        /// </summary>
+        private async Task UpdateOriginRuleMessage (IGuild guild)
+        {
+            var message = await GetOriginMessage(guild);
+            string rules = BuildRuleMessage();
+
+            await message.ModifyAsync(m => m.Content = rules);
         }
     }
 }
