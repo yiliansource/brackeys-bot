@@ -14,10 +14,19 @@ namespace BrackeysBot.Commands
         {
             this.commands = commands;
         }
+        
+        [Command("thanks"), Alias("thank")]
+        public async Task ThankUserCommand()
+        {
+            EmbedBuilder eb = new EmbedBuilder()
+                    .WithColor(new Color(0, 255, 255))
+                    .WithTitle($"How to thank people:")
+                    .WithDescription("Example: []thanks @Brackeys");
 
-        [Command("thanks")]
-        [Alias("thank")]
-        public async Task ThankUserCommand (SocketGuildUser user)
+            await ReplyAsync(string.Empty, false, eb);
+        }
+        [Command("thanks"), Alias("thank")]
+        public async Task ThankUserCommand ([Remainder]IGuildUser user)
         {
             IUser source = Context.User, target = user;
             if (source == target)
