@@ -39,7 +39,7 @@ namespace BrackeysBot.Commands
                 await ReplyAsync($"{ UserHelper.GetDisplayName(user) } has { pointsDisplay }.");
 
                 // Make sure that staff doesn't have cooldowns
-                if (!StaffCommandHelper.HasStaffRole(Context.User as IGuildUser))
+                if (!(Context.User as IGuildUser).HasStaffRole())
                 {
                     int.TryParse(_settings["points-user"], out int cooldown);
                     _karmaTable.AddPointsUserCooldown(Context.User, cooldown);

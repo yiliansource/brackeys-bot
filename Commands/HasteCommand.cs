@@ -23,7 +23,7 @@ namespace BrackeysBot.Commands
         [HelpData("modhaste <message_id>", "Haste a specific message.", HelpMode = "mod")]
         public async Task ModHasteMessage(ulong messageId)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
 
             var message = await Context.Channel.GetMessageAsync(messageId);
             string content = RemoveCodeblockFormat(message.Content);

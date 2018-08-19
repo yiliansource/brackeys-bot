@@ -32,7 +32,7 @@ namespace BrackeysBot.Commands
         [HelpData("modhelp", "Displays this menu.", HelpMode = "mod")]
         public async Task ModHelp ()
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
 
             EmbedBuilder helpDialog = GetHelpDialog("mod");
             await ReplyAsync(string.Empty, false, helpDialog);

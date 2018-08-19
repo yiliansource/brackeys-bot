@@ -63,9 +63,9 @@ namespace BrackeysBot.Commands
         [HelpData("karma (add / remove / set) <user> <value>", "Modifies a user's karma points.", HelpMode = "mod")]
         public async Task ModifyKarmaCommand (string operation, SocketGuildUser user, int amount)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
 
-            switch(operation.ToLower())
+            switch (operation.ToLower())
             {
                 case "set":
                     _karmaTable.SetKarma(user, amount);

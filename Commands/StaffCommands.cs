@@ -16,9 +16,9 @@ namespace BrackeysBot.Commands
 
         [Command("set")]
         [HelpData("set <name> <value>", "Updates a setting.", HelpMode = "mod")]
-        public async Task ApplySetting(string name, string value)
+        public async Task ApplySetting(string name, [Remainder]string value)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
 
             if (_settings.Has(name))
             {

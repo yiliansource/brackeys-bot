@@ -23,8 +23,8 @@ namespace BrackeysBot.Commands
         [HelpData("rule <id>", "Quotes a rule.", HelpMode = "mod")]
         public async Task PrintRule (int id)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
-            
+            (Context.User as IGuildUser).EnsureStaff();
+
             if (_ruleTable.Has(id))
             {
                 EmbedBuilder eb = new EmbedBuilder()
@@ -45,7 +45,7 @@ namespace BrackeysBot.Commands
         [HelpData("addrule <id> <content>", "Creates a rule.", HelpMode = "mod")]
         public async Task AddRule (int id, [Remainder]string contents)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
             
             if (_ruleTable.Has(id))
             {
@@ -64,7 +64,7 @@ namespace BrackeysBot.Commands
         [HelpData("setrule <id> <content>", "Updates a rule.", HelpMode = "mod")]
         public async Task SetRule (int id, [Remainder]string contents)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
             
             if (_ruleTable.Has(id))
             {
@@ -83,7 +83,7 @@ namespace BrackeysBot.Commands
         [HelpData("removerule <id>", "Removes a rule.", HelpMode = "mod")]
         public async Task RemoveRule (int id)
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
             
             if (_ruleTable.Has(id))
             {
@@ -102,7 +102,7 @@ namespace BrackeysBot.Commands
         [HelpData("allrules", "Prints all the rules.", HelpMode = "mod")]
         public async Task PrintAllRules ()
         {
-            StaffCommandHelper.EnsureStaff(Context.User as IGuildUser);
+            (Context.User as IGuildUser).EnsureStaff();
             
             await ReplyAsync(BuildRuleMessage());
         }
