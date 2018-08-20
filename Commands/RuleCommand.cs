@@ -20,10 +20,19 @@ namespace BrackeysBot.Commands
         }
 
         [Command("rule")]
-        [HelpData("rule <id>", "Quotes a rule.", HelpMode = "mod")]
+        [HelpData("rule <id>", "Quotes a rule.")]
         public async Task PrintRule (int id)
         {
-            (Context.User as IGuildUser).EnsureStaff();
+            if (!(Context.User as IGuildUser).HasStaffRole())
+            {
+                int remainingSeconds;
+
+                if (!_ruleTable.CheckRulesUserCooldownExpired(Context.User as IGuildUser, out remainingSeconds)) {
+                    string displaySeconds = $"{ remainingSeconds } second{ (remainingSeconds != 1 ? "s" : "") }";
+                    await ReplyAsync($"{ Context.User.Mention }, please wait { displaySeconds } before using that command again.");
+                    return;
+                }
+            }
 
             if (_ruleTable.Has(id))
             {
