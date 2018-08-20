@@ -23,32 +23,40 @@ namespace BrackeysBot.Commands
         [HelpData("rule <id>", "Quotes a rule.")]
         public async Task PrintRule (int id)
         {
-            if (!(Context.User as IGuildUser).HasStaffRole())
-            {
-                int remainingSeconds;
+            int remainingSeconds;
 
-                if (!_ruleTable.CheckRulesUserCooldownExpired(Context.User as IGuildUser, out remainingSeconds))
+            if (_ruleTable.CheckRulesUserCooldownExpired(Context.User, out remainingSeconds))
+            {
+                if (_ruleTable.Has(id))
                 {
-                    string displaySeconds = $"{ remainingSeconds } second{ (remainingSeconds != 1 ? "s" : "") }";
-                    await ReplyAsync($"{ Context.User.Mention }, please wait { displaySeconds } before using that command again.");
-                    return;
+                    EmbedBuilder eb = new EmbedBuilder()
+                        .WithColor(new Color(0, 255, 255))
+                        .WithTitle($"Rule { id }")
+                        .WithDescription(_ruleTable.Get(id))
+                        .WithFooter("To see all the rules go to #info.");
+
+                    await ReplyAsync(string.Empty, false, eb);
+                
+                    // Make sure that staff doesn't have cooldowns
+                    if (!(Context.User as IGuildUser).HasStaffRole())
+                    {
+                        int.TryParse(_settings["rule-user"], out int cooldown);
+                        _ruleTable.AddRulesUserCooldown(Context.User, cooldown);
+                    }
                 }
+                else
+                {
+                    await ReplyAsync("Invalid rule ID.");
+                }
+            } 
+            else 
+            {
+                string displaySeconds = $"{ remainingSeconds } second{ (remainingSeconds != 1 ? "s" : "") }";
+                await ReplyAsync($"{ Context.User.Mention }, please wait { displaySeconds } before using that command again.");
+                return;
             }
 
-            if (_ruleTable.Has(id))
-            {
-                EmbedBuilder eb = new EmbedBuilder()
-                    .WithColor(new Color(0, 255, 255))
-                    .WithTitle($"Rule { id }")
-                    .WithDescription(_ruleTable.Get(id))
-                    .WithFooter("To see all the rules go to #info.");
-
-                await ReplyAsync(string.Empty, false, eb);
-            }
-            else
-            {
-                await ReplyAsync("Invalid rule ID.");
-            }
+            
         }
 
         [Command("addrule")]
