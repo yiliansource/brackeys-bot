@@ -27,7 +27,8 @@ namespace BrackeysBot.Commands
             {
                 int remainingSeconds;
 
-                if (!_ruleTable.CheckRulesUserCooldownExpired(Context.User as IGuildUser, out remainingSeconds)) {
+                if (!_ruleTable.CheckRulesUserCooldownExpired(Context.User as IGuildUser, out remainingSeconds))
+                {
                     string displaySeconds = $"{ remainingSeconds } second{ (remainingSeconds != 1 ? "s" : "") }";
                     await ReplyAsync($"{ Context.User.Mention }, please wait { displaySeconds } before using that command again.");
                     return;
