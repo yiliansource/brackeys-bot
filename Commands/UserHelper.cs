@@ -40,10 +40,10 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Checks if the user has the specified role.
         /// </summary>
-        public static bool HasRole (this IGuildUser user, string role)
+        public static bool HasRole(this IGuildUser user, string role)
         {
-            var staffRole = user.Guild.Roles.First(r => r.Name == role);
-            return user.RoleIds.Any(id => id == staffRole.Id);
+            var staffRole = user.Guild.Roles.FirstOrDefault(r => string.Equals(r.Name, role, StringComparison.CurrentCultureIgnoreCase));
+            return user.RoleIds.Any(id => id == staffRole?.Id);
         }
     }
 }
