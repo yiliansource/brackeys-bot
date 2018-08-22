@@ -10,6 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+
+using BrackeysBot.Commands;
 
 namespace BrackeysBot 
 {
@@ -25,6 +28,8 @@ namespace BrackeysBot
         private SettingsTable _settings;
         private RuleTable _rules;
         private UnityDocs _unityDocs;
+
+        private readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n--------------------------------\nProject Name: .*\nRole Required: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*\nTeam Size: .*\nProject Length \(specify if it's not strict\): .*\nCompensation: .*\nResponsibilities: .*\nProject Description: .*```)|(```.*\[Looking for work\]\n--------------------------------\nMy Role: .*\nSkills: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*\nExperience in field: .*\nRates: .*```)|(```.*\[Hiring\]\n--------------------------------\nProject Name: .*\nRole Required: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*\nProject Description: .*```)|(```.*\[Looking for work\]\n--------------------------------\nMy Role: .*\nSkills: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*```)|(```.*\[Recruiting\]\n--------------------------------\nProject Name: .*\nProject Description: .*```)|\n(```.*\[Looking to mentor\]\n--------------------------------\nAre of interest: .*\nRates / Free: .*```)|(```.*\[Looking for a mentor\]\n--------------------------------\nArea of interest: .*\nRates / Free: .*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
 
         private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
 
@@ -125,6 +130,23 @@ namespace BrackeysBot
         private void RegisterMassiveCodeblockHandle ()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
+            _client.MessageReceived += CheckTemplate;
+        }
+
+        public async Task CheckTemplate (SocketMessage s)
+        {
+            ulong[] ignoreChannelIds = _settings["massivecodeblock-ignore"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
+            if (ignoreChannelIds.All(id => id != s.Channel.Id)) return;
+
+            if (!_jobRegex.IsMatch(s.Content.ToLower()))
+            {
+                if (!(s.Author as IGuildUser).HasRole("Staff"))
+                {
+                    if (!s.Author.IsBot)
+                        await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString()} UTC, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
+                    await s.DeleteAsync();
+                }
+            }
         }
         /// <summary>
         /// Handles a massive codeblock.
