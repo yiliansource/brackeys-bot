@@ -37,12 +37,20 @@ namespace BrackeysBot.Commands
         {
             ulong[] ignoreChannelIds = _settings["massivecodeblock-ignore"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
             if (ignoreChannelIds.All(id => id != s.Channel.Id)) return;
-            if (!_jobRegex.IsMatch(s.Content) && s.Author.Id != 267062730056269845)
+            if (!_jobRegex.IsMatch(s.Content))
             {
-                if (!s.Author.IsBot)
-                    await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you've sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString()} UTC, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
-                await s.DeleteAsync();
-                await Task.Delay(1000);
+                try
+                {
+                    (s.Author as IGuildUser).EnsureStaff();
+                    await Task.Delay(500);
+                }
+                catch
+                {
+                    if (!s.Author.IsBot)
+                        await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you've sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString()} UTC, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
+                    await s.DeleteAsync();
+                    await Task.Delay(1000);
+                }
             }
         }
     }
