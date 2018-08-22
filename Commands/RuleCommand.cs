@@ -1,10 +1,12 @@
-﻿using System.Linq;
-using System.Text;
+﻿using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
+
+using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands
 {
@@ -20,7 +22,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("rule")]
-        [HelpData("rule <id>", "Quotes a rule.", HelpMode = "mod")]
+        [HelpData("rule <id>", "Quotes a rule.")]
         public async Task PrintRule (int id)
         {
             (Context.User as IGuildUser).EnsureStaff();
@@ -42,7 +44,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("addrule")]
-        [HelpData("addrule <id> <content>", "Creates a rule.", HelpMode = "mod")]
+        [HelpData("addrule <id> <content>", "Creates a rule.", AllowedRoles = UserType.Staff)]
         public async Task AddRule (int id, [Remainder]string contents)
         {
             (Context.User as IGuildUser).EnsureStaff();
@@ -61,7 +63,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("setrule")]
-        [HelpData("setrule <id> <content>", "Updates a rule.", HelpMode = "mod")]
+        [HelpData("setrule <id> <content>", "Updates a rule.", AllowedRoles = UserType.Staff)]
         public async Task SetRule (int id, [Remainder]string contents)
         {
             (Context.User as IGuildUser).EnsureStaff();
@@ -80,7 +82,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("removerule")]
-        [HelpData("removerule <id>", "Removes a rule.", HelpMode = "mod")]
+        [HelpData("removerule <id>", "Removes a rule.", AllowedRoles = UserType.Staff)]
         public async Task RemoveRule (int id)
         {
             (Context.User as IGuildUser).EnsureStaff();
@@ -99,7 +101,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("allrules")]
-        [HelpData("allrules", "Prints all the rules.", HelpMode = "mod")]
+        [HelpData("allrules", "Prints all the rules.", AllowedRoles = UserType.Staff)]
         public async Task PrintAllRules ()
         {
             (Context.User as IGuildUser).EnsureStaff();

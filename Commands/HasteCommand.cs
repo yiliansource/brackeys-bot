@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 
+using BrackeysBot.Data;
+
 namespace BrackeysBot.Commands
 {
     public class HasteCommand : ModuleBase
@@ -16,7 +18,7 @@ namespace BrackeysBot.Commands
         private const int MASSIVE_THRESHOLD = 300;
 
         [Command("modhaste")]
-        [HelpData("modhaste <message_id>", "Haste a specific message.", HelpMode = "mod")]
+        [HelpData("modhaste <message_id>", "Haste a specific message.", AllowedRoles = UserType.Staff)]
         public async Task ModHasteMessage(ulong messageId)
         {
             (Context.User as IGuildUser).EnsureStaff();

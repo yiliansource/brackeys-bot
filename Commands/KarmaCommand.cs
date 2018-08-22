@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
+using BrackeysBot.Data;
+
 namespace BrackeysBot.Commands
 {
     public class KarmaCommand : ModuleBase
@@ -60,7 +62,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("karma")]
-        [HelpData("karma (add / remove / set) <user> <value>", "Modifies a user's karma points.", HelpMode = "mod")]
+        [HelpData("karma (add / remove / set) <user> <value>", "Modifies a user's karma points.", AllowedRoles = UserType.Staff)]
         public async Task ModifyKarmaCommand (string operation, SocketGuildUser user, int amount)
         {
             (Context.User as IGuildUser).EnsureStaff();

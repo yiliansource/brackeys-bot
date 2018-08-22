@@ -3,6 +3,8 @@
 using Discord;
 using Discord.Commands;
 
+using BrackeysBot.Data;
+
 namespace BrackeysBot.Commands
 {
     public class StaffCommands : ModuleBase
@@ -15,7 +17,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("set")]
-        [HelpData("set <name> <value>", "Updates a setting.", HelpMode = "mod")]
+        [HelpData("set <name> <value>", "Updates a setting.", AllowedRoles = UserType.Staff)]
         public async Task ApplySetting(string name, [Remainder]string value)
         {
             (Context.User as IGuildUser).EnsureStaff();
