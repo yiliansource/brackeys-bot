@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace BrackeysBot 
 {
@@ -125,6 +126,12 @@ namespace BrackeysBot
         private void RegisterMassiveCodeblockHandle ()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
+            _client.MessageReceived += CheckTemplate;
+        }
+
+        public async Task CheckTemplate (SocketMessage s)
+        {
+            await Commands.TemplateCommand.CheckTemplate(s, _settings);
         }
         /// <summary>
         /// Handles a massive codeblock.
