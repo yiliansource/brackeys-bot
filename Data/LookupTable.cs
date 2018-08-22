@@ -42,6 +42,11 @@ namespace BrackeysBot
         {
             return _lookup[key];
         }
+        public virtual TValue GetOrDefault(TKey key)
+        {
+            if (Has(key)) return Get(key);
+            else return default;
+        }
         public virtual void Set(TKey key, TValue value)
         {
             _lookup[key] = value;

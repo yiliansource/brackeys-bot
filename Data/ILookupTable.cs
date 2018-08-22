@@ -19,6 +19,13 @@ public interface ILookupTable<TKey, TValue>
     TValue Get(TKey key);
 
     /// <summary>
+    /// Gets a value from the lookup table. Returns the default value for <see cref="TValue"/> if the key doesn't exist.
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    TValue GetOrDefault(TKey key);
+
+    /// <summary>
     /// Sets a value in the lookup table.
     /// </summary>
     void Set(TKey key, TValue value);
