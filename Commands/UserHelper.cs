@@ -23,18 +23,27 @@ namespace BrackeysBot.Commands
         /// </summary>
         public static void EnsureStaff(this IGuildUser user)
         {
-            if (!user.HasStaffRole())
+            user.EnsureRole("Staff");
+        }
+        /// <summary>
+        /// Ensures that the user has any of the given roles.
+        /// </summary>
+        public static void EnsureAnyRole (this IGuildUser user, params string[] roles)
+        {
+            if (!roles.Any(role => user.HasRole(role)))
             {
                 throw new Exception("Insufficient permissions.");
             }
         }
-
         /// <summary>
-        /// Checks if a specified user has the Staff role.
+        /// Ensures that the user has the specified role.
         /// </summary>
-        public static bool HasStaffRole(this IGuildUser user)
+        public static void EnsureRole (this IGuildUser user, string role)
         {
-            return user.HasRole("Staff");
+            if (!user.HasRole(role))
+            {
+                throw new Exception("Insufficient permissions.");
+            }
         }
 
         /// <summary>

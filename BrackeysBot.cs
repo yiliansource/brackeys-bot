@@ -100,7 +100,7 @@ namespace BrackeysBot
                 && !msg.Content.ToLower().StartsWith("thanks")) return;
 
             CommandContext context = new CommandContext(_client, msg);
-
+            
             IResult result = await _commandService.ExecuteAsync(context, argPos, _services);
             if (!result.IsSuccess)
             {
