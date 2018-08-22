@@ -1,0 +1,17 @@
+{
+    "commands":
+    [
+        {
+            "commandName": "thanks",
+            "cooldownTime": "14400",
+            "cooldownType": "sameParameters",
+            "users": []
+        },
+        {
+            "commandName": "rule",
+            "cooldownTime": "14400",
+            "cooldownType": "sameCommand",
+            "users": []
+        }
+    ]
+}
