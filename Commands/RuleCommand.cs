@@ -25,8 +25,6 @@ namespace BrackeysBot.Commands
         [HelpData("rule <id>", "Quotes a rule.")]
         public async Task PrintRule (int id)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             if (_ruleTable.Has(id))
             {
                 EmbedBuilder eb = new EmbedBuilder()
