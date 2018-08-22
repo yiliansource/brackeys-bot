@@ -15,10 +15,6 @@ namespace BrackeysBot.Commands
         private const string CODEBLOCK_IDENTIFIER = "```";
         private const int MASSIVE_THRESHOLD = 300;
 
-        public HasteCommand()
-        {
-        }
-
         [Command("modhaste")]
         [HelpData("modhaste <message_id>", "Haste a specific message.", HelpMode = "mod")]
         public async Task ModHasteMessage(ulong messageId)

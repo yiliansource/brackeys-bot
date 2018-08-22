@@ -9,9 +9,6 @@ namespace BrackeysBot.Commands
 {
     public class LmgtfyCommand : ModuleBase
     {
-        public LmgtfyCommand()
-        {
-        }
 
         [Command("lmgtfy")]
         [HelpData("lmgtfy <search>", "Performs a google search for a user that doesn't know how to use google")]
