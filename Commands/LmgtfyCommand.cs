@@ -1,0 +1,24 @@
+﻿using Discord.WebSocket;
+using System.Threading.Tasks;
+using System.Web;
+
+using Discord;
+using Discord.Commands;
+
+namespace BrackeysBot.Commands
+{
+    public class LmgtfyCommand : ModuleBase
+    {
+
+        [Command("lmgtfy")]
+        [HelpData("lmgtfy <search>", "Performs a google search for a user that doesn't know how to use google")]
+        public async Task GoogleCommand([Remainder] string search)
+        {
+            await ReplyAsync($"http://lmgtfy.com/?q={HttpUtility.UrlEncode(search)}");
+            return;
+        }
+       
+
+
+    }
+}
