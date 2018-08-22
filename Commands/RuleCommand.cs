@@ -20,25 +20,43 @@ namespace BrackeysBot.Commands
         }
 
         [Command("rule")]
-        [HelpData("rule <id>", "Quotes a rule.", HelpMode = "mod")]
+        [HelpData("rule <id>", "Quotes a rule.")]
         public async Task PrintRule (int id)
         {
-            (Context.User as IGuildUser).EnsureStaff();
+            int remainingSeconds;
 
-            if (_ruleTable.Has(id))
+            if (_ruleTable.CheckRulesUserCooldownExpired(Context.User, out remainingSeconds))
             {
-                EmbedBuilder eb = new EmbedBuilder()
-                    .WithColor(new Color(0, 255, 255))
-                    .WithTitle($"Rule { id }")
-                    .WithDescription(_ruleTable.Get(id))
-                    .WithFooter("To see all the rules go to #info.");
+                if (_ruleTable.Has(id))
+                {
+                    EmbedBuilder eb = new EmbedBuilder()
+                        .WithColor(new Color(0, 255, 255))
+                        .WithTitle($"Rule { id }")
+                        .WithDescription(_ruleTable.Get(id))
+                        .WithFooter("To see all the rules go to #info.");
 
-                await ReplyAsync(string.Empty, false, eb);
-            }
-            else
+                    await ReplyAsync(string.Empty, false, eb);
+                
+                    // Make sure that staff doesn't have cooldowns
+                    if (!(Context.User as IGuildUser).HasStaffRole())
+                    {
+                        int.TryParse(_settings["rule-user"], out int cooldown);
+                        _ruleTable.AddRulesUserCooldown(Context.User, cooldown);
+                    }
+                }
+                else
+                {
+                    await ReplyAsync("Invalid rule ID.");
+                }
+            } 
+            else 
             {
-                await ReplyAsync("Invalid rule ID.");
+                string displaySeconds = $"{ remainingSeconds } second{ (remainingSeconds != 1 ? "s" : "") }";
+                await ReplyAsync($"{ Context.User.Mention }, please wait { displaySeconds } before using that command again.");
+                return;
             }
+
+            
         }
 
         [Command("addrule")]
