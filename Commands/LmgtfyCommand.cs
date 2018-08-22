@@ -1,6 +1,6 @@
 ﻿using Discord.WebSocket;
 using System.Threading.Tasks;
-using System;
+using System.Web;
 
 using Discord;
 using Discord.Commands;
@@ -23,8 +23,7 @@ namespace BrackeysBot.Commands
        
         private static string SearchBuilder(string search)
         {
-            string par = search.Replace(" ", "+");
-            string url = "http://lmgtfy.com/?q=" + par;
+            string url = $"http://lmgtfy.com/?q={HttpUtility.UrlEncode(search)}";
             return url;
         }
 
