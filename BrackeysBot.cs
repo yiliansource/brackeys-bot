@@ -129,7 +129,7 @@ namespace BrackeysBot
             _client.MessageReceived += CheckTemplate;
         }
 
-        public async Task CheckTemplate (SocketMessage s)
+        public async Task CheckTemplate (IMessage s)
         {
             await Commands.TemplateCommand.CheckTemplate(s, _settings);
         }
