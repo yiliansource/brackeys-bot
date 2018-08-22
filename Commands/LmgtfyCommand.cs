@@ -17,15 +17,10 @@ namespace BrackeysBot.Commands
         [HelpData("lmgtfy <search>", "Performs a google search for a user that doesn't know how to use google")]
         public async Task GoogleCommand([Remainder] string search)
         {
-            await ReplyAsync(SearchBuilder(search));
+            await ReplyAsync($"http://lmgtfy.com/?q={HttpUtility.UrlEncode(search)}");
             return;
         }
        
-        private static string SearchBuilder(string search)
-        {
-            string url = $"http://lmgtfy.com/?q={HttpUtility.UrlEncode(search)}";
-            return url;
-        }
 
 
     }
