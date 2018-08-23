@@ -147,7 +147,7 @@ namespace BrackeysBot.Commands
 
                         if (data.DisplayIndex + modification < min)
                         {
-                            data.DisplayIndex = min;
+                            modification = min;
                         }
                         if (data.DisplayIndex + modification > max)
                         {
