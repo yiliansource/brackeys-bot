@@ -10,6 +10,7 @@ namespace BrackeysBot.Commands
     /// </summary>
     public static class UserHelper
     {
+        public static SettingsTable _settings;
         /// <summary>
         /// Returns the displayed name for the specified user.
         /// </summary>
@@ -19,11 +20,11 @@ namespace BrackeysBot.Commands
         }
 
         /// <summary>
-        /// Ensures that the specified user has the "Staff" role. Throws an exception if they don't.
+        /// Ensures that the specified user is staff. Throws an exception if they aren't.
         /// </summary>
         public static void EnsureStaff(this IGuildUser user)
         {
-            user.EnsureRole("Staff");
+            user.EnsureRole(_settings["staff-role"]);
         }
         /// <summary>
         /// Ensures that the user has any of the given roles.
@@ -58,7 +59,7 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Checks if the user is staff.
         /// </summary>
-        public static bool HasStaffRole(this IGuildUser user, SettingsTable _settings)
+        public static bool HasStaffRole(this IGuildUser user)
         {
             return HasRole(user, _settings["staff-role"]);
         }
