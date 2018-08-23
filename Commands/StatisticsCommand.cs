@@ -26,9 +26,11 @@ namespace BrackeysBot.Commands
         }
 
         [Command("statistics")]
-        [HelpData("statistics", "Displays the most frequently used commands.")]
+        [HelpData("statistics", "Displays the most frequently used commands.", HelpMode = "mod")]
         public async Task DisplayLeaderboard()
         {
+            (Context.User as IGuildUser).EnsureStaff();
+
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
 
             var builder = await BuildForNextPlaces(_statisticsTable, Context.Guild, 0, pagesize);
