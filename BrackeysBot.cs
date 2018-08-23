@@ -82,6 +82,7 @@ namespace BrackeysBot
                 .BuildServiceProvider();
 
             await InstallCommands();
+            UserHelper._settings = _settings;
 
             RegisterMassiveCodeblockHandle();
             RegisterLeaderboardNavigationHandle();
@@ -165,7 +166,7 @@ namespace BrackeysBot
             if (ignoreChannelIds.All(id => id != s.Channel.Id)) return;
             if (!_jobRegex.IsMatch(s.Content.ToLower()))
             {
-                if (!(s.Author as IGuildUser).HasStaffRole(_settings))
+                if (!(s.Author as IGuildUser).HasStaffRole())
                 {
                     if (!s.Author.IsBot)
                         await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString()} UTC, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
