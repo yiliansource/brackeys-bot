@@ -48,7 +48,7 @@ namespace BrackeysBot.Commands
 
                 int total = _karmaTable.GetKarma(target);
                 string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
-                var message = await ReplyAsync($"{ user.Mention } has { pointsDisplay }.");
+                var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
 
                 await Task.Delay(5000);
                 await message.DeleteAsync();
