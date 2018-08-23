@@ -29,7 +29,7 @@ namespace BrackeysBot
         private RuleTable _rules;
         private UnityDocs _unityDocs;
 
-        private readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n--------------------------------\nProject Name: .*\nRole Required: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*\nTeam Size: .*\nProject Length \(specify if it's not strict\): .*\nCompensation: .*\nResponsibilities: .*\nProject Description: .*```)|(```.*\[Looking for work\]\n--------------------------------\nMy Role: .*\nSkills: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*\nExperience in field: .*\nRates: .*```)|(```.*\[Hiring\]\n--------------------------------\nProject Name: .*\nRole Required: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*\nProject Description: .*```)|(```.*\[Looking for work\]\n--------------------------------\nMy Role: .*\nSkills: .*\nMy Previous Projects / Portfolio \(N/A if none\): .*```)|(```.*\[Recruiting\]\n--------------------------------\nProject Name: .*\nProject Description: .*```)|\n(```.*\[Looking to mentor\]\n--------------------------------\nAre of interest: .*\nRates / Free: .*```)|(```.*\[Looking for a mentor\]\n--------------------------------\nArea of interest: .*\nRates / Free: .*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
+        private readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
 
         private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
 
@@ -50,6 +50,7 @@ namespace BrackeysBot
 
             _karma = new KarmaTable("karma.json");
             _settings = new SettingsTable("settings.json");
+
             _rules = new RuleTable("rules.json");
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
 
@@ -135,12 +136,11 @@ namespace BrackeysBot
 
         public async Task CheckTemplate (SocketMessage s)
         {
-            ulong[] ignoreChannelIds = _settings["massivecodeblock-ignore"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
+            ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
             if (ignoreChannelIds.All(id => id != s.Channel.Id)) return;
-
             if (!_jobRegex.IsMatch(s.Content.ToLower()))
             {
-                if (!(s.Author as IGuildUser).HasRole("Staff"))
+                if (!(s.Author as IGuildUser).HasStaffRole(_settings))
                 {
                     if (!s.Author.IsBot)
                         await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString()} UTC, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
@@ -156,7 +156,7 @@ namespace BrackeysBot
             if (!(s is SocketUserMessage msg)) return;
 
             // Ignore specific channels
-            ulong[] ignoreChannelIds = _settings["massivecodeblock-ignore"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
+            ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
             if (ignoreChannelIds.Any(id => id == s.Channel.Id)) return;
 
             await Commands.HasteCommand.HasteIfMassiveCodeblock(s);

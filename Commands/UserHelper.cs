@@ -19,7 +19,7 @@ namespace BrackeysBot.Commands
         }
 
         /// <summary>
-        /// Ensures that the specified user has the "Staff" role. Throws an exception if he doesn't.
+        /// Ensures that the specified user has the "Staff" role. Throws an exception if they don't.
         /// </summary>
         public static void EnsureStaff(this IGuildUser user)
         {
@@ -53,6 +53,14 @@ namespace BrackeysBot.Commands
         {
             var staffRole = user.Guild.Roles.FirstOrDefault(r => string.Equals(r.Name, role, StringComparison.CurrentCultureIgnoreCase));
             return user.RoleIds.Any(id => id == staffRole?.Id);
+        }
+
+        /// <summary>
+        /// Checks if the user is staff.
+        /// </summary>
+        public static bool HasStaffRole(this IGuildUser user, SettingsTable _settings)
+        {
+            return HasRole(user, _settings["staff-role"]);
         }
     }
 }
