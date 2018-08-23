@@ -26,12 +26,15 @@ namespace BrackeysBot
 
         private KarmaTable _karma;
         private SettingsTable _settings;
+        private StatisticsTable _statistics;
         private RuleTable _rules;
         private UnityDocs _unityDocs;
 
         private readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
 
         private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
+
+        private Commands.StatisticsCommand.StatisticsNavigator _statisticsNavigator;
 
         public BrackeysBot ()
         {
@@ -50,11 +53,13 @@ namespace BrackeysBot
 
             _karma = new KarmaTable("karma.json");
             _settings = new SettingsTable("settings.json");
+            _statistics = new StatisticsTable("statistics.json");
 
             _rules = new RuleTable("rules.json");
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
 
             _leaderboardNavigator = new Commands.LeaderboardCommand.LeaderboardNavigator(_karma, _settings);
+            _statisticsNavigator = new Commands.StatisticsCommand.StatisticsNavigator(_statistics, _settings);
 
             _services = new ServiceCollection()
 
@@ -66,10 +71,12 @@ namespace BrackeysBot
                 // Add the singletons for the databases
                 .AddSingleton(_karma)
                 .AddSingleton(_settings)
+                .AddSingleton(_statistics)
                 .AddSingleton(_rules)
                 .AddSingleton(_unityDocs)
 
                 .AddSingleton(_leaderboardNavigator)
+                .AddSingleton(_statisticsNavigator)
 
                 // Finally, build the provider
                 .BuildServiceProvider();
@@ -122,6 +129,24 @@ namespace BrackeysBot
                     .WithColor(Color.Red);
 
                 await context.Channel.SendMessageAsync(string.Empty, false, builder);
+            }
+            else
+            {
+                /*
+                Example: "[]thanks John". First split the prefix, so you get "[]" and "thanks John". Take "thanks John"
+                and split it at the space. You get "thanks" and "John". Take "thanks", and that's your command.
+                Example: "[]help". First split the prefix, so you get "[]" and "help". Split at the space, nothing happens,
+                you get "help" and that's your command.
+                */
+               string command = context.Message.Content.Substring(Configuration["prefix"].Length).Split(" ")[0];
+               if (!_statistics.Has(command))
+               {
+                   _statistics.Add(command, 1);
+               }
+               else
+               {
+                   _statistics.Set(command, _statistics[command] + 1);
+               }
             }
         }
 

@@ -6,6 +6,7 @@
 # Exclude specific data files
 appsettings.json
 karma.json
+statistics.json
 
 # Exclude .vscode folder
 .vscode/
