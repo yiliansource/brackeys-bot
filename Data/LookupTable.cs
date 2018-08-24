@@ -45,7 +45,7 @@ namespace BrackeysBot
         public virtual TValue GetOrDefault(TKey key)
         {
             if (Has(key)) return Get(key);
-            else return default;
+            else return default(TValue);
         }
         public virtual void Set(TKey key, TValue value)
         {

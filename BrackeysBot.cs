@@ -34,8 +34,6 @@ namespace BrackeysBot
 
         private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
 
-        private Commands.StatisticsCommand.StatisticsNavigator _statisticsNavigator;
-
         public BrackeysBot ()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
@@ -59,7 +57,6 @@ namespace BrackeysBot
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
 
             _leaderboardNavigator = new Commands.LeaderboardCommand.LeaderboardNavigator(_karma, _settings);
-            _statisticsNavigator = new Commands.StatisticsCommand.StatisticsNavigator(_statistics, _settings);
 
             _services = new ServiceCollection()
 
@@ -76,7 +73,6 @@ namespace BrackeysBot
                 .AddSingleton(_unityDocs)
 
                 .AddSingleton(_leaderboardNavigator)
-                .AddSingleton(_statisticsNavigator)
 
                 // Finally, build the provider
                 .BuildServiceProvider();
