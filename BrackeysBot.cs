@@ -30,7 +30,7 @@ namespace BrackeysBot
         private RuleTable _rules;
         private UnityDocs _unityDocs;
 
-        private readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
+        private static readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
 
         private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
 
@@ -81,6 +81,7 @@ namespace BrackeysBot
             UserHelper._settings = _settings;
 
             RegisterMassiveCodeblockHandle();
+            RegisterTemplateCheck();
             RegisterLeaderboardNavigationHandle();
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
@@ -94,7 +95,7 @@ namespace BrackeysBot
         private async Task InstallCommands ()
         {
             _client.MessageReceived += HandleCommand;
-            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly());
+            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
         }
 
         /// <summary>
@@ -125,7 +126,7 @@ namespace BrackeysBot
                     .WithDescription(result.ErrorReason)
                     .WithColor(Color.Red);
 
-                await context.Channel.SendMessageAsync(string.Empty, false, builder);
+                await context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
             }
             else
             {
@@ -153,16 +154,32 @@ namespace BrackeysBot
         private void RegisterMassiveCodeblockHandle ()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
+        }
+
+        /// <summary>
+        /// Registers a method to check the templates in the job channels.
+        /// </summary>
+
+        private void RegisterTemplateCheck()
+        {
             _client.MessageReceived += CheckTemplate;
         }
 
+        /// <summary>
+        /// Handles template checking in the job channels.
+        /// </summary>
+
         public async Task CheckTemplate (SocketMessage s)
         {
+            if (!(s is SocketUserMessage msg)) 
+                return;
             ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
-            if (ignoreChannelIds.All(id => id != s.Channel.Id)) return;
+            if (ignoreChannelIds.All(id => id != s.Channel.Id)) 
+                return;
+
             if (!_jobRegex.IsMatch(s.Content.ToLower()))
             {
-                if (!(s.Author as IGuildUser).HasStaffRole())
+                if (!(s.Author as SocketGuildUser).HasStaffRole())
                 {
                     if (!s.Author.IsBot)
                         await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString()} UTC, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");

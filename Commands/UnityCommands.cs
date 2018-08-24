@@ -84,7 +84,7 @@ namespace BrackeysBot.Commands
                 }
             }
 
-            await ReplyAsync ("", false, eb);
+            await ReplyAsync ("", false, eb.Build());
         }
     }
 }

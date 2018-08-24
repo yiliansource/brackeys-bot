@@ -27,10 +27,10 @@ namespace BrackeysBot.Commands
                 .WithColor(new Color(0, 255, 255))
                 .WithTitle("How to give yourself a role:")
                 .WithDescription("Example: []giverole Team Blue")
-                .AddInlineField("Available Teams:", string.Join("\n", _uniqueRoleNames))
-                .AddInlineField("Available Roles:", string.Join("\n", _sharedUniqueRoleNames));
+                .AddField("Available Teams:", string.Join("\n", _uniqueRoleNames), true)
+                .AddField("Available Roles:", string.Join("\n", _sharedUniqueRoleNames), true);
 
-            await ReplyAsync("", embed: embedBuilder);
+            await ReplyAsync("", embed: embedBuilder.Build());
         }
 
         [Command("giverole"), Alias("addrole")]
@@ -72,7 +72,7 @@ namespace BrackeysBot.Commands
                 .WithTitle("Success!")
                 .WithDescription($"Added role \"{role.Name}\" to your roles.");
 
-            await ReplyAsync("", embed: embedBuilder);
+            await ReplyAsync("", embed: embedBuilder.Build());
         }
 
         [Command("removerole")]
@@ -94,11 +94,11 @@ namespace BrackeysBot.Commands
                 .WithTitle("How to remove a role:")
                 .WithDescription("Example: []removerole Team Blue");
 
-            embedBuilder.AddInlineField("Roles you can remove:", removeableRoles.Any() 
+            embedBuilder.AddField("Roles you can remove:", removeableRoles.Any() 
                     ? string.Join('\n', removeableRoles) 
-                    : "None!");
+                    : "None!", true);
 
-            await ReplyAsync("", embed: embedBuilder);
+            await ReplyAsync("", embed: embedBuilder.Build());
         }
 
         [Command("removerole")]
@@ -133,7 +133,7 @@ namespace BrackeysBot.Commands
                 .WithTitle("Success!")
                 .WithDescription($"Removed role \"{roleToRemove.Name}\"");
 
-            await ReplyAsync("", embed: embedBuilder);
+            await ReplyAsync("", embed: embedBuilder.Build());
         }
 
         [Command("team"), Alias("jointeam")]
@@ -143,9 +143,9 @@ namespace BrackeysBot.Commands
                 .WithColor(new Color(0, 255, 255))
                 .WithTitle("How to join a new team:")
                 .WithDescription("Example: []team blue")
-                .AddInlineField("Available Teams:", string.Join("\n", _uniqueRoleNames));
+                .AddField("Available Teams:", string.Join("\n", _uniqueRoleNames), true);
 
-            await ReplyAsync("", embed: embedBuilder);
+            await ReplyAsync("", embed: embedBuilder.Build());
         }
 
         [Command("team"), Alias("jointeam")]
@@ -196,7 +196,7 @@ namespace BrackeysBot.Commands
                 .WithTitle("Success!")
                 .WithDescription($"You are now {newUnique.Name}!");
 
-            await ReplyAsync("", embed: embedBuilder);
+            await ReplyAsync("", embed: embedBuilder.Build());
         }
 
         /// <summary>Returns the user's unique role. If the user does not have one, it returns null.</summary>
