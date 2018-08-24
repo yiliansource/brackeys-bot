@@ -2,6 +2,7 @@ language: csharp
 mono: none
 dotnet: 2.1.302
 script:
+  - dotnet restore -s https://www.myget.org/F/rogueexception/api/v3/index.json
   - dotnet build
 
 after_success:
