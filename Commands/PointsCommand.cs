@@ -20,7 +20,7 @@ namespace BrackeysBot.Commands
         
         [Command("points")]
         [HelpData("points", "Displays your points.")]
-        [Alian ("doints")]
+        [Alias ("doints")]
         public async Task DisplayPointsSelf ()
         {
             var user = Context.User;
