@@ -25,7 +25,7 @@ namespace BrackeysBot.Commands
         public async Task Help ()
         {
             EmbedBuilder helpDialog = GetHelpDialog("default");
-            await ReplyAsync(string.Empty, false, helpDialog);
+            await ReplyAsync(string.Empty, false, helpDialog.Build());
         }
 
         [Command("modhelp")]
@@ -35,7 +35,7 @@ namespace BrackeysBot.Commands
             (Context.User as IGuildUser).EnsureStaff();
 
             EmbedBuilder helpDialog = GetHelpDialog("mod");
-            await ReplyAsync(string.Empty, false, helpDialog);
+            await ReplyAsync(string.Empty, false, helpDialog.Build());
         }
 
         /// <summary>

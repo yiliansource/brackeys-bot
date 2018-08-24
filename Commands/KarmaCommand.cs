@@ -25,7 +25,7 @@ namespace BrackeysBot.Commands
                     .WithTitle($"How to thank people:")
                     .WithDescription("Example: []thanks @Brackeys");
 
-            var message = await ReplyAsync(string.Empty, false, eb);
+            var message = await ReplyAsync(string.Empty, false, eb.Build());
 
             await Task.Delay(5000);
             await message.DeleteAsync();

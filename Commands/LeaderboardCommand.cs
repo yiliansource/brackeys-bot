@@ -32,7 +32,7 @@ namespace BrackeysBot.Commands
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
 
             var builder = await BuildForNextPlaces(_karmaTable, Context.Guild, 0, pagesize);
-            var message = await ReplyAsync(string.Empty, false, builder);
+            var message = await ReplyAsync(string.Empty, false, builder.Build());
 
             await message.AddReactionAsync(new Emoji(LEFT_ARROW));
             await message.AddReactionAsync(new Emoji(RIGHT_ARROW));
@@ -121,8 +121,8 @@ namespace BrackeysBot.Commands
                     int modification = 0;
 
                     // Check if there is an excess reaction for LEFT
-                    var leftReactions = await message.GetReactionUsersAsync(LEFT_ARROW, 2);
-                    if (leftReactions.Count > 1)
+                    var leftReactions = await message.GetReactionUsersAsync(new Emoji(LEFT_ARROW), 2).FlattenAsync();
+                    if (leftReactions.Count() > 1)
                     {
                         // Navigate to the left and remove the reaction
                         modification = -pagesize;
@@ -131,8 +131,8 @@ namespace BrackeysBot.Commands
                     else
                     {
                         // Check if there is an excess reaction for RIGHT
-                        var rightReactions = await message.GetReactionUsersAsync(RIGHT_ARROW, 2);
-                        if (rightReactions.Count > 1)
+                        var rightReactions = await message.GetReactionUsersAsync(new Emoji(RIGHT_ARROW), 2).FlattenAsync();
+                        if (rightReactions.Count() > 1)
                         {
                             // Navigate to the right and remove the reaction
                             modification = +pagesize;
@@ -158,7 +158,7 @@ namespace BrackeysBot.Commands
 
                         // Build the new content and modify the message
                         EmbedBuilder newContent = await BuildForNextPlaces(_table, data.Guild, data.DisplayIndex, pagesize);
-                        await message.ModifyAsync(m => m.Embed = new Optional<Embed>(newContent));
+                        await message.ModifyAsync(m => m.Embed = new Optional<Embed>(newContent.Build()));
                     }
                 }
             }
