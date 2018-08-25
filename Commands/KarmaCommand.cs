@@ -17,7 +17,7 @@ namespace BrackeysBot.Commands
             _settings = settings;
         }
         
-        [Command("thanks"), Alias("thank")]
+        [Command("thanks"), Alias("thank", "thank you")]
         public async Task ThankUserCommand()
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -30,7 +30,7 @@ namespace BrackeysBot.Commands
             await Task.Delay(5000);
             await message.DeleteAsync();
         }
-        [Command("thanks"), Alias("thank")]
+        [Command("thanks"), Alias("thank", "thank you")]
         [HelpData("thanks <user>", "Thank a user.")]
         public async Task ThankUserCommand ([Remainder]IGuildUser user)
         {
