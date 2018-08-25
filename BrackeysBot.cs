@@ -129,21 +129,17 @@ namespace BrackeysBot
             }
             else
             {
-                /*
-                Example: "[]thanks John". First split the prefix, so you get "[]" and "thanks John". Take "thanks John"
-                and split it at the space. You get "thanks" and "John". Take "thanks", and that's your command.
-                Example: "[]help". First split the prefix, so you get "[]" and "help". Split at the space, nothing happens,
-                you get "help" and that's your command.
-                */
-               string command = context.Message.Content.Substring(Configuration["prefix"].Length).Split(" ")[0];
-               if (!_statistics.Has(command))
-               {
-                   _statistics.Add(command, 1);
-               }
-               else
-               {
-                   _statistics.Set(command, _statistics[command] + 1);
-               }
+                // Searches the executed command from the service and increases the statistics appropriately
+                CommandInfo executedCommand = _commandService.Search (context, argPos).Commands [0].Command;
+                string command = executedCommand.Name;
+                if(_statistics.Has(command))
+                {
+                    _statistics.Set(command, _statistics.Get(command) + 1);
+                }
+                else 
+                {
+                    _statistics.Add(command, 1);
+                }
             }
         }
 
