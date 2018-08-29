@@ -33,7 +33,7 @@ namespace BrackeysBot.Commands
             var stats = _statisticsTable.GetSortedLeaderboard();
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Here are the statistics for the command usages:");
+            sb.AppendLine("Here are the command usage statistics:");
             sb.AppendLine();
 
             foreach (KeyValuePair<string, uint> stat in stats) 
