@@ -72,13 +72,24 @@ namespace BrackeysBot.Commands
         private static string GetPlaceStringRepresentation (int placeIndex)
         {
             int place = placeIndex + 1;
-            switch (place)
+            switch(place % 100)
             {
-                case 1: return "1st Place:";
-                case 2: return "2nd Place:";
-                case 3: return "3rd Place:";
+                case 11:
+                case 12:
+                case 13:
+                    return place + "th Place:";
+            }
 
-                default: return place + "th Place:";
+            switch(place % 10)
+            {
+                case 1:
+                    return place + "st Place:";
+                case 2:
+                    return place + "nd Place:";
+                case 3:
+                    return place + "rd Place:";
+                default:
+                    return place + "th Place:";
             }
         }
 
