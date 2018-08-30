@@ -174,6 +174,7 @@ namespace BrackeysBot
             if (!(s is SocketUserMessage msg)) 
                 return;
             ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
+			
             if (ignoreChannelIds.All(id => id != s.Channel.Id)) 
                 return;
 
@@ -181,9 +182,12 @@ namespace BrackeysBot
             {
                 if (!(s.Author as SocketGuildUser).HasStaffRole())
                 {
-                    if (!s.Author.IsBot)
-                        await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString("dd/MM/yyyy hh:mm UTC")}, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
                     await s.DeleteAsync();
+					try
+					{
+						await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString("dd/MM/yyyy hh:mm UTC")}, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
+					}
+					catch {}
                 }
             }
         }
