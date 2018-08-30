@@ -30,7 +30,7 @@ namespace BrackeysBot.Commands
 
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
 
-            var stats = _statisticsTable.GetSortedLeaderboard();
+            var stats = _statisticsTable.GetSortedStatistics();
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Here are the command usage statistics:");

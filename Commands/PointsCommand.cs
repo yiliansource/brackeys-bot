@@ -25,7 +25,8 @@ namespace BrackeysBot.Commands
             var user = Context.User;
             int karma = _karmaTable.GetKarma(user);
 
-            await ReplyAsync($"{ user.Mention }, you have { karma } points.");
+            string pointsDisplay = $"{ karma } point{ (karma != 1 ? "s" : "") }";
+            await ReplyAsync($"{ user.Mention }, you have { pointsDisplay }.");
         }
 
         [Command("rank")]
