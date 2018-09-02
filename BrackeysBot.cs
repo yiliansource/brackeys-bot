@@ -95,7 +95,7 @@ namespace BrackeysBot
         private async Task InstallCommands ()
         {
             _client.MessageReceived += HandleCommand;
-            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            await _commandService.AddModulesAsync(Assembly.GetEntryAssembly());
         }
 
         /// <summary>
@@ -191,10 +191,13 @@ namespace BrackeysBot
             if (!(s is SocketUserMessage msg)) return;
 
             // Ignore specific channels
-            ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
-            if (ignoreChannelIds.Any(id => id == s.Channel.Id)) return;
+            if (_settings.Has("job-channel-ids"))
+            {
+                ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
+                if (ignoreChannelIds.Any(id => id == s.Channel.Id)) return;
+            }
 
-            await Commands.HasteCommand.HasteIfMassiveCodeblock(s);
+            await PasteCommand.PasteIfMassiveCodeblock(s);
         }
         /// <summary>
         /// Handles a leaderboard navigation event.

@@ -132,7 +132,7 @@ namespace BrackeysBot.Commands
                     int modification = 0;
 
                     // Check if there is an excess reaction for LEFT
-                    var leftReactions = await message.GetReactionUsersAsync(new Emoji(LEFT_ARROW), 2).FlattenAsync();
+                    var leftReactions = await message.GetReactionUsersAsync(LEFT_ARROW, 2);
                     if (leftReactions.Count() > 1)
                     {
                         // Navigate to the left and remove the reaction
@@ -142,7 +142,7 @@ namespace BrackeysBot.Commands
                     else
                     {
                         // Check if there is an excess reaction for RIGHT
-                        var rightReactions = await message.GetReactionUsersAsync(new Emoji(RIGHT_ARROW), 2).FlattenAsync();
+                        var rightReactions = await message.GetReactionUsersAsync(RIGHT_ARROW, 2);
                         if (rightReactions.Count() > 1)
                         {
                             // Navigate to the right and remove the reaction
