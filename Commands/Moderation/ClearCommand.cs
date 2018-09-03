@@ -35,8 +35,8 @@ namespace BrackeysBot.Commands.Moderation
                 await Context.Channel.DeleteMessagesAsync(messagesForDeletion);
             }
 
-            IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully cleared {( (user == null) ? amount : count )} messages{( (user != null) ? $" sent by {user.GetDisplayName()}" : string.Empty )}.");
-            await messageToDel.TimedDeletion(3000).ConfigureAwait(false);
+            IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully cleared {((user == null) ? amount : count)} messages{((user != null) ? $" sent by {user.GetDisplayName()}" : string.Empty)}.");
+            _ = Task.Run(async () => await messageToDel.TimedDeletion(3000));
         }
     }
 }

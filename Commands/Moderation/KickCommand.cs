@@ -16,7 +16,7 @@ namespace BrackeysBot.Commands.Moderation
 
             await user.KickAsync(reason);
             IMessage messageToDel = await ReplyAsync($":white_check_mark: {user.GetDisplayName()} kicked successfully.");
-            await messageToDel.TimedDeletion(3000).ConfigureAwait(false);
+            _ = Task.Run(async () => await messageToDel.TimedDeletion(3000));
         }
     }
 }
