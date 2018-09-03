@@ -26,9 +26,7 @@ namespace BrackeysBot.Commands
                     .WithDescription("Example: []thanks @Brackeys");
 
             var message = await ReplyAsync(string.Empty, false, eb.Build());
-
-            await Task.Delay(5000);
-            await message.DeleteAsync();
+            _ = Task.Run(async () => await message.TimedDeletion(5000));
         }
         [Command("thanks"), Alias("thank", "thank you")]
         [HelpData("thanks <user>", "Thank a user.")]
@@ -49,9 +47,7 @@ namespace BrackeysBot.Commands
                 int total = _karmaTable.GetKarma(target);
                 string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
                 var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
-
-                await Task.Delay(5000);
-                await message.DeleteAsync();
+                _ = Task.Run(async () => await message.TimedDeletion(5000));
             }
             else
             {
