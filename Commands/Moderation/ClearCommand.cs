@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using System.Threading;
 
 using Discord;
 using Discord.Commands;
