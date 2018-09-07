@@ -111,7 +111,7 @@ namespace BrackeysBot
 
             bool cooldownCommand = CheckIfCommandHasCooldown (executedCommand.Name.ToLower ());
 
-            if (cooldownCommand)
+            if (cooldownCommand && !UserHelper.HasStaffRole (s.Author as IGuildUser))
             {
                 bool sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());
 
