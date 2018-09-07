@@ -16,7 +16,7 @@ namespace BrackeysBot.Commands.Moderation
         {
             await Context.Guild.AddBanAsync(user, pruneDays, reason);
             IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully banned {user.GetDisplayName()}.");
-            _ = Task.Run(async () => await messageToDel.TimedDeletion(3000));
+            _ = messageToDel.TimedDeletion(3000);
         }
     }
 }

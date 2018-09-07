@@ -7,6 +7,7 @@
 appsettings.json
 karma.json
 statistics.json
+cooldowns.json
 
 # Exclude .vscode folder
 .vscode/

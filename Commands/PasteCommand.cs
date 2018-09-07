@@ -58,10 +58,11 @@ namespace BrackeysBot.Commands
         public async Task ModPasteMessage(ulong messageId)
         {
             var message = await Context.Channel.GetMessageAsync(messageId);
-            string content = RemoveCodeblockFormat(message.Content, out string syntax);
-            string url = await PasteMessage(content, syntax);
+            var messageContent = message.Content;
+            RemoveCodeblockFormat(ref messageContent, out string syntax);
+            string url = await PasteMessage(messageContent, syntax);
 
-            await ReplyAsync($"Message by { message.Author.Mention } was hasted to { url }.");
+            await ReplyAsync($"Message by { ((IGuildUser) message.Author).GetDisplayName() } was pasted to { url }.");
             await message.DeleteAsync();
         }
 
@@ -70,7 +71,8 @@ namespace BrackeysBot.Commands
         [Alias("haste")]
         public async Task PasteMessage([Remainder] string messageContent)
         {
-            string content = RemoveCodeblockFormat(messageContent.Trim('\n', ' '), out string syntax);
+            string content = messageContent.Trim('\n', ' ');
+            RemoveCodeblockFormat(ref content, out string syntax);
             string url = await PasteMessage(content, syntax);
 
             await ReplyAsync($"{ (Context.User as IGuildUser).GetDisplayName() }, I created a paste for you! <{ url }>");
@@ -129,10 +131,10 @@ namespace BrackeysBot.Commands
             string content = message.Content;
             if (HasCodeblockFormat(content) && content.Length >= MASSIVE_THRESHOLD)
             {
-                string code = RemoveCodeblockFormat(content, out string syntax);
-                string url = await PasteMessage(code, syntax);
+                RemoveCodeblockFormat(ref content, out string syntax);
+                string url = await PasteMessage(content, syntax);
 
-                await message.Channel.SendMessageAsync($"Paste created in place of massive codeblock by { message.Author.Mention }: <{ url }>");
+                await message.Channel.SendMessageAsync($"Paste created in place of massive codeblock by { ((IGuildUser)message.Author).GetDisplayName() }: <{ url }>");
                 await message.DeleteAsync();
             }
         }
@@ -148,30 +150,28 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Removes the codeblock format (```) from a string, and potentially retrieves the formatting of the code.
         /// </summary>
-        public static string RemoveCodeblockFormat (string message, out string syntax)
+        public static void RemoveCodeblockFormat (ref string message, out string syntax)
         {
             var matches = _codeblockRegex.Matches(message);
-
-            if (matches.Count > 0)
+            syntax = "";
+            while (matches.Count > 0)
             {
                 var groups = matches[0].Groups;
                 if (groups.Count == 2)
                 {
                     // There is a codeblock format, but no syntax passed
-                    syntax = "";
-                    return groups[1].Value;
+                    message = message.Remove(matches[0].Index, matches[0].Length).Insert(matches[0].Index, groups[1].Value + "\n");
                 }
-                if (groups.Count == 3)
+                else if (groups.Count == 3)
                 {
                     // There is a codeblock format, and a syntax has been passed
                     syntax = groups[1].Value;
-                    return groups[2].Value;
+                    message = message.Remove(matches[0].Index, matches[0].Length).Insert(matches[0].Index, groups[2].Value + "\n");
                 }
+                matches = _codeblockRegex.Matches(message);
             }
-            
-            // There is no codeblock format
-            syntax = "";
-            return message;
+            if (message.Substring(message.Length - 3, 3) == CODEBLOCK_IDENTIFIER)
+                message = message.Remove(message.Length - 3, 3);
         }
     }
 }

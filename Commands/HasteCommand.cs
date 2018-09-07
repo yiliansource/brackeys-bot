@@ -25,7 +25,7 @@ namespace BrackeysBot.Commands
             string content = RemoveCodeblockFormat(message.Content);
             string url = await HasteMessage(content);
 
-            await ReplyAsync($"Message by { message.Author.Mention } was hasted to { url }.");
+            await ReplyAsync($"Message by { ((IGuildUser) message.Author).GetDisplayName() } was pasted to { url }.");
             await message.DeleteAsync();
         }
 
@@ -63,7 +63,7 @@ namespace BrackeysBot.Commands
                 string code = RemoveCodeblockFormat(content);
                 string url = await HasteMessage(code);
 
-                await message.Channel.SendMessageAsync($"Hastebin created in place of massive codeblock by { message.Author.Mention }: { url }");
+                await message.Channel.SendMessageAsync($"Hastebin created in place of massive codeblock by { ((IGuildUser) message.Author).GetDisplayName() }: { url }");
                 await message.DeleteAsync();
             }
         }

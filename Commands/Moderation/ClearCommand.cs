@@ -15,6 +15,11 @@ namespace BrackeysBot.Commands.Moderation
         public async Task Clear(int amount, [Optional] IGuildUser user)
         {
             int count = 0;
+            if (amount <= 0)
+            {
+                throw new System.Exception("Please provide a valid amount of messages to delete.");
+            }
+            await Context.Message.DeleteAsync();
             if (user == null)
             {
                 var messages = await Context.Channel.GetMessagesAsync(amount).Flatten();
@@ -36,7 +41,7 @@ namespace BrackeysBot.Commands.Moderation
             }
 
             IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully cleared {((user == null) ? amount : count)} messages{((user != null) ? $" sent by {user.GetDisplayName()}" : string.Empty)}.");
-            _ = Task.Run(async () => await messageToDel.TimedDeletion(3000));
+            _ = messageToDel.TimedDeletion(3000);
         }
     }
 }
