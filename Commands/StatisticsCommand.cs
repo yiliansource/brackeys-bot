@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands
 {
@@ -22,12 +23,10 @@ namespace BrackeysBot.Commands
         }
 
         [Command("statistics")]
-        [HelpData("statistics", "Displays the most frequently used commands.", HelpMode = "mod")]
+        [HelpData("statistics", "Displays the most frequently used commands.", AllowedRoles = UserType.Staff)]
         [Alias("stats")]
         public async Task DisplayStatistics()
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
 
             var stats = _statisticsTable.GetSortedStatistics();

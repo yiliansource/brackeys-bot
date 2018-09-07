@@ -9,6 +9,7 @@ using System.IO;
 
 using Newtonsoft.Json;
 using System.Text;
+using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands
 {
@@ -52,12 +53,10 @@ namespace BrackeysBot.Commands
         private static readonly Regex _codeblockRegex = new Regex($@"(?:{ CODEBLOCK_IDENTIFIER })(\w+)?\n([^{ CODEBLOCK_IDENTIFIER[0] }]*)", RegexOptions.Compiled);
 
         [Command("modpaste")]
-        [HelpData("modpaste <message_id>", "Paste a specific message.", HelpMode = "mod")]
+        [HelpData("modpaste <message_id>", "Paste a specific message.", AllowedRoles = UserType.Staff)]
         [Alias("modhaste")]
         public async Task ModPasteMessage(ulong messageId)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             var message = await Context.Channel.GetMessageAsync(messageId);
             string content = RemoveCodeblockFormat(message.Content, out string syntax);
             string url = await PasteMessage(content, syntax);
