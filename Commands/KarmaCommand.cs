@@ -41,26 +41,12 @@ namespace BrackeysBot.Commands
                 return;
             }
 
-            if (_karmaTable.CheckThanksCooldownExpired(source, target, out int remainingMinutes))
-            {
-                int.TryParse(_settings["thanks"], out int cooldown);
-                _karmaTable.ThankUser(source, target, cooldown);
+            _karmaTable.AddKarma(target);
 
-                int total = _karmaTable.GetKarma(target);
-                string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
-                var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
-                _ = Task.Run(async () => await message.TimedDeletion(5000));
-            }
-            else
-            {
-                int hours = remainingMinutes / 60;
-                int minutes = remainingMinutes % 60;
-
-                string displayhours = $"{ hours } hour{ (minutes != 1 ? "s" : "") }";
-                string displayminutes = $"{ minutes } minute{ (minutes != 1 ? "s" : "") }";
-
-                await ReplyAsync($"{ source.Mention }, you can't thank that user yet, please wait { displayhours }{ (minutes > 0 ? $" and { displayminutes }" : "") }.");
-            }
+            int total = _karmaTable.GetKarma(target);
+            string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
+            var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
+            _ = Task.Run(async () => await message.TimedDeletion(5000));
         }
 
         [Command("karma")]

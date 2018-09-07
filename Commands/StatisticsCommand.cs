@@ -27,8 +27,6 @@ namespace BrackeysBot.Commands
         [Alias("stats")]
         public async Task DisplayStatistics()
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
 
             var stats = _statisticsTable.GetSortedStatistics();

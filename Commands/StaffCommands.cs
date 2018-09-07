@@ -22,8 +22,6 @@ namespace BrackeysBot.Commands
         [HelpData("set <name> <value>", "Updates a setting.", AllowedRoles = UserType.Staff)]
         public async Task ApplySetting(string name, [Remainder]string value)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             if (_settings.Has(name))
             {
                 _settings.Set(name, value);
@@ -40,8 +38,6 @@ namespace BrackeysBot.Commands
         [HelpData("viewsettings", "Views all registered settings.", AllowedRoles = UserType.Staff)]
         public async Task ViewSettings() 
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             var allsettings = _settings.GetAllSettings();
 
             StringBuilder sb = new StringBuilder();

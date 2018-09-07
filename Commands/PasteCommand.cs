@@ -57,8 +57,6 @@ namespace BrackeysBot.Commands
         [Alias("modhaste")]
         public async Task ModPasteMessage(ulong messageId)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             var message = await Context.Channel.GetMessageAsync(messageId);
             string content = RemoveCodeblockFormat(message.Content, out string syntax);
             string url = await PasteMessage(content, syntax);

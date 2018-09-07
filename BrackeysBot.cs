@@ -118,6 +118,36 @@ namespace BrackeysBot
             CommandContext context = new CommandContext(_client, msg);
             CommandInfo executedCommand = _commandService.Search (context, argPos).Commands [0].Command;
 
+            if (executedCommand.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
+            {
+                Embed eb = new EmbedBuilder ()
+                    .WithTitle ("Insufficient permission")
+                    .WithDescription ("You don't have the required permissions to run that command.")
+                    .WithColor (Color.Red)
+                    .Build ();
+
+                switch (data.AllowedRoles)
+                {
+                    case UserType.Staff:
+                    {
+                        if (!UserHelper.HasStaffRole (s.Author as IGuildUser))
+                        {
+                            await context.Channel.SendMessageAsync (string.Empty, false, eb);
+                            return;
+                        }
+                    } break;
+                    case UserType.StaffGuru:
+                    {
+                        if (!UserHelper.HasStaffRole (s.Author as IGuildUser) || 
+                            !UserHelper.HasRole (s.Author as IGuildUser, _settings ["guru-role"]))
+                        {
+                            await context.Channel.SendMessageAsync (string.Empty, false, eb);
+                            return;
+                        }
+                     } break;
+                }
+            }            
+
             bool cooldownCommand = CheckIfCommandHasCooldown (executedCommand.Name.ToLower ());
 
             if (cooldownCommand && !UserHelper.HasStaffRole (s.Author as IGuildUser))

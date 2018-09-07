@@ -14,7 +14,6 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("clear <amount of messages> <sent by> (optional)", "Clears the specified amount of messages or clears the number of messages sent by a user, if specified.", AllowedRoles = UserType.Staff)]
         public async Task Clear(int amount, [Optional] IGuildUser user)
         {
-            (Context.User as IGuildUser).EnsureStaff();
             int count = 0;
             if (user == null)
             {

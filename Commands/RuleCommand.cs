@@ -45,8 +45,6 @@ namespace BrackeysBot.Commands
         [HelpData("addrule <id> <content>", "Creates a rule.", AllowedRoles = UserType.Staff)]
         public async Task AddRule (int id, [Remainder]string contents)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-            
             if (_ruleTable.Has(id))
             {
                 await ReplyAsync("Rule already exists.");
@@ -64,8 +62,6 @@ namespace BrackeysBot.Commands
         [HelpData("setrule <id> <content>", "Updates a rule.", AllowedRoles = UserType.Staff)]
         public async Task SetRule (int id, [Remainder]string contents)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-            
             if (_ruleTable.Has(id))
             {
                 _ruleTable.Set(id, contents);
@@ -83,8 +79,6 @@ namespace BrackeysBot.Commands
         [HelpData("removerule <id>", "Removes a rule.", AllowedRoles = UserType.Staff)]
         public async Task RemoveRule (int id)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-            
             if (_ruleTable.Has(id))
             {
                 _ruleTable.Remove(id);
@@ -102,8 +96,6 @@ namespace BrackeysBot.Commands
         [HelpData("allrules", "Prints all the rules.", AllowedRoles = UserType.Staff)]
         public async Task PrintAllRules ()
         {
-            (Context.User as IGuildUser).EnsureStaff();
-            
             await ReplyAsync(BuildRuleMessage());
         }
 

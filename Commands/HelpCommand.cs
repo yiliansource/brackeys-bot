@@ -34,8 +34,6 @@ namespace BrackeysBot.Commands
         [HelpData("modhelp", "Displays this menu.", AllowedRoles = UserType.Staff)]
         public async Task ModHelp ()
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             EmbedBuilder helpDialog = GetHelpDialog(UserType.Staff);
             await ReplyAsync(string.Empty, false, helpDialog);
         }

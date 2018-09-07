@@ -21,8 +21,6 @@ namespace BrackeysBot.Commands
         [HelpData("modhaste <message_id>", "Haste a specific message.", AllowedRoles = UserType.Staff)]
         public async Task ModHasteMessage(ulong messageId)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             var message = await Context.Channel.GetMessageAsync(messageId);
             string content = RemoveCodeblockFormat(message.Content);
             string url = await HasteMessage(content);
