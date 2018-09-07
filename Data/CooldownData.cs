@@ -1,19 +1,22 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
+
+using Newtonsoft.Json;
 
 namespace BrackeysBot.Data
 {
     public class CooldownData
     {
-        public List<CommandCooldown> Commands { get; set; } 
+        public List<CommandCooldown<UserCooldown>> Commands { get; set; } = new List<CommandCooldown<UserCooldown>> ();
+        public List<CommandCooldown<UserCooldownParameters>> SameParameterCommands { get; set; } = new List<CommandCooldown<UserCooldownParameters>> ();
     }
 
-    public class CommandCooldown
+    public class CommandCooldown<T> where T : UserCooldown
     {
         public string CommandName { get; set; }
         public ulong CooldownTime { get; set; }
-        public CooldownType CooldownType { get; set; } = CooldownType.SameCommand;
-        public List<UserCooldown> Users { get; set; }
+        public List<T> Users { get; set; } = new List<T> ();
     }
 
     public class UserCooldown
@@ -22,9 +25,8 @@ namespace BrackeysBot.Data
         public string CommandExecutedTime { get; set; }
     }
 
-    public enum CooldownType
+    public class UserCooldownParameters : UserCooldown
     {
-        SameParameters,
-        SameCommand
+        public string Parameters { get; set; }
     }
 }

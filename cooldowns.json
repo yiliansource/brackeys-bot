@@ -1,17 +1,48 @@
 {
-    "commands":
-    [
+  "Commands": [
+    {
+      "CommandName": "rule",
+      "CooldownTime": 30,
+      "Users": []
+    },
+    {
+      "CommandName": "help",
+      "CooldownTime": 10,
+      "Users": [
         {
-            "commandName": "thanks",
-            "cooldownTime": "14400",
-            "cooldownType": "sameParameters",
-            "users": []
+          "Id": 267062730056269845,
+          "CommandExecutedTime": "20180907163231656"
+        }
+      ]
+    }
+  ],
+  "SameParameterCommands": [
+    {
+      "CommandName": "thanks",
+      "CooldownTime": 14400,
+      "Users": [
+        {
+          "Parameters": "codemyst",
+          "Id": 267062730056269845,
+          "CommandExecutedTime": "20180907164213636"
+        }
+      ]
+    },
+    {
+      "CommandName": "team",
+      "CooldownTime": 60,
+      "Users": [
+        {
+          "Parameters": "blue",
+          "Id": 267062730056269845,
+          "CommandExecutedTime": "20180907164413831"
         },
         {
-            "commandName": "rule",
-            "cooldownTime": "14400",
-            "cooldownType": "sameCommand",
-            "users": []
+          "Parameters": "red",
+          "Id": 267062730056269845,
+          "CommandExecutedTime": "20180907164417933"
         }
-    ]
+      ]
+    }
+  ]
 }

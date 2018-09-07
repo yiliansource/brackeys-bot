@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace BrackeysBot.Data
 {
@@ -8,6 +9,9 @@ namespace BrackeysBot.Data
             => value.ToString ("yyyyMMddHHmmssfff");
     
         public static DateTime ToDateTime (this string value)
-            => DateTime.Parse (value);
+        {
+            DateTime.TryParseExact (value, "yyyyMMddHHmmssfff", null, DateTimeStyles.AdjustToUniversal, out DateTime result);
+            return result;
+        }
     }
 }
