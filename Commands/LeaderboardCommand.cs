@@ -32,7 +32,7 @@ namespace BrackeysBot.Commands
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
 
             var builder = await BuildForNextPlaces(_karmaTable, Context.Guild, 0, pagesize);
-            var message = await ReplyAsync(string.Empty, false, builder);
+            var message = await ReplyAsync(string.Empty, false, builder.Build());
 
             await message.AddReactionAsync(new Emoji(LEFT_ARROW));
             await message.AddReactionAsync(new Emoji(RIGHT_ARROW));
@@ -72,13 +72,24 @@ namespace BrackeysBot.Commands
         private static string GetPlaceStringRepresentation (int placeIndex)
         {
             int place = placeIndex + 1;
-            switch (place)
+            switch(place % 100)
             {
-                case 1: return "1st Place:";
-                case 2: return "2nd Place:";
-                case 3: return "3rd Place:";
+                case 11:
+                case 12:
+                case 13:
+                    return place + "th Place:";
+            }
 
-                default: return place + "th Place:";
+            switch(place % 10)
+            {
+                case 1:
+                    return place + "st Place:";
+                case 2:
+                    return place + "nd Place:";
+                case 3:
+                    return place + "rd Place:";
+                default:
+                    return place + "th Place:";
             }
         }
 
@@ -122,7 +133,7 @@ namespace BrackeysBot.Commands
 
                     // Check if there is an excess reaction for LEFT
                     var leftReactions = await message.GetReactionUsersAsync(LEFT_ARROW, 2);
-                    if (leftReactions.Count > 1)
+                    if (leftReactions.Count() > 1)
                     {
                         // Navigate to the left and remove the reaction
                         modification = -pagesize;
@@ -132,7 +143,7 @@ namespace BrackeysBot.Commands
                     {
                         // Check if there is an excess reaction for RIGHT
                         var rightReactions = await message.GetReactionUsersAsync(RIGHT_ARROW, 2);
-                        if (rightReactions.Count > 1)
+                        if (rightReactions.Count() > 1)
                         {
                             // Navigate to the right and remove the reaction
                             modification = +pagesize;
@@ -147,7 +158,7 @@ namespace BrackeysBot.Commands
 
                         if (data.DisplayIndex + modification < min)
                         {
-                            data.DisplayIndex = min;
+                            modification = min;
                         }
                         if (data.DisplayIndex + modification > max)
                         {
@@ -158,7 +169,7 @@ namespace BrackeysBot.Commands
 
                         // Build the new content and modify the message
                         EmbedBuilder newContent = await BuildForNextPlaces(_table, data.Guild, data.DisplayIndex, pagesize);
-                        await message.ModifyAsync(m => m.Embed = new Optional<Embed>(newContent));
+                        await message.ModifyAsync(m => m.Embed = new Optional<Embed>(newContent.Build()));
                     }
                 }
             }

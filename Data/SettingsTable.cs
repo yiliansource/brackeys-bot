@@ -11,5 +11,10 @@ namespace BrackeysBot
         public SettingsTable(string path) : base(path)
         {
         }
+
+        public Dictionary<string, string> GetAllSettings () 
+        {
+            return _lookup;
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
@@ -32,6 +34,26 @@ namespace BrackeysBot.Commands
             }
 
             await ReplyAsync("Setting has been applied.");
+        }
+
+        [Command("viewsettings")]
+        [HelpData("viewsettings", "Views all registered settings.", AllowedRoles = UserType.Staff)]
+        public async Task ViewSettings() 
+        {
+            (Context.User as IGuildUser).EnsureStaff();
+
+            var allsettings = _settings.GetAllSettings();
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Settings:");
+            sb.AppendLine();
+
+            foreach (KeyValuePair<string, string> setting in allsettings) 
+            {
+                sb.AppendLine($"\"{ setting.Key }\": \"{ setting.Value }\"");
+            }
+
+            await ReplyAsync(sb.ToString());
         }
     }
 }

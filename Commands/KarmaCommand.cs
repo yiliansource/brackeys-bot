@@ -19,7 +19,7 @@ namespace BrackeysBot.Commands
             _settings = settings;
         }
         
-        [Command("thanks"), Alias("thank")]
+        [Command("thanks"), Alias("thank", "thank you")]
         public async Task ThankUserCommand()
         {
             EmbedBuilder eb = new EmbedBuilder()
@@ -27,9 +27,10 @@ namespace BrackeysBot.Commands
                     .WithTitle($"How to thank people:")
                     .WithDescription("Example: []thanks @Brackeys");
 
-            await ReplyAsync(string.Empty, false, eb);
+            var message = await ReplyAsync(string.Empty, false, eb.Build());
+            _ = Task.Run(async () => await message.TimedDeletion(5000));
         }
-        [Command("thanks"), Alias("thank")]
+        [Command("thanks"), Alias("thank", "thank you")]
         [HelpData("thanks <user>", "Thank a user.")]
         public async Task ThankUserCommand ([Remainder]IGuildUser user)
         {
@@ -40,11 +41,26 @@ namespace BrackeysBot.Commands
                 return;
             }
 
-            _karmaTable.AddKarma (target);
+            if (_karmaTable.CheckThanksCooldownExpired(source, target, out int remainingMinutes))
+            {
+                int.TryParse(_settings["thanks"], out int cooldown);
+                _karmaTable.ThankUser(source, target, cooldown);
 
-            int total = _karmaTable.GetKarma(target);
-            string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
-            await ReplyAsync($"{ user.Mention } has { pointsDisplay }.");
+                int total = _karmaTable.GetKarma(target);
+                string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
+                var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
+                _ = Task.Run(async () => await message.TimedDeletion(5000));
+            }
+            else
+            {
+                int hours = remainingMinutes / 60;
+                int minutes = remainingMinutes % 60;
+
+                string displayhours = $"{ hours } hour{ (minutes != 1 ? "s" : "") }";
+                string displayminutes = $"{ minutes } minute{ (minutes != 1 ? "s" : "") }";
+
+                await ReplyAsync($"{ source.Mention }, you can't thank that user yet, please wait { displayhours }{ (minutes > 0 ? $" and { displayminutes }" : "") }.");
+            }
         }
 
         [Command("karma")]

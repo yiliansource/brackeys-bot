@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
@@ -24,7 +25,26 @@ namespace BrackeysBot.Commands
             var user = Context.User;
             int karma = _karmaTable.GetKarma(user);
 
-            await ReplyAsync($"{ user.Mention }, you have { karma } points.");
+            string pointsDisplay = $"{ karma } point{ (karma != 1 ? "s" : "") }";
+            await ReplyAsync($"{ user.Mention }, you have { pointsDisplay }.");
+        }
+
+        [Command("rank")]
+        [HelpData("rank", "Displays your current leaderboard rank.")]
+        public async Task DisplayRankSelf ()
+        {
+            var user = Context.User;
+            
+            int karma = _karmaTable.GetKarma(user);
+            if (karma == 0)
+            {
+                await ReplyAsync("You aren't on the leaderboard yet!");
+            }
+            else
+            {
+                int index = _karmaTable.GetSortedLeaderboard().ToList().IndexOf(new System.Collections.Generic.KeyValuePair<ulong, int>(user.Id, karma));
+                await ReplyAsync($"{ user.Mention }, you are currently in place { index + 1 }.");
+            }
         }
 
         [Command("points")]

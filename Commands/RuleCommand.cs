@@ -33,7 +33,7 @@ namespace BrackeysBot.Commands
                     .WithDescription(_ruleTable.Get(id))
                     .WithFooter("To see all the rules go to #info.");
 
-                await ReplyAsync(string.Empty, false, eb);
+                await ReplyAsync(string.Empty, false, eb.Build());
             }
             else
             {

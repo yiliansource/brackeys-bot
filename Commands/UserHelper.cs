@@ -10,6 +10,7 @@ namespace BrackeysBot.Commands
     /// </summary>
     public static class UserHelper
     {
+        public static SettingsTable _settings;
         /// <summary>
         /// Returns the displayed name for the specified user.
         /// </summary>
@@ -19,22 +20,31 @@ namespace BrackeysBot.Commands
         }
 
         /// <summary>
-        /// Ensures that the specified user has the "Staff" role. Throws an exception if he doesn't.
+        /// Ensures that the specified user is staff. Throws an exception if they aren't.
         /// </summary>
         public static void EnsureStaff(this IGuildUser user)
         {
-            if (!user.HasStaffRole())
+            user.EnsureRole(_settings["staff-role"]);
+        }
+        /// <summary>
+        /// Ensures that the user has any of the given roles.
+        /// </summary>
+        public static void EnsureAnyRole (this IGuildUser user, params string[] roles)
+        {
+            if (!roles.Any(role => user.HasRole(role)))
             {
                 throw new Exception("Insufficient permissions.");
             }
         }
-
         /// <summary>
-        /// Checks if a specified user has the Staff role.
+        /// Ensures that the user has the specified role.
         /// </summary>
-        public static bool HasStaffRole(this IGuildUser user)
+        public static void EnsureRole (this IGuildUser user, string role)
         {
-            return user.HasRole("Staff");
+            if (!user.HasRole(role))
+            {
+                throw new Exception("Insufficient permissions.");
+            }
         }
 
         /// <summary>
@@ -44,6 +54,14 @@ namespace BrackeysBot.Commands
         {
             var staffRole = user.Guild.Roles.FirstOrDefault(r => string.Equals(r.Name, role, StringComparison.CurrentCultureIgnoreCase));
             return user.RoleIds.Any(id => id == staffRole?.Id);
+        }
+
+        /// <summary>
+        /// Checks if the user is staff.
+        /// </summary>
+        public static bool HasStaffRole(this IGuildUser user)
+        {
+            return HasRole(user, _settings["staff-role"]);
         }
     }
 }
