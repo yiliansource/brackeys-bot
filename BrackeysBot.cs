@@ -138,37 +138,38 @@ namespace BrackeysBot
                 switch (data.AllowedRoles)
                 {
                     case UserType.Staff:
-                    {
                         if (!UserHelper.HasStaffRole (s.Author as IGuildUser))
                         {
                             var messg = await context.Channel.SendMessageAsync (string.Empty, false, eb);
                             _ = messg.TimedDeletion(5000);
                             return;
                         }
-                    } break;
+                        break;
                     case UserType.StaffGuru:
-                    {
                         if (!UserHelper.HasStaffRole (s.Author as IGuildUser) || 
                             !UserHelper.HasRole (s.Author as IGuildUser, _settings ["guru-role"]))
                         {
                             var messg = await context.Channel.SendMessageAsync (string.Empty, false, eb);
                             _ = messg.TimedDeletion(5000);
                             return;
-                        }
-                     } break;
+                        } 
+                        break;
                 }
             }            
 
             bool cooldownCommand = CheckIfCommandHasCooldown (executedCommand.Name.ToLower ());
 
-            bool sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());
+            bool sameParamCommand = false; 
 
-            string parameters = s.ToString ().Remove (0, s.ToString ().IndexOf (' ') + 1);
+            string parameters = "";
 
-            bool cooldownExpired = HasCooldownExpired (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
+            bool cooldownExpired = false;
 
             if (cooldownCommand && !UserHelper.HasStaffRole (s.Author as IGuildUser))
             {
+                sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());    
+                parameters = s.ToString ().Remove (0, s.ToString ().IndexOf (' ') + 1);
+                cooldownExpired = HasCooldownExpired (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);            
                 if (!cooldownExpired)
                 {
                     TimeSpan ts = GetTimeUntilCooldownHasExpired (executedCommand.Name.ToLower (), s.Author as IGuildUser, sameParamCommand, parameters);
@@ -215,7 +216,8 @@ namespace BrackeysBot
             }
             else
             {
-                AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
+                if (!cooldownCommand || !UserHelper.HasStaffRole (s.Author as IGuildUser))
+                    AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
                 string command = executedCommand.Name;
                 if(_statistics.Has(command))
                 {
