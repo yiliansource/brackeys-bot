@@ -25,7 +25,7 @@ namespace BrackeysBot.Commands
             string content = RemoveCodeblockFormat(message.Content);
             string url = await HasteMessage(content);
 
-            await ReplyAsync($"Message by { ((IGuildUser) message.Author).GetDisplayName() } was pasted to { url }.");
+            await ReplyAsync($"Message by { message.Author.Mention } was pasted to { url }.");
             await message.DeleteAsync();
         }
 
