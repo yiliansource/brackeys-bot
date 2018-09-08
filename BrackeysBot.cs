@@ -216,7 +216,7 @@ namespace BrackeysBot
             }
             else
             {
-                if (!cooldownCommand || !UserHelper.HasStaffRole (s.Author as IGuildUser))
+                if (cooldownCommand && !UserHelper.HasStaffRole (s.Author as IGuildUser))
                     AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
                 string command = executedCommand.Name;
                 if(_statistics.Has(command))
