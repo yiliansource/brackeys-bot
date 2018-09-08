@@ -28,7 +28,7 @@ namespace BrackeysBot.Commands
                     .WithDescription("Example: []thanks @Brackeys");
 
             var message = await ReplyAsync(string.Empty, false, eb.Build());
-            _ = Task.Run(async () => await message.TimedDeletion(5000));
+            _ = message.TimedDeletion(5000);
         }
         [Command("thanks"), Alias("thank", "thank you")]
         [HelpData("thanks <user>", "Thank a user.")]
@@ -37,8 +37,7 @@ namespace BrackeysBot.Commands
             IUser source = Context.User, target = user;
             if (source == target)
             {
-                await ReplyAsync("You can't thank yourself!");
-                return;
+                throw new System.Exception("You cannot thank yourself.");
             }
 
             _karmaTable.AddKarma(target);
@@ -46,7 +45,7 @@ namespace BrackeysBot.Commands
             int total = _karmaTable.GetKarma(target);
             string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
             var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
-            _ = Task.Run(async () => await message.TimedDeletion(5000));
+            _ = message.TimedDeletion(5000);
         }
 
         [Command("karma")]
@@ -68,8 +67,7 @@ namespace BrackeysBot.Commands
                     break;
 
                 default:
-                    await ReplyAsync("Unknown karma operation.");
-                    return;
+                    throw new System.Exception("Unknown karma operation.");
             }
 
             await ReplyAsync($"{ UserHelper.GetDisplayName(user) } has { _karmaTable.GetKarma(user) } points.");

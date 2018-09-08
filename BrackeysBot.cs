@@ -36,6 +36,8 @@ namespace BrackeysBot
 
         private static readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
 
+        private static readonly string[] templateFiles = {"template-appsettings.json", "template-cooldowns.json", "template-rules.json", "template-settings.json"};
+
         private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
 
         public BrackeysBot ()
@@ -49,6 +51,13 @@ namespace BrackeysBot
 
         public async Task Start () 
         {
+            foreach (string str in templateFiles)
+            {
+                if (!File.Exists(str.Substring(9)))
+                {
+                    File.Copy(str, str.Substring(9));
+                }
+            }
             _client = new DiscordSocketClient();
 
             _commandService = new CommandService();
@@ -132,7 +141,8 @@ namespace BrackeysBot
                     {
                         if (!UserHelper.HasStaffRole (s.Author as IGuildUser))
                         {
-                            await context.Channel.SendMessageAsync (string.Empty, false, eb);
+                            var messg = await context.Channel.SendMessageAsync (string.Empty, false, eb);
+                            _ = messg.TimedDeletion(5000);
                             return;
                         }
                     } break;
@@ -141,7 +151,8 @@ namespace BrackeysBot
                         if (!UserHelper.HasStaffRole (s.Author as IGuildUser) || 
                             !UserHelper.HasRole (s.Author as IGuildUser, _settings ["guru-role"]))
                         {
-                            await context.Channel.SendMessageAsync (string.Empty, false, eb);
+                            var messg = await context.Channel.SendMessageAsync (string.Empty, false, eb);
+                            _ = messg.TimedDeletion(5000);
                             return;
                         }
                      } break;
@@ -150,19 +161,15 @@ namespace BrackeysBot
 
             bool cooldownCommand = CheckIfCommandHasCooldown (executedCommand.Name.ToLower ());
 
+            bool sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());
+
+            string parameters = s.ToString ().Remove (0, s.ToString ().IndexOf (' ') + 1);
+
+            bool cooldownExpired = HasCooldownExpired (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
+
             if (cooldownCommand && !UserHelper.HasStaffRole (s.Author as IGuildUser))
             {
-                bool sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());
-
-                string parameters = s.ToString ().Remove (0, s.ToString ().IndexOf (' ') + 1);
-
-                bool cooldownExpired = HasCooldownExpired (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
-
-                if (cooldownExpired)
-                {
-                    AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
-                }
-                else
+                if (!cooldownExpired)
                 {
                     TimeSpan ts = GetTimeUntilCooldownHasExpired (executedCommand.Name.ToLower (), s.Author as IGuildUser, sameParamCommand, parameters);
 
@@ -203,10 +210,12 @@ namespace BrackeysBot
                     .WithDescription(result.ErrorReason)
                     .WithColor(Color.Red);
 
-                await context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
+                IMessage errorMsg = await context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
+                _ = errorMsg.TimedDeletion(3000);
             }
             else
             {
+                AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
                 string command = executedCommand.Name;
                 if(_statistics.Has(command))
                 {

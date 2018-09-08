@@ -37,7 +37,7 @@ namespace BrackeysBot.Commands
             }
             else
             {
-                await ReplyAsync("Invalid rule ID.");
+                throw new System.Exception("Invalid rule ID.");
             }
         }
 
@@ -47,7 +47,7 @@ namespace BrackeysBot.Commands
         {
             if (_ruleTable.Has(id))
             {
-                await ReplyAsync("Rule already exists.");
+                throw new System.Exception("Rule already exists.");
             }
             else
             {
@@ -69,7 +69,7 @@ namespace BrackeysBot.Commands
             }
             else
             {
-                await ReplyAsync("Invalid rule ID.");
+                throw new System.Exception("Invalid rule ID.");
             }
 
             await UpdateOriginRuleMessage(Context.Guild);
@@ -86,7 +86,7 @@ namespace BrackeysBot.Commands
             }
             else
             {
-                await ReplyAsync("Rule doesn't exist.");
+                throw new System.Exception("Rule doesn't exist.");
             }
 
             await UpdateOriginRuleMessage(Context.Guild);
