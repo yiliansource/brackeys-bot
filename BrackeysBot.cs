@@ -177,7 +177,7 @@ namespace BrackeysBot
                     {
                         Embed eb = new EmbedBuilder ()
                             .WithTitle ("You can't thank that user yet")
-                            .WithDescription ($"{((IGuildUser)s.Author).GetDisplayName()}, you can't thank that user yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
+                            .WithDescription ($"{s.Author.Mention}, you can't thank that user yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
                             .WithColor (Color.Orange);
 
                         await context.Channel.SendMessageAsync (string.Empty, false, eb);
@@ -187,7 +187,7 @@ namespace BrackeysBot
                     {
                         Embed eb = new EmbedBuilder ()
                             .WithTitle ("Cooldown hasn't expired yet")
-                            .WithDescription ($"{((IGuildUser)s.Author).GetDisplayName()}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
+                            .WithDescription ($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
                             .WithColor (Color.Orange);
 
                         await context.Channel.SendMessageAsync (string.Empty, false, eb);
