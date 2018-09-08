@@ -27,7 +27,15 @@ namespace BrackeysBot.Commands
         public async Task Help ()
         {
             EmbedBuilder helpDialog = GetHelpDialog(UserType.Everyone);
-            await ReplyAsync(string.Empty, false, helpDialog);
+            try
+            {
+                await Context.User.SendMessageAsync(string.Empty, false, helpDialog);
+            }
+            catch
+            {
+                var msg = await ReplyAsync(string.Empty, false, helpDialog);
+                _ = msg.TimedDeletion(15000);
+            }
         }
 
         [Command("modhelp")]
@@ -35,7 +43,15 @@ namespace BrackeysBot.Commands
         public async Task ModHelp ()
         {
             EmbedBuilder helpDialog = GetHelpDialog(UserType.Staff);
-            await ReplyAsync(string.Empty, false, helpDialog);
+            try
+            {
+                await Context.User.SendMessageAsync(string.Empty, false, helpDialog);
+            }
+            catch
+            {
+                var msg = await ReplyAsync(string.Empty, false, helpDialog);
+                _ = msg.TimedDeletion(15000);
+            }
         }
 
         /// <summary>
