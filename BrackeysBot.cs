@@ -150,19 +150,15 @@ namespace BrackeysBot
 
             bool cooldownCommand = CheckIfCommandHasCooldown (executedCommand.Name.ToLower ());
 
+            bool sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());
+
+            string parameters = s.ToString ().Remove (0, s.ToString ().IndexOf (' ') + 1);
+
+            bool cooldownExpired = HasCooldownExpired (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
+
             if (cooldownCommand && !UserHelper.HasStaffRole (s.Author as IGuildUser))
             {
-                bool sameParamCommand = CheckIfSameParameterCommand (executedCommand.Name.ToLower ());
-
-                string parameters = s.ToString ().Remove (0, s.ToString ().IndexOf (' ') + 1);
-
-                bool cooldownExpired = HasCooldownExpired (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
-
-                if (cooldownExpired)
-                {
-                    AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
-                }
-                else
+                if (!cooldownExpired)
                 {
                     TimeSpan ts = GetTimeUntilCooldownHasExpired (executedCommand.Name.ToLower (), s.Author as IGuildUser, sameParamCommand, parameters);
 
@@ -208,6 +204,7 @@ namespace BrackeysBot
             }
             else
             {
+                AddUserToCooldown (executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
                 string command = executedCommand.Name;
                 if(_statistics.Has(command))
                 {
