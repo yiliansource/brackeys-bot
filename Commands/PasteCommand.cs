@@ -170,8 +170,7 @@ namespace BrackeysBot.Commands
                 }
                 matches = _codeblockRegex.Matches(message);
             }
-            if (message.Substring(message.Length - 3, 3) == CODEBLOCK_IDENTIFIER)
-                message = message.Remove(message.Length - 3, 3);
+            message = message.Replace(CODEBLOCK_IDENTIFIER, string.Empty);
         }
     }
 }
