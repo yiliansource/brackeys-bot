@@ -1,14 +1,15 @@
-﻿using Discord.WebSocket;
+﻿using System.Text;
 using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands
 {
-    public class KarmaCommand : ModuleBase
+    class KarmaCommand : ModuleBase
     {
         private readonly KarmaTable _karmaTable;
         private readonly SettingsTable _settings;
@@ -36,9 +37,7 @@ namespace BrackeysBot.Commands
         {
             IUser source = Context.User, target = user;
             if (source == target)
-            {
                 throw new System.Exception("You cannot thank yourself.");
-            }
 
             _karmaTable.AddKarma(target);
 
@@ -46,6 +45,28 @@ namespace BrackeysBot.Commands
             string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
             var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
             _ = message.TimedDeletion(5000);
+        }
+        [Command("thanks"), Alias("thank", "thank you")]
+        public async Task ThankUserCommand(params IGuildUser[] users)
+        {
+            IUser source = Context.User;
+
+            System.Collections.Generic.List<string> thankedUserMessages = new System.Collections.Generic.List<string>();
+            foreach (IGuildUser user in users)
+            {
+                if (source == user)
+                    continue;
+
+                _karmaTable.AddKarma(user);
+
+                int total = _karmaTable.GetKarma(user);
+                string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
+                thankedUserMessages.Add($"{ user.GetDisplayName() } has { pointsDisplay }");
+            }
+
+            string content = string.Join(", ", thankedUserMessages.ToArray()) + ".";
+            var message = await ReplyAsync(content);
+            _ = message.TimedDeletion(10000);
         }
 
         [Command("karma")]

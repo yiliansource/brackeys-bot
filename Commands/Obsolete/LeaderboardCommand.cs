@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace BrackeysBot.Commands
 {
-    public class LeaderboardCommand : ModuleBase
+    class LeaderboardCommand : ModuleBase
     {
         private readonly KarmaTable _karmaTable;
         private readonly SettingsTable _settings;

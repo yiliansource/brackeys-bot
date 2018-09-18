@@ -7,7 +7,7 @@ using Discord.WebSocket;
 
 namespace BrackeysBot.Commands
 {
-    public class PointsCommand : ModuleBase
+    class PointsCommand : ModuleBase
     {
         private readonly KarmaTable _karmaTable;
         private readonly SettingsTable _settings;
