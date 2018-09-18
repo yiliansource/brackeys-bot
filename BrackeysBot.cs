@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +15,7 @@ using Newtonsoft.Json;
 
 using BrackeysBot.Data;
 using BrackeysBot.Commands;
+using BrackeysBot.Listeners;
 
 namespace BrackeysBot 
 {
@@ -33,10 +33,8 @@ namespace BrackeysBot
         private RuleTable _rules;
         private UnityDocs _unityDocs;
         private CooldownData _cooldowns;
-
-        private static readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
         
-        private Listeners.ArchiveListener _archiveListener;
+        private ArchiveListener _archiveListener;
       
         private static readonly string[] templateFiles = {"template-appsettings.json", "template-cooldowns.json", "template-rules.json", "template-settings.json"};
 
@@ -95,7 +93,6 @@ namespace BrackeysBot
             UserHelper._settings = _settings;
 
             RegisterMassiveCodeblockHandle();
-            RegisterTemplateCheck();
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -355,42 +352,6 @@ namespace BrackeysBot
         private void RegisterMassiveCodeblockHandle ()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
-        }
-
-        /// <summary>
-        /// Registers a method to check the templates in the job channels.
-        /// </summary>
-
-        private void RegisterTemplateCheck()
-        {
-            _client.MessageReceived += CheckTemplate;
-        }
-
-        /// <summary>
-        /// Handles template checking in the job channels.
-        /// </summary>
-
-        public async Task CheckTemplate (SocketMessage s)
-        {
-            if (!(s is SocketUserMessage msg)) 
-                return;
-            ulong[] ignoreChannelIds = _settings["job-channel-ids"].Split(',').Select(id => ulong.Parse(id.Trim())).ToArray();
-			
-            if (ignoreChannelIds.All(id => id != s.Channel.Id)) 
-                return;
-
-            if (!_jobRegex.IsMatch(s.Content.ToLower()))
-            {
-                if (!(s.Author as SocketGuildUser).HasStaffRole())
-                {
-                    await s.DeleteAsync();
-					try
-					{
-						await s.Author.SendMessageAsync($"Hi, {s.Author.Username}. I've removed the message you sent in #{s.Channel.Name} at {s.Timestamp.DateTime.ToString("dd/MM/yyyy hh:mm UTC")}, because you didn't follow the template. Please re-post it using the provided template that is pinned to that channel.");
-					}
-					catch {}
-                }
-            }
         }
         /// <summary>
         /// Handles a massive codeblock.
