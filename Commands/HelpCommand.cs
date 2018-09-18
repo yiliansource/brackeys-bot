@@ -2,10 +2,12 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
+using Microsoft.Extensions.Configuration;
+
 using Discord;
 using Discord.Commands;
 
-using Microsoft.Extensions.Configuration;
+using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands
 {
@@ -24,24 +26,38 @@ namespace BrackeysBot.Commands
         [HelpData("help", "Displays this menu.")]
         public async Task Help ()
         {
-            EmbedBuilder helpDialog = GetHelpDialog("default");
-            await ReplyAsync(string.Empty, false, helpDialog.Build());
+            EmbedBuilder helpDialog = GetHelpDialog(UserType.Everyone);
+            try
+            {
+                await Context.User.SendMessageAsync(string.Empty, false, helpDialog);
+            }
+            catch
+            {
+                var msg = await ReplyAsync(string.Empty, false, helpDialog);
+                _ = msg.TimedDeletion(15000);
+            }
         }
 
         [Command("modhelp")]
-        [HelpData("modhelp", "Displays this menu.", HelpMode = "mod")]
+        [HelpData("modhelp", "Displays this menu.", AllowedRoles = UserType.Staff)]
         public async Task ModHelp ()
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
-            EmbedBuilder helpDialog = GetHelpDialog("mod");
-            await ReplyAsync(string.Empty, false, helpDialog.Build());
+            EmbedBuilder helpDialog = GetHelpDialog(UserType.Staff);
+            try
+            {
+                await Context.User.SendMessageAsync(string.Empty, false, helpDialog);
+            }
+            catch
+            {
+                var msg = await ReplyAsync(string.Empty, false, helpDialog);
+                _ = msg.TimedDeletion(15000);
+            }
         }
 
         /// <summary>
         /// Returns the help dialog for a specific mode.
         /// </summary>
-        private EmbedBuilder GetHelpDialog(string mode)
+        private EmbedBuilder GetHelpDialog(UserType userType)
         {
             EmbedBuilder eb = new EmbedBuilder()
                 .WithColor(new Color(247, 22, 131))
@@ -50,7 +66,7 @@ namespace BrackeysBot.Commands
 
             string prefix = _configuration["prefix"];
 
-            var commands = GetCommandDataCollection(mode);
+            var commands = GetCommandDataCollection(userType);
             foreach (var command in commands)
             {
                 string title = prefix + command.Usage;
@@ -64,7 +80,7 @@ namespace BrackeysBot.Commands
         /// <summary>
         /// Gathers the data for all commands found in the command modules.
         /// </summary>
-        private IEnumerable<HelpDataAttribute> GetCommandDataCollection (string mode)
+        private IEnumerable<HelpDataAttribute> GetCommandDataCollection (UserType userType)
         {
             var commandList = new List<HelpDataAttribute>();
 
@@ -73,7 +89,7 @@ namespace BrackeysBot.Commands
                 {
                     if (command.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
                     {
-                        if (mode.ToLower() == data.HelpMode.ToLower())
+                        if (userType == data.AllowedRoles)
                         {
                             commandList.Add(data as HelpDataAttribute);
                         }

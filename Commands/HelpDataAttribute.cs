@@ -1,5 +1,7 @@
 ﻿using System;
 
+using BrackeysBot.Data;
+
 [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
 sealed class HelpDataAttribute : Attribute
 {
@@ -8,7 +10,7 @@ sealed class HelpDataAttribute : Attribute
 
     public string Usage { get => _usage; }
     public string Description { get => _description; }
-    public string HelpMode { get; set; } = "default";
+    public UserType AllowedRoles { get; set; } = UserType.Everyone;
     public int ListOrder { get; set; }
 
     public HelpDataAttribute(string usage, string description)

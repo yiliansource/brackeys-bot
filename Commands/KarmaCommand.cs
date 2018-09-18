@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
+using BrackeysBot.Data;
+
 namespace BrackeysBot.Commands
 {
     public class KarmaCommand : ModuleBase
@@ -26,9 +28,7 @@ namespace BrackeysBot.Commands
                     .WithDescription("Example: []thanks @Brackeys");
 
             var message = await ReplyAsync(string.Empty, false, eb.Build());
-
-            await Task.Delay(5000);
-            await message.DeleteAsync();
+            _ = message.TimedDeletion(5000);
         }
         [Command("thanks"), Alias("thank", "thank you")]
         [HelpData("thanks <user>", "Thank a user.")]
@@ -37,36 +37,19 @@ namespace BrackeysBot.Commands
             IUser source = Context.User, target = user;
             if (source == target)
             {
-                await ReplyAsync("You can't thank yourself!");
-                return;
+                throw new System.Exception("You cannot thank yourself.");
             }
 
-            if (_karmaTable.CheckThanksCooldownExpired(source, target, out int remainingMinutes))
-            {
-                int.TryParse(_settings["thanks"], out int cooldown);
-                _karmaTable.ThankUser(source, target, cooldown);
+            _karmaTable.AddKarma(target);
 
-                int total = _karmaTable.GetKarma(target);
-                string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
-                var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
-
-                await Task.Delay(5000);
-                await message.DeleteAsync();
-            }
-            else
-            {
-                int hours = remainingMinutes / 60;
-                int minutes = remainingMinutes % 60;
-
-                string displayhours = $"{ hours } hour{ (minutes != 1 ? "s" : "") }";
-                string displayminutes = $"{ minutes } minute{ (minutes != 1 ? "s" : "") }";
-
-                await ReplyAsync($"{ source.Mention }, you can't thank that user yet, please wait { displayhours }{ (minutes > 0 ? $" and { displayminutes }" : "") }.");
-            }
+            int total = _karmaTable.GetKarma(target);
+            string pointsDisplay = $"{ total } point{ (total != 1 ? "s" : "") }";
+            var message = await ReplyAsync($"{ user.GetDisplayName() } has { pointsDisplay }.");
+            _ = message.TimedDeletion(5000);
         }
 
         [Command("karma")]
-        [HelpData("karma (add / remove / set) <user> <value>", "Modifies a user's karma points.", HelpMode = "mod")]
+        [HelpData("karma (add / remove / set) <user> <value>", "Modifies a user's karma points.", AllowedRoles = UserType.Staff)]
         public async Task ModifyKarmaCommand (string operation, SocketGuildUser user, int amount)
         {
             (Context.User as IGuildUser).EnsureStaff();
@@ -84,8 +67,7 @@ namespace BrackeysBot.Commands
                     break;
 
                 default:
-                    await ReplyAsync("Unknown karma operation.");
-                    return;
+                    throw new System.Exception("Unknown karma operation.");
             }
 
             await ReplyAsync($"{ UserHelper.GetDisplayName(user) } has { _karmaTable.GetKarma(user) } points.");

@@ -25,8 +25,7 @@ namespace BrackeysBot.Commands
         {
             if (!_settings.Has("jamevents"))
             {
-                await ReplyAsync("No jam event dates have been set.");
-                return;
+                throw new Exception("No jam event dates have been set.");
             }
 
             // Ordered by:
@@ -41,7 +40,7 @@ namespace BrackeysBot.Commands
             
             if (dates.Length != 3)
             {
-                await ReplyAsync("Invalid jam date configuration. Please check the settings.");
+                throw new Exception("Invalid jam date configuration. Please check the settings.");
             }
 
             if (dates[0] > utcNow)
