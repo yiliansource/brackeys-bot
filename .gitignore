@@ -10,6 +10,7 @@ statistics.json
 cooldowns.json
 rules.json
 settings.json
+custom-commands.json
 
 # Exclude .vscode folder
 .vscode/

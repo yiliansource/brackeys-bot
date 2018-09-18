@@ -31,6 +31,7 @@ namespace BrackeysBot
         private SettingsTable _settings;
         private StatisticsTable _statistics;
         private RuleTable _rules;
+        CustomizedCommandTable _customCommands;
         private UnityDocs _unityDocs;
         private CooldownData _cooldowns;
         
@@ -63,12 +64,13 @@ namespace BrackeysBot
             _karma = new KarmaTable("karma.json");
             _settings = new SettingsTable("settings.json");
             _statistics = new StatisticsTable("statistics.json");
+            _customCommands = new CustomizedCommandTable("custom-commands.json");
 
             _rules = new RuleTable("rules.json");
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
             _cooldowns = JsonConvert.DeserializeObject<CooldownData> (File.ReadAllText ("cooldowns.json"));
             
-            _archiveListener = new Listeners.ArchiveListener();
+            _archiveListener = new ArchiveListener();
 
             _services = new ServiceCollection()
 
@@ -81,6 +83,7 @@ namespace BrackeysBot
                 .AddSingleton(_karma)
                 .AddSingleton(_settings)
                 .AddSingleton(_statistics)
+                .AddSingleton(_customCommands)
                 .AddSingleton(_rules)
                 .AddSingleton(_unityDocs)
                 
@@ -121,7 +124,22 @@ namespace BrackeysBot
                 && !msg.Content.ToLower().StartsWith("thank")) return;
 
             CommandContext context = new CommandContext(_client, msg);
-            CommandInfo executedCommand = _commandService.Search (context, argPos).Commands [0].Command;
+            CommandInfo executedCommand = null;
+            try
+            {
+                executedCommand = _commandService.Search(context, argPos).Commands[0].Command;
+            }
+            catch
+            {
+                // The executed command wasnt found in the modules, therefore look if any custom commands are registered.
+                string command = msg.Content.Substring(argPos);
+                if (_customCommands.Has(command))
+                {
+                    string message = _customCommands.Get(command);
+                    await context.Channel.SendMessageAsync(message);
+                }
+                return;
+            }
 
             if (executedCommand.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
             {
