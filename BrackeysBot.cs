@@ -35,8 +35,7 @@ namespace BrackeysBot
         private CooldownData _cooldowns;
 
         private static readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
-
-        private LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
+        
         private Listeners.ArchiveListener _archiveListener;
       
         private static readonly string[] templateFiles = {"template-appsettings.json", "template-cooldowns.json", "template-rules.json", "template-settings.json"};
@@ -70,8 +69,7 @@ namespace BrackeysBot
             _rules = new RuleTable("rules.json");
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
             _cooldowns = JsonConvert.DeserializeObject<CooldownData> (File.ReadAllText ("cooldowns.json"));
-
-            _leaderboardNavigator = new LeaderboardCommand.LeaderboardNavigator(_karma, _settings);
+            
             _archiveListener = new Listeners.ArchiveListener();
 
             _services = new ServiceCollection()
@@ -87,8 +85,7 @@ namespace BrackeysBot
                 .AddSingleton(_statistics)
                 .AddSingleton(_rules)
                 .AddSingleton(_unityDocs)
-
-                .AddSingleton(_leaderboardNavigator)
+                
                 .AddSingleton(_archiveListener)
 
                 // Finally, build the provider
@@ -99,7 +96,6 @@ namespace BrackeysBot
 
             RegisterMassiveCodeblockHandle();
             RegisterTemplateCheck();
-            RegisterLeaderboardNavigationHandle();
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -411,13 +407,6 @@ namespace BrackeysBot
             }
 
             await PasteCommand.PasteIfMassiveCodeblock(s);
-        }
-        /// <summary>
-        /// Handles a leaderboard navigation event.
-        /// </summary>
-        private void RegisterLeaderboardNavigationHandle()
-        {
-            _client.ReactionAdded += _leaderboardNavigator.HandleLeaderboardNavigation;
         }
     }
 }
