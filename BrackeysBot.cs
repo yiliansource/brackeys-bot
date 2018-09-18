@@ -32,7 +32,8 @@ namespace BrackeysBot
 
         private static readonly Regex _jobRegex = new Regex(@"(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\nTeam Size:.*\n.*Length.*\nCompensation:.*\nResponsibilities:.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*\nExperience.*\nRates:.*```)|(```.*\[Hiring\]\n.*\n.*Name:.*\n.*Required:.*\n.*Portfolio.*\n.*Description:.*```)|(```.*\[Looking for work\]\n.*\n.*Role:.*\nSkills:.*\n.*Portfolio.*```)|(```.*\[Recruiting\]\n--------------------------------\n.*Name:.*\nProject Description:.*```)|(```.*\[Looking to mentor\]\n.*\n.*interest:.*\nRates.*```)|(```.*\[Looking for a mentor\]\n.*\n.*interest:.*\nRates.*```)".ToLower(), RegexOptions.Compiled | RegexOptions.Singleline);
 
-        private Commands.LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
+        private LeaderboardCommand.LeaderboardNavigator _leaderboardNavigator;
+        private Listeners.ArchiveListener _archiveListener;
 
         public BrackeysBot ()
         {
@@ -56,7 +57,8 @@ namespace BrackeysBot
             _rules = new RuleTable("rules.json");
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
 
-            _leaderboardNavigator = new Commands.LeaderboardCommand.LeaderboardNavigator(_karma, _settings);
+            _leaderboardNavigator = new LeaderboardCommand.LeaderboardNavigator(_karma, _settings);
+            _archiveListener = new Listeners.ArchiveListener();
 
             _services = new ServiceCollection()
 
@@ -73,6 +75,7 @@ namespace BrackeysBot
                 .AddSingleton(_unityDocs)
 
                 .AddSingleton(_leaderboardNavigator)
+                .AddSingleton(_archiveListener)
 
                 // Finally, build the provider
                 .BuildServiceProvider();
