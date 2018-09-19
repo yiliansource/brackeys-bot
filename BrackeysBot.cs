@@ -160,7 +160,7 @@ namespace BrackeysBot
                         }
                         break;
                     case UserType.StaffGuru:
-                        if (!UserHelper.HasStaffRole (s.Author as IGuildUser) || 
+                        if (!UserHelper.HasStaffRole (s.Author as IGuildUser) && 
                             !UserHelper.HasRole (s.Author as IGuildUser, _settings ["guru-role"]))
                         {
                             var messg = await context.Channel.SendMessageAsync (string.Empty, false, eb);
