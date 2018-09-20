@@ -1,4 +1,4 @@
-namespace BrackeysBot.Data
+namespace BrackeysBot
 {
     public enum UserType
     {

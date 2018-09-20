@@ -6,7 +6,7 @@ using Discord;
 
 using Newtonsoft.Json;
 
-namespace BrackeysBot
+namespace BrackeysBot.Data
 {
     public sealed class KarmaTable : LookupTable<ulong, int>
     {

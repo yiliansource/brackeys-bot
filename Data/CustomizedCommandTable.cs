@@ -1,12 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
+﻿using System.Linq;
 
-using Discord;
-
-using Newtonsoft.Json;
-
-namespace BrackeysBot
+namespace BrackeysBot.Data
 {
     /// <summary>
     /// Provides a table to store custom commands.
