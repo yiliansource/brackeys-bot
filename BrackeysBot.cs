@@ -13,7 +13,6 @@ using Discord.WebSocket;
 
 using Newtonsoft.Json;
 
-using BrackeysBot.Data;
 using BrackeysBot.Commands;
 using BrackeysBot.Listeners;
 

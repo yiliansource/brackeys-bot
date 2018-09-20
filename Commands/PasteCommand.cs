@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
@@ -8,8 +9,6 @@ using Discord.Commands;
 using System.IO;
 
 using Newtonsoft.Json;
-using System.Text;
-using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands
 {

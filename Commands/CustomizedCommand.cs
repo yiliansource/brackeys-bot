@@ -19,7 +19,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("ccadd")]
-        [HelpData("ccadd <name> <message>", "Adds a command that prints the specified message when called.", AllowedRoles = Data.UserType.Staff)]
+        [HelpData("ccadd <name> <message>", "Adds a command that prints the specified message when called.", AllowedRoles = UserType.Staff)]
         public async Task AddCustomCommand (string name, [Remainder]string message)
         {
             if (_customCommands.Has(name))
@@ -34,7 +34,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("ccdelete")]
-        [HelpData("ccdelete <name>", "Deletes the specified custom command.", AllowedRoles = Data.UserType.Staff)]
+        [HelpData("ccdelete <name>", "Deletes the specified custom command.", AllowedRoles = UserType.Staff)]
         public async Task DeleteCustomCommand (string name)
         {
             if (_customCommands.Has(name))
@@ -51,7 +51,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("cclist")]
-        [HelpData("cclist", "Lists all registered custom commands", AllowedRoles = Data.UserType.Staff)]
+        [HelpData("cclist", "Lists all registered custom commands", AllowedRoles = UserType.Staff)]
         public async Task ListCustomCommands()
         {
             EmbedBuilder eb = new EmbedBuilder();

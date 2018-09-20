@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BrackeysBot.Data
+namespace BrackeysBot
 {
     public class CooldownData
     {

@@ -5,8 +5,6 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using BrackeysBot.Data;
-
 namespace BrackeysBot.Commands
 {
     class KarmaCommand : ModuleBase

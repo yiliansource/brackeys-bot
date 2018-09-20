@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace BrackeysBot.Data
+namespace BrackeysBot
 {
     /// <summary>
     /// Provides a table to store custom commands.
