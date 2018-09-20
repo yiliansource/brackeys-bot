@@ -1,10 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-
-using Discord;
-
-using Newtonsoft.Json;
+﻿using System.Linq;
 
 namespace BrackeysBot
 {

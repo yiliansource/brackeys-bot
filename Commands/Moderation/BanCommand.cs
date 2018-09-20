@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 using Discord.Commands;
 using Discord;
-using BrackeysBot.Data;
 
 namespace BrackeysBot.Commands.Moderation
 {

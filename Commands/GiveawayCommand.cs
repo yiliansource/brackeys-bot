@@ -22,7 +22,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("initgiveaway")]
-        [HelpData("initgiveaway <message>", "Initializes a new giveaway, with a specified message.", AllowedRoles = Data.UserType.Staff)]
+        [HelpData("initgiveaway <message>", "Initializes a new giveaway, with a specified message.", AllowedRoles = UserType.Staff)]
         public async Task InitializeGiveaway ([Remainder] string message)
         {
             (Context.User as IGuildUser).EnsureStaff();
@@ -44,7 +44,7 @@ namespace BrackeysBot.Commands
         }
 
         [Command("performgiveaway")]
-        [HelpData("performgiveaway <usercount> <includestaff>", "Performs a giveaway with a set number of winners.", AllowedRoles = Data.UserType.Staff)]
+        [HelpData("performgiveaway <usercount> <includestaff>", "Performs a giveaway with a set number of winners.", AllowedRoles = UserType.Staff)]
         public async Task PerformGiveaway (int userCount, bool includeStaff = true)
         {
             (Context.User as IGuildUser).EnsureStaff();

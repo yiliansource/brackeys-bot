@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace BrackeysBot.Data
+namespace BrackeysBot
 {
     public static class TimeHelpers
     {

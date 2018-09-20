@@ -7,8 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Discord;
 using Discord.Commands;
 
-using BrackeysBot.Data;
-
 namespace BrackeysBot.Commands
 {
     public class HelpCommand : ModuleBase

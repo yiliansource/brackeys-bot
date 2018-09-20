@@ -6,8 +6,6 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.Commands;
 
-using BrackeysBot.Data;
-
 namespace BrackeysBot.Commands
 {
     public class HasteCommand : ModuleBase
