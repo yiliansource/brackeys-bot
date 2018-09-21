@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Commands\Obsolete\KarmaCommand.cs" />
+    <Compile Remove="Commands\Obsolete\LeaderboardCommand.cs" />
+    <Compile Remove="Commands\Obsolete\PointsCommand.cs" />
+    <Compile Remove="Data\Obsolete\KarmaTable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Commands\Obsolete\KarmaCommand.cs" />
+    <None Include="Commands\Obsolete\LeaderboardCommand.cs" />
+    <None Include="Commands\Obsolete\PointsCommand.cs" />
+    <None Include="Data\Obsolete\KarmaTable.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Discord.Net" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.1" />

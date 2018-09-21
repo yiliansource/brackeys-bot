@@ -1,4 +1,6 @@
+using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.IO;
 
 namespace BrackeysBot
 {
@@ -6,6 +8,15 @@ namespace BrackeysBot
     {
         public List<CommandCooldown<UserCooldown>> Commands { get; set; } = new List<CommandCooldown<UserCooldown>> ();
         public List<CommandCooldown<UserCooldownParameters>> SameParameterCommands { get; set; } = new List<CommandCooldown<UserCooldownParameters>> ();
+
+        public static CooldownData FromPath(string path)
+        {
+            return JsonConvert.DeserializeObject<CooldownData>(File.ReadAllText(path));
+        }
+        public void Save(string path)
+        {
+            File.WriteAllText("cooldowns.json", JsonConvert.SerializeObject(this, Formatting.Indented));
+        }
     }
 
     public class CommandCooldown<T> where T : UserCooldown
