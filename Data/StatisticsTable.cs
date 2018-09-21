@@ -8,9 +8,7 @@ namespace BrackeysBot
     /// </summary>
     public class StatisticsTable : LookupTable<string, uint>
     {
-        public StatisticsTable(string path) : base(path)
-        {
-        }
+        public override string FileName => "statistics";
 
         /// <summary>
         /// Returns the leaderboard, sorted by points.

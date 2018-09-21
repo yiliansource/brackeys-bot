@@ -7,13 +7,12 @@ namespace BrackeysBot
     /// </summary>
     public class RuleTable : LookupTable<int, string>
     {
+        public override string FileName => "rules";
+        public override bool RequiresTemplateFile => true;
+
         /// <summary>
         /// Returns the rules from the table.
         /// </summary>
         public Dictionary<int, string> Rules => _lookup;
-
-        public RuleTable(string path) : base(path)
-        {
-        }
     }
 }

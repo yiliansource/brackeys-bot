@@ -1,0 +1,38 @@
+﻿namespace BrackeysBot.Modules
+{
+    /// <summary>
+    /// Provides a module to store the data files.
+    /// </summary>
+    public class DataModule
+    {
+        public EventPointTable EventPoints { get; private set; }
+        public SettingsTable Settings { get; private set; }
+        public StatisticsTable Statistics { get; private set; }
+        public RuleTable Rules { get; private set; }
+        public CustomizedCommandTable CustomCommands { get; private set; }
+        public UnityDocs UnityDocs { get; private set; }
+        public CooldownData Cooldowns { get; private set; }
+
+        private static readonly string[] templateFiles = { "template-appsettings.json", "template-cooldowns.json" };
+
+        public DataModule()
+        {
+        }
+
+        /// <summary>
+        /// Initializes the data files from the disk
+        /// </summary>
+        public void InitializeDataFiles ()
+        {
+            // Load the lookup files
+            EventPoints = new EventPointTable();
+            Settings = new SettingsTable();
+            Statistics = new StatisticsTable();
+            CustomCommands = new CustomizedCommandTable();
+            Rules = new RuleTable();
+
+            UnityDocs = new UnityDocs("manualReference.json", "scriptReference.json");
+            Cooldowns = CooldownData.FromPath("cooldowns.json");
+        }
+    }
+}
