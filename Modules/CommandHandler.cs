@@ -14,20 +14,18 @@ namespace BrackeysBot.Modules
     /// <summary>
     /// Provides a module to execute commands.
     /// </summary>
-    public class CommandModule
+    public class CommandHandler
     {
         public CommandService Service => _commandService;
         private CommandService _commandService;
 
         public IServiceProvider ServiceProvider { get; set; }
         public string CommandPrefix { get; set; }
-
-        private DiscordSocketClient _client;
+        
         private DataModule _data;
 
-        public CommandModule(DiscordSocketClient client, DataModule data, string commandPrefix)
+        public CommandHandler(DataModule data, string commandPrefix)
         {
-            _client = client;
             _data = data;
             CommandPrefix = commandPrefix;
 
@@ -37,16 +35,16 @@ namespace BrackeysBot.Modules
         /// <summary>
         /// Installs the command handling to the client.
         /// </summary>
-        public async Task InstallCommands()
+        public async Task InstallCommands(DiscordSocketClient client)
         {
-            _client.MessageReceived += HandleCommand;
+            client.MessageReceived += (s) => HandleCommand(s, client);
             await _commandService.AddModulesAsync(Assembly.GetEntryAssembly());
         }
 
         /// <summary>
         /// Handles a command, represented in the given message.
         /// </summary>
-        private async Task HandleCommand(SocketMessage s)
+        private async Task HandleCommand(SocketMessage s, DiscordSocketClient client)
         {
             if (!(s is SocketUserMessage msg)) return;
 
@@ -55,7 +53,7 @@ namespace BrackeysBot.Modules
             if (!msg.HasStringPrefix(CommandPrefix, ref argPos)
                 && !msg.Content.ToLower().StartsWith("thank")) return;
 
-            CommandContext context = new CommandContext(_client, msg);
+            CommandContext context = new CommandContext(client, msg);
             CommandInfo executedCommand = null;
             try
             {

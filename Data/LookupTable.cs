@@ -13,7 +13,7 @@ namespace BrackeysBot
         /// <summary>
         /// Returns the path of the lookup file.
         /// </summary>
-        public string FilePath => FileName + FILETYPE;
+        public string FilePath => $"{ FileName }.{ FILETYPE }";
         /// <summary>
         /// Returns the name of the lookup file (without the extension).
         /// </summary>
@@ -23,7 +23,7 @@ namespace BrackeysBot
         /// </summary>
         public virtual bool RequiresTemplateFile => false;
 
-        private const string FILETYPE = ".json";
+        private const string FILETYPE = "json";
         private const string TEMPLATE_IDENTIFIER = "template-";
         
         protected Dictionary<TKey, TValue> _lookup;

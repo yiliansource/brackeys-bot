@@ -21,7 +21,7 @@ namespace BrackeysBot
         public IConfiguration Configuration { get; set; }
 
         public DataModule Data { get; set; }
-        public CommandModule Commands { get; set; }
+        public CommandHandler Commands { get; set; }
 
         private IServiceProvider _services;
         private DiscordSocketClient _client;
@@ -50,7 +50,7 @@ namespace BrackeysBot
             Data = new DataModule();
             Data.InitializeDataFiles();
 
-            Commands = new CommandModule(_client, Data, Configuration["prefix"]);
+            Commands = new CommandHandler(Data, Configuration["prefix"]);
 
             _leaderboardNavigator = new EventPointCommand.LeaderboardNavigator(Data.EventPoints, Data.Settings);
 
@@ -77,7 +77,7 @@ namespace BrackeysBot
                 .BuildServiceProvider();
 
             Commands.ServiceProvider = _services;
-            await Commands.InstallCommands();
+            await Commands.InstallCommands(_client);
 
             UserHelper.Settings = Data.Settings;
 
