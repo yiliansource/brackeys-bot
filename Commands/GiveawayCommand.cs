@@ -25,8 +25,6 @@ namespace BrackeysBot.Commands
         [HelpData("initgiveaway <message>", "Initializes a new giveaway, with a specified message.", AllowedRoles = UserType.Staff)]
         public async Task InitializeGiveaway ([Remainder] string message)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             // Delete the invokation message
             await Context.Message.DeleteAsync();
 
@@ -47,8 +45,6 @@ namespace BrackeysBot.Commands
         [HelpData("performgiveaway <usercount> <includestaff>", "Performs a giveaway with a set number of winners.", AllowedRoles = UserType.Staff)]
         public async Task PerformGiveaway (int userCount, bool includeStaff = true)
         {
-            (Context.User as IGuildUser).EnsureStaff();
-
             // Delete the invokation message
             await Context.Message.DeleteAsync();
 

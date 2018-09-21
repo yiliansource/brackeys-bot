@@ -11,8 +11,6 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using Newtonsoft.Json;
-
 using BrackeysBot.Commands;
 using BrackeysBot.Listeners;
 
@@ -26,18 +24,23 @@ namespace BrackeysBot
         private DiscordSocketClient _client;
         private CommandService _commandService;
 
-        private KarmaTable _karma;
+        private EventPointTable _eventPoints;
         private SettingsTable _settings;
         private StatisticsTable _statistics;
         private RuleTable _rules;
-        CustomizedCommandTable _customCommands;
+        private CustomizedCommandTable _customCommands;
         private UnityDocs _unityDocs;
         private CooldownData _cooldowns;
         
         private ArchiveListener _archiveListener;
-      
-        private static readonly string[] templateFiles = {"template-appsettings.json", "template-cooldowns.json", "template-rules.json", "template-settings.json"};
 
+        private EventPointCommand.LeaderboardNavigator _leaderboardNavigator;
+      
+        private static readonly string[] templateFiles = { "template-appsettings.json", "template-cooldowns.json", "template-rules.json", "template-settings.json" };
+
+        /// <summary>
+        /// Creates a new instance of the bot and initializes the configuration.
+        /// </summary>
         public BrackeysBot ()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
@@ -47,46 +50,49 @@ namespace BrackeysBot
             Configuration = builder.Build();
         }
 
+        /// <summary>
+        /// Starts the execution of the bot.
+        /// </summary>
         public async Task Start () 
         {
-            foreach (string str in templateFiles)
-            {
-                if (!File.Exists(str.Substring(9)))
-                {
-                    File.Copy(str, str.Substring(9));
-                }
-            }
             _client = new DiscordSocketClient();
 
             _commandService = new CommandService();
 
-            _karma = new KarmaTable("karma.json");
+            EnsurePreDataFiles();
+
+            _eventPoints = new EventPointTable("eventPoints.json");
             _settings = new SettingsTable("settings.json");
             _statistics = new StatisticsTable("statistics.json");
             _customCommands = new CustomizedCommandTable("custom-commands.json");
-
             _rules = new RuleTable("rules.json");
             _unityDocs = new UnityDocs ("manualReference.json", "scriptReference.json");
-            _cooldowns = JsonConvert.DeserializeObject<CooldownData> (File.ReadAllText ("cooldowns.json"));
+            _cooldowns = CooldownData.FromPath("cooldowns.json");
             
             _archiveListener = new ArchiveListener();
+
+            _leaderboardNavigator = new EventPointCommand.LeaderboardNavigator(_eventPoints, _settings);
 
             _services = new ServiceCollection()
 
                 // Add the command service
                 .AddSingleton(_commandService)
 
+                // Add the configuration
                 .AddSingleton(Configuration)
 
                 // Add the singletons for the databases
-                .AddSingleton(_karma)
+                .AddSingleton(_eventPoints)
                 .AddSingleton(_settings)
                 .AddSingleton(_statistics)
                 .AddSingleton(_customCommands)
+                .AddSingleton(_cooldowns)
                 .AddSingleton(_rules)
                 .AddSingleton(_unityDocs)
                 
                 .AddSingleton(_archiveListener)
+
+                .AddSingleton(_leaderboardNavigator)
 
                 // Finally, build the provider
                 .BuildServiceProvider();
@@ -95,6 +101,7 @@ namespace BrackeysBot
             UserHelper._settings = _settings;
 
             RegisterMassiveCodeblockHandle();
+            RegisterLeaderboardNavigationHandle();
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -243,6 +250,27 @@ namespace BrackeysBot
             }
         }
 
+        /// <summary>
+        /// Ensures the existance of pre-data files.
+        /// </summary>
+        private void EnsurePreDataFiles()
+        {
+            const string templatePrefix = "template-";
+            int prefixLength = templatePrefix.Length;
+
+            foreach (string templateFile in templateFiles)
+            {
+                string filename = templateFile.Substring(prefixLength);
+                if (!File.Exists(filename))
+                {
+                    File.Copy(templateFile, filename);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if the command with the specified name has a cooldown.
+        /// </summary>
         private bool CheckIfCommandHasCooldown (string commandName)
         {
             if (_cooldowns.Commands.Any (c => c.CommandName == commandName)) return true;
@@ -250,6 +278,9 @@ namespace BrackeysBot
             return false;
         }
 
+        /// <summary>
+        /// Checks if the command with the specified name is a same parameter command.
+        /// </summary>
         private bool CheckIfSameParameterCommand (string commandName)
         {
             if (_cooldowns.Commands.Any (c => c.CommandName == commandName)) return false;
@@ -257,6 +288,9 @@ namespace BrackeysBot
             throw new ArgumentException ("Command isn't a normal command nor a same parameter command.");
         }
 
+        /// <summary>
+        /// Returns the <see cref="TimeSpan"/> until the specified command has expired (for the specified user).
+        /// </summary>
         private TimeSpan GetTimeUntilCooldownHasExpired (string commandName, IGuildUser user, bool sameParameters, string parameters = "")
         {
             if (sameParameters && !string.IsNullOrEmpty (parameters))
@@ -281,6 +315,9 @@ namespace BrackeysBot
             }
         }
 
+        /// <summary>
+        /// Gets the cooldown until a certain user can be targeted again.
+        /// </summary>
         private T GetUserCooldown<T> (string commandName, IGuildUser user, bool sameParameters = false, string parameters = "") where T : UserCooldown
         {
             if (sameParameters && !string.IsNullOrEmpty (parameters))
@@ -357,11 +394,8 @@ namespace BrackeysBot
                     usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp ();
             }            
 
-            SaveCooldowns ();
+            _cooldowns.Save("cooldowns.json");
         }
-
-        private void SaveCooldowns ()
-            => File.WriteAllText ("cooldowns.json", JsonConvert.SerializeObject (_cooldowns, Formatting.Indented));
 
         /// <summary>
         /// Registers a method to handle massive codeblocks.
@@ -370,6 +404,15 @@ namespace BrackeysBot
         {
             _client.MessageReceived += HandleMassiveCodeblock;
         }
+
+        /// <summary>
+        /// Registers the handle for a leaderboard navigation event.
+        /// </summary>
+        private void RegisterLeaderboardNavigationHandle()
+        {
+            _client.ReactionAdded += _leaderboardNavigator.HandleLeaderboardNavigation;
+        }
+
         /// <summary>
         /// Handles a massive codeblock.
         /// </summary>
