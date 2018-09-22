@@ -11,6 +11,8 @@ namespace BrackeysBot
     /// </summary>
     public class EventPointTable : LookupTable<ulong, Dictionary<int, int>>
     {
+        public override string FileName => "event-points";
+
         /// <summary>
         /// Returns the index of the current day (in UTC time).
         /// </summary>
@@ -23,10 +25,6 @@ namespace BrackeysBot
         private static readonly DateTime _dataStoreOffset = new DateTime(2000, 1, 1, 0, 0, 0);
 
         private const int POINT_EXPIRATION_DAYS = 30 * 4;
-
-        public EventPointTable(string path) : base(path)
-        {
-        }
 
         /// <summary>
         /// Returns the points for the specified user, capped by the expiration days.

@@ -7,13 +7,9 @@ namespace BrackeysBot
     /// </summary>
     public class SettingsTable : LookupTable<string, string>
     {
-        public SettingsTable(string path) : base(path)
-        {
-        }
+        public override string FileName => "settings";
+        public override bool RequiresTemplateFile => true;
 
-        public Dictionary<string, string> GetAllSettings () 
-        {
-            return _lookup;
-        }
+        public Dictionary<string, string> Settings => _lookup;
     }
 }

@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
+﻿using System.Net;
 using System.Text;
 using System.Threading;
+using System.Net.Sockets;
 
-namespace BrackeysBot.Listeners
+namespace BrackeysBot.Modules
 {
     public class ArchiveListener
     {

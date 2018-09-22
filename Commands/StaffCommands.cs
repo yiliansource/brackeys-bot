@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using Discord;
 using Discord.Commands;
 
 namespace BrackeysBot.Commands
@@ -36,7 +35,7 @@ namespace BrackeysBot.Commands
         [HelpData("viewsettings", "Views all registered settings.", AllowedRoles = UserType.Staff)]
         public async Task ViewSettings() 
         {
-            var allsettings = _settings.GetAllSettings();
+            var allsettings = _settings.Settings;
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Settings:");
