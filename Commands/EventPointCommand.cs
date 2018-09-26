@@ -24,6 +24,27 @@ namespace BrackeysBot.Commands
             _pointTable = pointTable;
             _navigator = navigator;
         }
+
+        [Command("points")]
+        [HelpData("points", "Displays your current event points.", AllowedRoles = UserType.Everyone)]
+        public async Task DisplayEventPoints()
+        {
+            var user = Context.User;
+            int points = _pointTable.GetPoints(user);
+
+            string pointsDisplay = $"{ points } point{ (points != 1 ? "s" : "") }";
+            await ReplyAsync($"{ (user as IGuildUser).GetDisplayName() }, you have { pointsDisplay }.");
+        }
+
+        [Command("points")]
+        [HelpData("points <user>", "Displays the points of a specific user.", AllowedRoles = UserType.Everyone)]
+        public async Task DisplayEventPoints(SocketGuildUser user)
+        {
+            int points = _pointTable.GetPoints(user);
+
+            string pointsDisplay = $"{ points } point{ (points != 1 ? "s" : "") }";
+            await ReplyAsync($"{ (user as IGuildUser).GetDisplayName() } has { pointsDisplay }.");
+        }
         
         [Command("eventpoints"), Alias("ep")]
         [HelpData("eventpoints (add / remove / set) <user> <value>", "Modifies a user's event points.", AllowedRoles = UserType.Staff)]
@@ -51,10 +72,19 @@ namespace BrackeysBot.Commands
                 .WithDescription($"{ UserHelper.GetDisplayName(user) } has { _pointTable.GetPoints(user) } event points.");
 
             await ReplyAsync(string.Empty, false, builder);
+
+            // If the settings tell you to automatically update the roles, do it.
+            if (_settings.Has("top-autoupdate"))
+            {
+                if (bool.Parse(_settings.Get("top-autoupdate")))
+                {
+                    await UpdateTopUsersWithRoles(false);
+                }
+            }
         }
 
         [Command("updateeventroles"), Alias("uer")]
-        [HelpData("eventupdateroles [with-reply]", "Updates the top users of the leaderboard with the event top role, and conditionally includes a reply with the updated users.", AllowedRoles = UserType.Staff)]
+        [HelpData("updateeventroles [with-reply]", "Updates the top users of the leaderboard with the event top role, and conditionally includes a reply with the updated users.", AllowedRoles = UserType.Staff)]
         public async Task UpdateTopUsersWithRoles(bool withReply = true)
         {
             // Fetch the setting variables
@@ -85,18 +115,19 @@ namespace BrackeysBot.Commands
 
             if (withReply)
             {
+                string topReply = string.Join(", ", newTop.Select(u => u.GetDisplayName()).ToArray());
+                string exReply = string.Join(", ", exTop.Select(u => u.GetDisplayName()).ToArray());
+
                 EmbedBuilder reply = new EmbedBuilder()
                     .WithColor(new Color(162, 219, 160))
                     .WithTitle("Event Roles Updated!")
-                    .AddField($"**New Top { topRoleMaxCount } Users**", string.Join(", ", newTop.Select(u => u.GetDisplayName()).ToArray()))
-                    .AddField($"**New Ex { topRoleMaxCount } Users**", string.Join(", ", exTop.Select(u => u.GetDisplayName()).ToArray()));
+                    .AddField($"**New Top { topRoleMaxCount } Users**", string.IsNullOrEmpty(topReply) ? "No changes made." : topReply)
+                    .AddField($"**New Ex { topRoleMaxCount } Users**", string.IsNullOrEmpty(exReply) ? "No changes made." : exReply);
 
                 await ReplyAsync(string.Empty, false, reply);
             }
         }
-
-
-
+        
         [Command("leaderboard"), Alias("top")]
         [HelpData("leaderboard [starting-rank]", "Shows the leaderboard, either from rank 1, or from a specified rank.")]
         public async Task ShowLeaderboard(int startingRank = 1)
