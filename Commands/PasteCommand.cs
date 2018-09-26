@@ -143,7 +143,9 @@ namespace BrackeysBot.Commands
         /// </summary>
         public static bool HasCodeblockFormat(string message)
         {
-            return _codeblockRegex.IsMatch(message);
+            return _codeblockRegex.IsMatch(message)
+                && message.StartsWith(CODEBLOCK_IDENTIFIER)
+                && message.EndsWith(CODEBLOCK_IDENTIFIER);
         }
 
         /// <summary>
