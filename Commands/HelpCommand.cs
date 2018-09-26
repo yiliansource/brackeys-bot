@@ -69,7 +69,7 @@ namespace BrackeysBot.Commands
             EmbedBuilder commandDialog = GetCustomCommandDialog();
 
             var msg = await ReplyAsync(string.Empty, false, commandDialog);
-            _ = msg.TimedDeletion(30 * 1000);
+            _ = msg.TimedDeletion(20 * 1000);
         }
         
         /// <summary>
