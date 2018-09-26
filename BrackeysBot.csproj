@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Commands\Obsolete\HasteCommand.cs" />
     <Compile Remove="Commands\Obsolete\KarmaCommand.cs" />
     <Compile Remove="Commands\Obsolete\LeaderboardCommand.cs" />
     <Compile Remove="Commands\Obsolete\PointsCommand.cs" />
@@ -14,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Commands\Obsolete\HasteCommand.cs" />
     <None Include="Commands\Obsolete\KarmaCommand.cs" />
     <None Include="Commands\Obsolete\LeaderboardCommand.cs" />
     <None Include="Commands\Obsolete\PointsCommand.cs" />
