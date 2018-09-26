@@ -57,7 +57,7 @@ namespace BrackeysBot.Modules
 
             if (context.IsPrivate)
             {
-                await context.Channel.SendMessageAsync ("You can't use BrackeysBot in DMs.");
+                await context.Channel.SendMessageAsync ("I'm sorry but you can't use command here since they don't work in DMs (not my fault, I swear :eyes:). Please run the commands in our server :smile:");
                 return;
             }
 
