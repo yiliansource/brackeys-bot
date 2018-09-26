@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -12,11 +13,13 @@ namespace BrackeysBot.Commands
     public class HelpCommand : ModuleBase
     {
         private readonly CommandService _commands;
+        private readonly CustomizedCommandTable _customCommands;
         private readonly IConfiguration _configuration;
 
-        public HelpCommand(CommandService commands, IConfiguration configuration)
+        public HelpCommand(CommandService commands, CustomizedCommandTable customCommands, IConfiguration configuration)
         {
             _commands = commands;
+            _customCommands = customCommands;
             _configuration = configuration;
         }
 
@@ -24,15 +27,22 @@ namespace BrackeysBot.Commands
         [HelpData("help", "Displays this menu.")]
         public async Task Help ()
         {
+            EmbedBuilder commandDialog = GetCustomCommandDialog();
             EmbedBuilder helpDialog = GetHelpDialog(UserType.Everyone);
             try
             {
+                await Context.User.SendMessageAsync(string.Empty, false, commandDialog);
                 await Context.User.SendMessageAsync(string.Empty, false, helpDialog);
+
+                await ReplyAsync("Help has been sent to your DMs! :white_check_mark:");
             }
             catch
             {
-                var msg = await ReplyAsync(string.Empty, false, helpDialog);
-                _ = msg.TimedDeletion(15000);
+                var msg1 = await ReplyAsync(string.Empty, false, commandDialog);
+                var msg2 = await ReplyAsync(string.Empty, false, helpDialog);
+
+                _ = msg1.TimedDeletion(30 * 1000);
+                _ = msg2.TimedDeletion(30 * 1000);
             }
         }
 
@@ -48,8 +58,37 @@ namespace BrackeysBot.Commands
             catch
             {
                 var msg = await ReplyAsync(string.Empty, false, helpDialog);
-                _ = msg.TimedDeletion(15000);
+                _ = msg.TimedDeletion(30 * 1000);
             }
+        }
+
+        [Command("customcommands")]
+        [HelpData("customcommands", "Displays all the registered custom commands.")]
+        public async Task CustomCommands()
+        {
+            EmbedBuilder commandDialog = GetCustomCommandDialog();
+
+            var msg = await ReplyAsync(string.Empty, false, commandDialog);
+            _ = msg.TimedDeletion(20 * 1000);
+        }
+        
+        /// <summary>
+        /// Returns the dialog displaying the custom commands.
+        /// </summary>
+        private EmbedBuilder GetCustomCommandDialog()
+        {
+            EmbedBuilder eb = new EmbedBuilder()
+                .WithColor(new Color(165, 79, 121))
+                .WithTitle("Custom Commands");
+
+            StringBuilder commands = new StringBuilder();
+            foreach (string command in _customCommands.CommandNames)
+            {
+                commands.AppendLine($"{command}");
+            }
+            eb.WithDescription(commands.ToString());
+
+            return eb;
         }
 
         /// <summary>
