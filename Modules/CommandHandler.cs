@@ -54,6 +54,13 @@ namespace BrackeysBot.Modules
                 && !msg.Content.ToLower().StartsWith("thank")) return;
 
             CommandContext context = new CommandContext(client, msg);
+
+            if (context.IsPrivate)
+            {
+                await context.Channel.SendMessageAsync ("You can't use BrackeysBot in DMs.");
+                return;
+            }
+
             CommandInfo executedCommand = null;
             try
             {
