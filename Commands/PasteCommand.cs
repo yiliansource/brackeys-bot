@@ -47,7 +47,7 @@ namespace BrackeysBot.Commands
     {
         private const string PASTE_EE_URL = "https://api.paste.ee/v1/pastes";
         private const string PASTE_EE_API_KEY = "athpICq32L0e7FByPACnfniTkOX2aGgLROHwd10v9";
-        private const int MASSIVE_THRESHOLD = 300;
+        private const int MASSIVE_THRESHOLD = 500;
         private const string CODEBLOCK_IDENTIFIER = "```";
         private static readonly Regex _codeblockRegex = new Regex($@"(?:{ CODEBLOCK_IDENTIFIER })(\w+)?\n([^{ CODEBLOCK_IDENTIFIER[0] }]*)", RegexOptions.Compiled);
 

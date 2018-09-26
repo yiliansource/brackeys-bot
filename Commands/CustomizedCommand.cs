@@ -8,7 +8,7 @@ namespace BrackeysBot.Commands
 {
     public class CustomizedCommand : ModuleBase
     {
-        private CustomizedCommandTable _customCommands;
+        private readonly CustomizedCommandTable _customCommands;
 
         public CustomizedCommand(CustomizedCommandTable customCommands)
         {
@@ -45,24 +45,6 @@ namespace BrackeysBot.Commands
             {
                 await ReplyAsync("Custom command does not exist.");
             }
-        }
-
-        [Command("cclist")]
-        [HelpData("cclist", "Lists all registered custom commands", AllowedRoles = UserType.Staff)]
-        public async Task ListCustomCommands()
-        {
-            EmbedBuilder eb = new EmbedBuilder();
-
-            eb.WithTitle("Custom Commands");
-
-            StringBuilder commands = new StringBuilder();
-            foreach (string command in _customCommands.CommandNames)
-            {
-                commands.AppendLine($"{command}");
-            }
-            eb.WithDescription(commands.ToString());
-
-            await ReplyAsync(string.Empty, false, eb);
         }
     }
 }
