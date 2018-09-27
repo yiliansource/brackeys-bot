@@ -10,6 +10,6 @@ namespace BrackeysBot
         public override string FileName => "settings";
         public override bool RequiresTemplateFile => true;
 
-        public Dictionary<string, string> Settings => _lookup;
+        public Dictionary<string, string> Settings => Table;
     }
 }

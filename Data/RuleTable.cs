@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 
 namespace BrackeysBot
 {
@@ -13,6 +13,10 @@ namespace BrackeysBot
         /// <summary>
         /// Returns the rules from the table.
         /// </summary>
-        public Dictionary<int, string> Rules => _lookup;
+        public string[] Rules 
+            => Table
+                .OrderBy(k => k.Key)
+                .Select(k => k.Value)
+                .ToArray();
     }
 }

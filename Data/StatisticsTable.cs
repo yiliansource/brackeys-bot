@@ -15,7 +15,7 @@ namespace BrackeysBot
         /// </summary>
         public IEnumerable<KeyValuePair<string, uint>> GetSortedStatistics ()
         {
-            return _lookup
+            return Table
                 .OrderByDescending(t => t.Value);
         }
     }

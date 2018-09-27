@@ -25,8 +25,9 @@ namespace BrackeysBot
 
         private const string FILETYPE = "json";
         private const string TEMPLATE_IDENTIFIER = "template-";
-        
-        protected Dictionary<TKey, TValue> _lookup;
+
+        protected Dictionary<TKey, TValue> Table => _lookup;
+        private Dictionary<TKey, TValue> _lookup;
 
         public LookupTable()
         {

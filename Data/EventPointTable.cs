@@ -20,7 +20,7 @@ namespace BrackeysBot
         /// <summary>
         /// Returns the number of users registered in the table.
         /// </summary>
-        public int RegisteredUsers => _lookup.Keys.Count;
+        public int RegisteredUsers => Table.Keys.Count;
 
         private static readonly DateTime _dataStoreOffset = new DateTime(2000, 1, 1, 0, 0, 0);
 
@@ -126,7 +126,7 @@ namespace BrackeysBot
         /// </summary>
         public IOrderedEnumerable<KeyValuePair<ulong, int>> GetLeaderboard()
         {
-            return _lookup.Keys
+            return Table.Keys
                 .ToDictionary(u => u, u => GetPointsCappedByDayCount(u))
                 .OrderByDescending(k => k.Value);
         }
@@ -151,7 +151,7 @@ namespace BrackeysBot
         /// </summary>
         public void CleanupPointLookups()
         {
-            foreach (ulong userId in _lookup.Keys)
+            foreach (ulong userId in Table.Keys)
             {
                 CleanupPointLookup(userId);
             }
