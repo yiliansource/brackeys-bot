@@ -142,7 +142,8 @@ namespace BrackeysBot.Modules
             if (!result.IsSuccess)
             {
                 if (result.Error == CommandError.UnknownCommand
-                    || result.Error == CommandError.BadArgCount)
+                    || result.Error == CommandError.BadArgCount 
+                    || result.Error == CommandError.ParseFailed)
                 {
                     return;
                 }
@@ -153,7 +154,6 @@ namespace BrackeysBot.Modules
                     .WithColor(Color.Red);
 
                 IMessage errorMsg = await context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
-                _ = errorMsg.TimedDeletion(3000);
             }
             else
             {

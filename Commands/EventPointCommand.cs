@@ -132,6 +132,17 @@ namespace BrackeysBot.Commands
         [HelpData("leaderboard [starting-rank]", "Shows the leaderboard, either from rank 1, or from a specified rank.")]
         public async Task ShowLeaderboard(int startingRank = 1)
         {
+            if (_pointTable.RegisteredUsers < 1)
+            {
+                var eb = new EmbedBuilder()
+                    .WithColor(new Color(162, 219, 160))
+                    .WithTitle("This place is empty.")
+                    .WithDescription("Seems like no one is one the leaderboard just yet.");
+
+                await ReplyAsync(string.Empty, false, eb);
+                return;
+            }
+
             int startingRankIndex = Math.Clamp(startingRank - 1, 0, _pointTable.RegisteredUsers - 1);
 
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
@@ -139,8 +150,8 @@ namespace BrackeysBot.Commands
             var builder = await BuildForNextPlaces(_pointTable, Context.Guild, startingRankIndex, pagesize);
             var message = await ReplyAsync(string.Empty, false, builder);
 
-            await message.AddReactionAsync(new Emoji(LEFT_ARROW));
-            await message.AddReactionAsync(new Emoji(RIGHT_ARROW));
+            _ = message.AddReactionAsync(new Emoji(LEFT_ARROW));
+            _ = message.AddReactionAsync(new Emoji(RIGHT_ARROW));
 
             _navigator.AddTrackedMessage(new LeaderboardNavigator.LeaderboardDisplayData() { DisplayIndex = startingRankIndex, Message = message, Guild = Context.Guild });
         }
