@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
@@ -39,38 +37,20 @@ namespace BrackeysBot.Commands
             }
         }
 
-        [Command("addrule")]
-        [HelpData("addrule <id> <content>", "Creates a rule.", AllowedRoles = UserType.Staff)]
-        public async Task AddRule (int id, [Remainder]string contents)
-        {
-            if (_ruleTable.Has(id))
-            {
-                throw new System.Exception("Rule already exists.");
-            }
-            else
-            {
-                _ruleTable.Add(id, contents);
-                await ReplyAsync("Rule created.");
-            }
-
-            await UpdateOriginRuleMessage(Context.Guild);
-        }
-
-        [Command("setrule")]
+        [Command("setrule"), Alias("addrule")]
         [HelpData("setrule <id> <content>", "Updates a rule.", AllowedRoles = UserType.Staff)]
         public async Task SetRule (int id, [Remainder]string contents)
         {
             if (_ruleTable.Has(id))
             {
                 _ruleTable.Set(id, contents);
-                await ReplyAsync("Rule updated.");
+                await ReplyAsync($"I updated rule { id } for you!");
             }
             else
             {
-                throw new System.Exception("Invalid rule ID.");
+                _ruleTable.Add(id, contents);
+                await ReplyAsync($"I created rule { id } for you!");
             }
-
-            await UpdateOriginRuleMessage(Context.Guild);
         }
 
         [Command("removerule")]
@@ -86,59 +66,21 @@ namespace BrackeysBot.Commands
             {
                 throw new System.Exception("Rule doesn't exist.");
             }
-
-            await UpdateOriginRuleMessage(Context.Guild);
         }
 
-        [Command("allrules")]
-        [HelpData("allrules", "Prints all the rules.", AllowedRoles = UserType.Staff)]
+        [Command("rules")]
+        [HelpData("rules", "Prints all the rules.", AllowedRoles = UserType.StaffGuru)]
         public async Task PrintAllRules ()
         {
-            await ReplyAsync(BuildRuleMessage());
-        }
-
-        /// <summary>
-        /// Builds the rule message.
-        /// </summary>
-        private string BuildRuleMessage ()
-        {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine("**Welcome to the official Brackeys discord server!**");
-            builder.AppendLine();
-            builder.AppendLine("Please take a moment to read the rules.");
 
-            Dictionary<int, string> rules = _ruleTable.Rules;
-            foreach (int id in rules.Keys.OrderBy(k => k))
+            string[] rules = _ruleTable.Rules;
+            for (int i = 0; i < rules.Length; i++)
             {
-                builder.AppendLine();
-                builder.AppendLine($"**Rule { id }**");
-                builder.AppendLine(rules[id]);
+                builder.AppendLine($"{ i } - { rules[i] }");
             }
 
-            return builder.ToString();
-        }
-        /// <summary>
-        /// Gets the origin rule message.
-        /// </summary>
-        private async Task<IUserMessage> GetOriginMessage(IGuild guild)
-        {
-            ulong id = ulong.Parse(_settings["rulemessage-id"]);
-            var channels = await guild.GetChannelsAsync();
-            var infoChannel = channels.First(c => c.Name.ToLower() == "info");
-            var message = await (infoChannel as IMessageChannel).GetMessageAsync(id);
-
-            return message as IUserMessage;
-        }
-
-        /// <summary>
-        /// Updates the origin rule message with the rules from the rule table.
-        /// </summary>
-        private async Task UpdateOriginRuleMessage (IGuild guild)
-        {
-            var message = await GetOriginMessage(guild);
-            string rules = BuildRuleMessage();
-
-            await message.ModifyAsync(m => m.Content = rules);
+            await ReplyAsync(builder.ToString());
         }
     }
 }

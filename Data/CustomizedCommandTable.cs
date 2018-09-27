@@ -13,6 +13,6 @@ namespace BrackeysBot
         /// Returns the names of all registered commands.
         /// </summary>
         public string[] CommandNames
-            => _lookup.Keys.ToArray();
+            => Table.Keys.ToArray();
     }
 }
