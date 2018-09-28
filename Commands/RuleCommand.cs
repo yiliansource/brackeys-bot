@@ -77,7 +77,7 @@ namespace BrackeysBot.Commands
             string[] rules = _ruleTable.Rules;
             for (int i = 0; i < rules.Length; i++)
             {
-                builder.AppendLine($"{ i } - { rules[i] }");
+                builder.AppendLine($"{ i + 1 } - { rules[i] }");
             }
 
             await ReplyAsync(builder.ToString());
