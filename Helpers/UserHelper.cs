@@ -3,7 +3,7 @@ using System.Linq;
 
 using Discord;
 
-namespace BrackeysBot.Commands
+namespace BrackeysBot
 {
     /// <summary>
     /// Provides extension methods for discord users.

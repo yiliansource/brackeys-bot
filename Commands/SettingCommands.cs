@@ -6,11 +6,11 @@ using Discord.Commands;
 
 namespace BrackeysBot.Commands
 {
-    public class StaffCommands : ModuleBase
+    public class SettingCommands : ModuleBase
     {
         private readonly SettingsTable _settings;
 
-        public StaffCommands(SettingsTable settings)
+        public SettingCommands(SettingsTable settings)
         {
             _settings = settings;
         }
@@ -22,22 +22,38 @@ namespace BrackeysBot.Commands
             if (_settings.Has(name))
             {
                 _settings.Set(name, value);
+                await ReplyAsync("I updated the setting for you!");
             }
             else
             {
                 _settings.Add(name, value);
+                await ReplyAsync("I added the setting for you!");
             }
-
-            await ReplyAsync("Setting has been applied.");
         }
 
-        [Command("viewsettings")]
+        [Command("delete"), Alias("del")]
+        [HelpData("delete <name>", "Deletes a setting.", AllowedRoles = UserType.Staff)]
+        public async Task DeleteSetting(string name)
+        {
+            if (_settings.Has(name))
+            {
+                _settings.Remove(name);
+                await ReplyAsync("I removed the setting for you!");
+            }
+            else
+            {
+                await ReplyAsync("There is no such setting!");
+            }
+        }
+
+        [Command("viewsettings"), Alias("settings")]
         [HelpData("viewsettings", "Views all registered settings.", AllowedRoles = UserType.Staff)]
         public async Task ViewSettings() 
         {
             var allsettings = _settings.Settings;
 
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine("```");
             sb.AppendLine("Settings:");
             sb.AppendLine();
 
@@ -45,6 +61,8 @@ namespace BrackeysBot.Commands
             {
                 sb.AppendLine($"\"{ setting.Key }\": \"{ setting.Value }\"");
             }
+
+            sb.AppendLine("```");
 
             await ReplyAsync(sb.ToString());
         }

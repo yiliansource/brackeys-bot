@@ -18,7 +18,7 @@ namespace BrackeysBot
 {
     public sealed class BrackeysBot 
     {
-        public IConfiguration Configuration { get; set; }
+        public static IConfiguration Configuration { get; set; }
 
         public DataModule Data { get; set; }
         public CommandHandler Commands { get; set; }
@@ -58,9 +58,6 @@ namespace BrackeysBot
 
                 // Add the command service
                 .AddSingleton(Commands.Service)
-
-                // Add the configuration
-                .AddSingleton(Configuration)
 
                 // Add the singletons for the databases
                 .AddSingleton(Data.EventPoints)

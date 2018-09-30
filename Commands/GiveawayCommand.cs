@@ -13,8 +13,8 @@ namespace BrackeysBot.Commands
     {
         private readonly SettingsTable _settings;
 
-        private const string GIVEAWAY_EMOTE = "⭐";
-        private const string GIVEAWAY_MESSAGE_IDENTIFIER = "giveaway_messageid";
+        private const string GIVEAWAY_EMOTE_IDENTIFIER = "brackeys-emote";
+        private const string GIVEAWAY_MESSAGE_IDENTIFIER = "giveaway-messageid";
 
         private static List<ulong> _blacklistedUsers = new List<ulong>();
 
@@ -34,7 +34,8 @@ namespace BrackeysBot.Commands
             var botMessage = await ReplyAsync(message);
 
             // Find the giveaway emote and add it as a reaction
-            await botMessage.AddReactionAsync(new Emoji(GIVEAWAY_EMOTE));
+            var emote = _settings.Get(GIVEAWAY_EMOTE_IDENTIFIER);
+            await botMessage.AddReactionAsync(new Emoji(emote));
 
             // Save the giveaway message id
             if (!_settings.Has(GIVEAWAY_MESSAGE_IDENTIFIER))
@@ -133,13 +134,15 @@ namespace BrackeysBot.Commands
             var giveawayMessage = await Context.Channel.GetMessageAsync(messageId) as IUserMessage;
 
             // Get all users that reacted to the message with the giveaway emote
-            var giveawayUsers = await giveawayMessage.GetReactionUsersAsync(GIVEAWAY_EMOTE);
+            var emote = _settings.Get(GIVEAWAY_EMOTE_IDENTIFIER);
+            var giveawayUsers = await giveawayMessage.GetReactionUsersAsync(emote);
+
             // Project the users into IGuildUsers
             var guildUsers = await Context.Guild.GetUsersAsync(CacheMode.AllowDownload);
             var projectedGuildUsers = giveawayUsers.Select(u => guildUsers.First(g => g.Id == u.Id));
 
             // Filter out bots, blacklisted users and conditionally staff
-            var users = projectedGuildUsers.Where(u => !u.IsBot && !_blacklistedUsers.Contains(u.Id));
+            var users = projectedGuildUsers.Where(u => !(u.IsBot || _blacklistedUsers.Contains(u.Id)));
             if (!includeStaff) users = users.Where(u => !(u as IGuildUser)?.HasStaffRole() ?? false);
 
             // Randomize the users
