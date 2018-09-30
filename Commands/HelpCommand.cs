@@ -14,13 +14,11 @@ namespace BrackeysBot.Commands
     {
         private readonly CommandService _commands;
         private readonly CustomizedCommandTable _customCommands;
-        private readonly IConfiguration _configuration;
 
-        public HelpCommand(CommandService commands, CustomizedCommandTable customCommands, IConfiguration configuration)
+        public HelpCommand(CommandService commands, CustomizedCommandTable customCommands)
         {
             _commands = commands;
             _customCommands = customCommands;
-            _configuration = configuration;
         }
 
         [Command ("help")]
@@ -99,9 +97,9 @@ namespace BrackeysBot.Commands
             EmbedBuilder eb = new EmbedBuilder()
                 .WithColor(new Color(247, 22, 131))
                 .WithTitle("BrackeysBot")
-                .WithDescription("The official Brackeys server bot. Commands are:");
+                .WithDescription("The official Brackeys Discord bot! Commands are:");
 
-            string prefix = _configuration["prefix"];
+            string prefix = BrackeysBot.Configuration["prefix"];
 
             var commands = GetCommandDataCollection(userType);
             foreach (var command in commands)

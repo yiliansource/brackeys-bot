@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 
 using Discord;
 
-namespace BrackeysBot.Commands
+namespace BrackeysBot
 {
     /// <summary>
     /// Provides extension methods for Discord messages.

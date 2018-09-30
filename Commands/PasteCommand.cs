@@ -46,7 +46,6 @@ namespace BrackeysBot.Commands
     public class PasteCommand : ModuleBase
     {
         private const string PASTE_EE_URL = "https://api.paste.ee/v1/pastes";
-        private const string PASTE_EE_API_KEY = "athpICq32L0e7FByPACnfniTkOX2aGgLROHwd10v9";
         private const int MASSIVE_THRESHOLD = 500;
         private const string CODEBLOCK_IDENTIFIER = "```";
         private static readonly Regex _codeblockRegex = new Regex($@"(?:{ CODEBLOCK_IDENTIFIER })(\w+)?\n([^{ CODEBLOCK_IDENTIFIER[0] }]*)", RegexOptions.Compiled);
@@ -86,7 +85,7 @@ namespace BrackeysBot.Commands
             WebRequest request = WebRequest.Create(PASTE_EE_URL);
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.Headers.Add($"X-Auth-Token: { PASTE_EE_API_KEY }");
+            request.Headers.Add($"X-Auth-Token: { BrackeysBot.Configuration["paste-ee-api-key"] }");
 
             PasteRequest bodyData = new PasteRequest()
             {
