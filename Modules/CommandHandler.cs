@@ -50,8 +50,7 @@ namespace BrackeysBot.Modules
 
             int argPos = 0;
 
-            if (!msg.HasStringPrefix(CommandPrefix, ref argPos)
-                && !msg.Content.ToLower().StartsWith("thank")) return;
+            if (!msg.HasStringPrefix(CommandPrefix, ref argPos)) return;
 
             CommandContext context = new CommandContext(client, msg);
 
