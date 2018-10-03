@@ -14,6 +14,7 @@ namespace BrackeysBot
         {
             return JsonConvert.DeserializeObject<CooldownData>(File.ReadAllText(path));
         }
+
         public void Save(string path)
         {
             File.WriteAllText("cooldowns.json", JsonConvert.SerializeObject(this, Formatting.Indented));
