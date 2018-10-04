@@ -137,7 +137,7 @@ namespace BrackeysBot.Commands
                 var eb = new EmbedBuilder()
                     .WithColor(new Color(162, 219, 160))
                     .WithTitle("This place is empty.")
-                    .WithDescription("Seems like no one is one the leaderboard just yet.");
+                    .WithDescription("Seems like no one is on the leaderboard just yet.");
 
                 await ReplyAsync(string.Empty, false, eb);
                 return;
