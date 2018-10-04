@@ -75,6 +75,8 @@ namespace BrackeysBot.Commands
 
             await ReplyAsync($"{ (Context.User as IGuildUser).GetDisplayName() }, I created a paste for you! <{ url }>");
             await Context.Message.DeleteAsync();
+
+            
         }
 
         /// <summary>
