@@ -10,11 +10,12 @@ namespace BrackeysBot.Commands.Moderation
     {
 
         [Command("ban")]
-        [HelpData("ban <member> <days of message history to delete> <reason> (optional)", "Ban a member and deletes the specified amount of days of their message history.", AllowedRoles = UserType.Staff)]
-        public async Task Ban(IGuildUser user, int pruneDays, [Optional] [Remainder] string reason)
+        [HelpData("ban <member> <reason> (optional)", "Ban a member.", AllowedRoles = UserType.Staff)]
+        public async Task Ban(IGuildUser user, [Optional] [Remainder] string reason)
         {
-            await Context.Guild.AddBanAsync(user, pruneDays, reason);
-            IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully banned {user.GetDisplayName()}.");
+            string _displayName = user.GetDisplayName();
+            await Context.Guild.AddBanAsync(user, 7, reason);
+            IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully banned {_displayName}.");
             _ = messageToDel.TimedDeletion(3000);
         }
     }

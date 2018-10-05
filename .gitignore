@@ -11,6 +11,8 @@ cooldowns.json
 rules.json
 settings.json
 custom-commands.json
+mute.json
+event-points.json
 
 # Exclude .vscode folder
 .vscode/
