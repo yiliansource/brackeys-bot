@@ -19,7 +19,7 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("tempmute")]
-        [HelpData("tempmute <member> <duration in hours> <reason> (optional)", "Mute a member for a specified amount of time.", AllowedRoles = UserType.Staff)]
+        [HelpData("tempmute <member> <duration in hours> <reason> (optional)", "Mute a member for the specified amount of time.", AllowedRoles = UserType.Staff)]
         public async Task TempMute(IGuildUser user, double duration, [Optional] [Remainder] string reason)
         {
             _mutes.Set(user.Id.ToString() + "," + Context.Guild.Id.ToString(), (DateTime.UtcNow + new TimeSpan((long)(duration * TimeSpan.TicksPerHour))).ToBinary().ToString());

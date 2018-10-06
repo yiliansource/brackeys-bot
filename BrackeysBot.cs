@@ -69,6 +69,7 @@ namespace BrackeysBot
                 .AddSingleton(Data.Rules)
                 .AddSingleton(Data.UnityDocs)
                 .AddSingleton(Data.Mutes)
+                .AddSingleton(Data.Bans)
 
                 .AddSingleton(_leaderboardNavigator)
 
@@ -84,6 +85,7 @@ namespace BrackeysBot
             RegisterMassiveCodeblockHandle();
             RegisterLeaderboardNavigationHandle();
             _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), System.Threading.CancellationToken.None);
+            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerSecond * 5), System.Threading.CancellationToken.None);
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -131,6 +133,38 @@ namespace BrackeysBot
                                SocketGuild guild = _client.GetGuild(ulong.Parse(current.Key.Split(',')[1]));
                                SocketGuildUser user = guild.GetUser(ulong.Parse(current.Key.Split(',')[0]));
                                await user.Unmute();
+                               Data.Mutes.Remove(current.Key);
+                           }
+                       }
+                       catch { }
+                   });
+                await Task.Delay(interval, cancellationToken);
+            }
+        }
+
+        public async Task PeriodicCheckBan(TimeSpan interval, System.Threading.CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                Parallel.For(0, Data.Bans.Bans.Count,
+                   async index =>
+                   {
+                       try
+                       {
+                           var current = Data.Bans.Bans.ElementAt(index);
+                           if (DateTime.UtcNow.ToBinary() >= long.Parse(current.Value))
+                           {
+                               SocketGuild guild = _client.GetGuild(ulong.Parse(current.Key.Split(',')[1]));
+                               IUser user = null;
+                               foreach (IBan ban in await guild.GetBansAsync())
+                               {
+                                   if (ban.User.Id == ulong.Parse(current.Key.Split(',')[0]))
+                                   {
+                                       user = ban.User;
+                                   }
+                               }
+                               await guild.RemoveBanAsync(user);
+                               Data.Bans.Remove(current.Key);
                            }
                        }
                        catch { }

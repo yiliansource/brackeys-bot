@@ -15,6 +15,8 @@
 
         public MuteTable Mutes { get; private set; }
 
+        public BanTable Bans { get; private set; }
+
         private static readonly string[] templateFiles = { "template-appsettings.json", "template-cooldowns.json" };
 
         public DataModule()
@@ -33,6 +35,7 @@
             CustomCommands = new CustomizedCommandTable();
             Rules = new RuleTable();
             Mutes = new MuteTable();
+            Bans = new BanTable();
 
             UnityDocs = new UnityDocs("manualReference.json", "scriptReference.json");
             Cooldowns = CooldownData.FromPath("cooldowns.json");
