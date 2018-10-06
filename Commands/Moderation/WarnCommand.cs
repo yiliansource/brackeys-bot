@@ -14,7 +14,7 @@ namespace BrackeysBot.Commands.Moderation
             _warns = warns;
         }
         [Command("warn")]
-        [HelpData("warn <member> <severity (1-3)> <reason> (optional)", "Warns a user.", AllowedRoles = UserType.Staff)]
+        [HelpData("warn <member> <severity (how many infraction points to give)> <reason> (optional)", "Warns a user.", AllowedRoles = UserType.Staff)]
         public async Task Warn(IGuildUser user, int severity, [Optional] [Remainder] string reason)
         {
             string warner = ((IGuildUser)Context.Message.Author).GetDisplayName();
