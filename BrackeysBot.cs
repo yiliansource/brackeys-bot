@@ -70,6 +70,7 @@ namespace BrackeysBot
                 .AddSingleton(Data.UnityDocs)
                 .AddSingleton(Data.Mutes)
                 .AddSingleton(Data.Bans)
+                .AddSingleton(Data.Warns)
 
                 .AddSingleton(_leaderboardNavigator)
 
@@ -85,7 +86,7 @@ namespace BrackeysBot
             RegisterMassiveCodeblockHandle();
             RegisterLeaderboardNavigationHandle();
             _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), System.Threading.CancellationToken.None);
-            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerSecond * 5), System.Threading.CancellationToken.None);
+            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerMinute * 3), System.Threading.CancellationToken.None);
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
