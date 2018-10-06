@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Discord;
+using BrackeysBot.Modules;
 
 namespace BrackeysBot
 {
@@ -10,7 +12,7 @@ namespace BrackeysBot
     /// </summary>
     public static class UserHelper
     {
-        public static SettingsTable Settings { get; set; }
+        public static DataModule Data { get; set; }
 
         /// <summary>
         /// Returns the displayed name for the specified user.
@@ -25,7 +27,7 @@ namespace BrackeysBot
         /// </summary>
         public static void EnsureStaff(this IGuildUser user)
         {
-            user.EnsureRole(Settings["staff-role"]);
+            user.EnsureRole(Data.Settings["staff-role"]);
         }
         /// <summary>
         /// Ensures that the user has any of the given roles.
@@ -62,7 +64,26 @@ namespace BrackeysBot
         /// </summary>
         public static bool HasStaffRole(this IGuildUser user)
         {
-            return HasRole(user, Settings["staff-role"]);
+            return HasRole(user, Data.Settings["staff-role"]);
+        }
+
+        /// <summary>
+        /// Mutes a user.
+        /// </summary>
+
+        public static async Task Mute (this IGuildUser user)
+        {
+            await user.AddRoleAsync(user.Guild.Roles.First(x => x.Name == "Muted"));
+        }
+
+        public static async Task Unmute (this IGuildUser user)
+        {
+            await user.RemoveRoleAsync(user.Guild.Roles.First(x => x.Name == "Muted"));
+        }
+
+        public static long GetMuteTime (this IGuildUser user)
+        {
+            return long.Parse(Data.Mutes.GetOrDefault(user.Id.ToString() + "," + user.Guild.Id.ToString()));
         }
     }
 }
