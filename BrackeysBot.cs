@@ -70,6 +70,7 @@ namespace BrackeysBot
                 .AddSingleton(Data.UnityDocs)
                 .AddSingleton(Data.Mutes)
                 .AddSingleton(Data.Bans)
+                .AddSingleton(Data.Warns)
 
                 .AddSingleton(_leaderboardNavigator)
 
