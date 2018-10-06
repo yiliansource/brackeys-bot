@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,9 +15,9 @@ using Discord.WebSocket;
 using BrackeysBot.Commands;
 using BrackeysBot.Modules;
 
-namespace BrackeysBot 
+namespace BrackeysBot
 {
-    public sealed class BrackeysBot 
+    public sealed class BrackeysBot
     {
         public static IConfiguration Configuration { get; set; }
 
@@ -31,7 +32,7 @@ namespace BrackeysBot
         /// <summary>
         /// Creates a new instance of the bot and initializes the configuration.
         /// </summary>
-        public BrackeysBot ()
+        public BrackeysBot()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
@@ -43,7 +44,7 @@ namespace BrackeysBot
         /// <summary>
         /// Starts the execution of the bot.
         /// </summary>
-        public async Task Start () 
+        public async Task Start()
         {
             _client = new DiscordSocketClient();
 
@@ -67,6 +68,7 @@ namespace BrackeysBot
                 .AddSingleton(Data.Cooldowns)
                 .AddSingleton(Data.Rules)
                 .AddSingleton(Data.UnityDocs)
+                .AddSingleton(Data.Mutes)
 
                 .AddSingleton(_leaderboardNavigator)
 
@@ -76,23 +78,65 @@ namespace BrackeysBot
             Commands.ServiceProvider = _services;
             await Commands.InstallCommands(_client);
 
-            UserHelper.Settings = Data.Settings;
+            UserHelper.Data = Data;
 
+            RegisterMuteOnJoin();
             RegisterMassiveCodeblockHandle();
             RegisterLeaderboardNavigationHandle();
+            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), System.Threading.CancellationToken.None);
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
             await _client.StartAsync();
         }
-        
-        
+
+
         /// <summary>
         /// Registers a method to handle massive codeblocks.
         /// </summary>
-        private void RegisterMassiveCodeblockHandle ()
+        private void RegisterMassiveCodeblockHandle()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
+        }
+
+        /// <summary>
+        /// Registers a method to mute people who were muted but decided to be clever
+        /// and wanted to rejoin to lose the muted role.
+        /// </summary>
+        private void RegisterMuteOnJoin()
+        {
+            _client.UserJoined += CheckMuteOnJoin;
+        }
+
+        async Task CheckMuteOnJoin(SocketGuildUser user)
+        {
+            if (DateTime.UtcNow.ToBinary() < user.GetMuteTime())
+                await user.Mute();
+            else
+                await user.Unmute();
+        }
+
+        public async Task PeriodicCheckMute(TimeSpan interval, System.Threading.CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                Parallel.For(0, Data.Mutes.Mutes.Count,
+                   async index =>
+                   {
+                       try
+                       {
+                           var current = Data.Mutes.Mutes.ElementAt(index);
+                           if (DateTime.UtcNow.ToBinary() >= long.Parse(current.Value))
+                           {
+                               SocketGuild guild = _client.GetGuild(ulong.Parse(current.Key.Split(',')[1]));
+                               SocketGuildUser user = guild.GetUser(ulong.Parse(current.Key.Split(',')[0]));
+                               await user.Unmute();
+                           }
+                       }
+                       catch { }
+                   });
+                await Task.Delay(interval, cancellationToken);
+            }
         }
 
         /// <summary>
@@ -106,7 +150,7 @@ namespace BrackeysBot
         /// <summary>
         /// Handles a massive codeblock.
         /// </summary>
-        private async Task HandleMassiveCodeblock (SocketMessage s)
+        private async Task HandleMassiveCodeblock(SocketMessage s)
         {
             if (!(s is SocketUserMessage msg)) return;
 
