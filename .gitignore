@@ -12,6 +12,7 @@ rules.json
 settings.json
 custom-commands.json
 mute.json
+bans.json
 event-points.json
 
 # Exclude .vscode folder

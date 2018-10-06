@@ -78,12 +78,12 @@ namespace BrackeysBot
             Commands.ServiceProvider = _services;
             await Commands.InstallCommands(_client);
 
-            UserHelper.Settings = Data.Settings;
+            UserHelper.Data = Data;
 
             RegisterMuteOnJoin();
             RegisterMassiveCodeblockHandle();
             RegisterLeaderboardNavigationHandle();
-            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerSecond * 5), System.Threading.CancellationToken.None);
+            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), System.Threading.CancellationToken.None);
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -110,10 +110,10 @@ namespace BrackeysBot
 
         async Task CheckMuteOnJoin(SocketGuildUser user)
         {
-            if (DateTime.UtcNow.ToBinary() < long.Parse(Data.Mutes.GetOrDefault(user.Id.ToString() + "," + user.Guild.Id.ToString())))
-                await user.AddRoleAsync(user.Guild.Roles.FirstOrDefault(x => x.Name == "Muted"));
+            if (DateTime.UtcNow.ToBinary() < user.GetMuteTime())
+                await user.Mute();
             else
-                await user.RemoveRoleAsync(user.Guild.Roles.FirstOrDefault(x => x.Name == "Muted"));
+                await user.Unmute();
         }
 
         public async Task PeriodicCheckMute(TimeSpan interval, System.Threading.CancellationToken cancellationToken)
@@ -130,7 +130,7 @@ namespace BrackeysBot
                            {
                                SocketGuild guild = _client.GetGuild(ulong.Parse(current.Key.Split(',')[1]));
                                SocketGuildUser user = guild.GetUser(ulong.Parse(current.Key.Split(',')[0]));
-                               await user.RemoveRoleAsync(user.Guild.Roles.FirstOrDefault(x => x.Name == "Muted"));
+                               await user.Unmute();
                            }
                        }
                        catch { }
