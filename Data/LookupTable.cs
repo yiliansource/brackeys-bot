@@ -68,7 +68,9 @@ namespace BrackeysBot
         }
         public virtual bool Remove(TKey key)
         {
-            return _lookup.Remove(key);
+            bool exists = _lookup.Remove(key);
+            SaveData();
+            return exists;    
         }
 
         /// <summary>
