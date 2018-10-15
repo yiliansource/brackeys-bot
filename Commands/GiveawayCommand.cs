@@ -127,7 +127,7 @@ namespace BrackeysBot.Commands
 
             // Project the users into IGuildUsers
             var guildUsers = await Context.Guild.GetUsersAsync(CacheMode.AllowDownload);
-            var projectedGuildUsers = giveawayUsers.Select(u => guildUsers.First(g => g.Id == u.Id));
+            var projectedGuildUsers = giveawayUsers.Select(u => guildUsers.FirstOrDefault(g => g.Id == u.Id)).Where(u => u != default(IGuildUser));
 
             // Filter out bots, blacklisted users and conditionally staff
             var users = projectedGuildUsers.Where(u => !(u.IsBot || _blacklistedUsers.Contains(u.Id)));
