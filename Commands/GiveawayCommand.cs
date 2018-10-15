@@ -123,7 +123,7 @@ namespace BrackeysBot.Commands
 
             // Get all users that reacted to the message with the giveaway emote
             var emote = _settings.Get(GIVEAWAY_EMOTE_IDENTIFIER);
-            var giveawayUsers = await giveawayMessage.GetReactionUsersAsync(emote, int.MaxValue);
+            var giveawayUsers = await giveawayMessage.GetReactionUsersAsync(emote, 1000);
 
             // Project the users into IGuildUsers
             var guildUsers = await Context.Guild.GetUsersAsync(CacheMode.AllowDownload);

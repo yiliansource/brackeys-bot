@@ -12,12 +12,15 @@ namespace BrackeysBot
 
         public static CooldownData FromPath(string path)
         {
+            if (!File.Exists(path))
+                File.WriteAllText(path, "{}");
+
             return JsonConvert.DeserializeObject<CooldownData>(File.ReadAllText(path));
         }
 
         public void Save(string path)
         {
-            File.WriteAllText("cooldowns.json", JsonConvert.SerializeObject(this, Formatting.Indented));
+            File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
         }
     }
 
