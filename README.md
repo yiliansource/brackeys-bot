@@ -1,4 +1,4 @@
-# BrackeysBot [![Build Status](https://travis-ci.com/YilianSource/brackeys-bot.svg?branch=master)](https://travis-ci.com/YilianSource/brackeys-bot) [![Discord Server](https://discordapp.com/api/guilds/243005537342586880/widget.png)](https://discord.gg/rNQBq9)
+# BrackeysBot [![Build Status](https://travis-ci.com/YilianSource/brackeys-bot.svg?branch=master)](https://travis-ci.com/YilianSource/brackeys-bot) [![Discord Server](https://discordapp.com/api/guilds/243005537342586880/widget.png)](https://discord.gg/brackeys)
 
 The official Brackeys discord bot.
 
