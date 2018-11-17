@@ -1,7 +1,8 @@
 {
-    "leaderboard-pagesize": "5",
-    "staff-role": "Staff",
-    "guru-role": "Guru",
-    "sharedUniques": "gamejam_2018",
-    "uniques": "Team Fuchsia,Team Blue,Team Green,Team Yellow"
+  "leaderboard-pagesize": "5",
+  "staff-role": "Staff",
+  "guru-role": "Guru",
+  "sharedUniques": "gamejam_2018",
+  "uniques": "Team Fuchsia,Team Blue,Team Green,Team Yellow",
+  "articlesChannelId": "495578972130639884"
 }
