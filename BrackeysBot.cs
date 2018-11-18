@@ -76,14 +76,17 @@ namespace BrackeysBot
                 // Finally, build the provider
                 .BuildServiceProvider();
 
+            UserHelper.Data = Data;
+            
             Commands.ServiceProvider = _services;
             await Commands.InstallCommands(_client);
-
-            UserHelper.Data = Data;
-
+            
             RegisterMuteOnJoin();
             RegisterMassiveCodeblockHandle();
+            RegisterMentionMessage();
+            RegisterStaffPingLogging();
             RegisterLeaderboardNavigationHandle();
+
             _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), System.Threading.CancellationToken.None);
             _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerMinute * 3), System.Threading.CancellationToken.None);
 
@@ -99,6 +102,45 @@ namespace BrackeysBot
         private void RegisterMassiveCodeblockHandle()
         {
             _client.MessageReceived += HandleMassiveCodeblock;
+        }
+
+        private void RegisterMentionMessage()
+        {
+            _client.MessageReceived += async (s) =>
+            {
+                if (!(s is SocketUserMessage msg)) return;
+
+                string mention = _client.CurrentUser.Mention.Replace("!", "");
+                if (msg.Content.StartsWith(mention) && msg.Content.Length == mention.Length)
+                {
+                    await msg.Channel.SendMessageAsync($"The command prefix for this server is `{ Configuration["prefix"] }`!");
+                    return;
+                }
+            };
+        }
+
+        private void RegisterStaffPingLogging()
+        {
+            _client.MessageReceived += async (s) =>
+            {
+                if (!(s is SocketUserMessage msg) || s.Author.IsBot) return;
+
+                if (!Data.Settings.Has("staff-role") || !Data.Settings.Has("log-channel-id")) return;
+
+                SocketGuild guild = (msg.Channel as SocketGuildChannel).Guild;
+                SocketRole staffRole = guild.Roles.FirstOrDefault(r => r.Name == Data.Settings.Get("staff-role"));
+                if(staffRole != null && s.MentionedRoles.Contains(staffRole))
+                {
+                    if (guild.Channels.FirstOrDefault(c => c.Id == ulong.Parse(Data.Settings.Get("log-channel-id"))) is IMessageChannel logChannel)
+                    {
+                        string author = msg.Author.Mention;
+                        string messageLink = $@"https://discordapp.com/channels/{ guild.Id }/{ msg.Channel.Id }/{ msg.Id }";
+                        string messageContent = msg.Content.Replace(staffRole.Mention, "@" + staffRole.Name);
+
+                        await logChannel.SendMessageAsync($"{ author } mentioned staff in the following message! (<{ messageLink }>)\n```\n{ messageContent }\n```");
+                    }
+                }
+            };
         }
 
         /// <summary>

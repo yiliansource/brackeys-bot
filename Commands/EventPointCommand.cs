@@ -212,6 +212,38 @@ namespace BrackeysBot.Commands
             }
         }
 
+        [Command("distributepoints")]
+        [HelpData("distributepoints <channel-id>", "Distributes event points, based on the reactions on a user's message.", AllowedRoles = UserType.Staff)]
+        public async Task DistributePointsPerRatings(ulong channelId)
+        {
+            ISocketMessageChannel channel = (await Context.Guild.GetChannelAsync(channelId)) as ISocketMessageChannel;
+            if (channel == null)
+            {
+                await ReplyAsync("The channel doesn't exist!");
+                return;
+            }
+
+            var emote = _settings.Get("brackeys-emote");
+
+            var messages = await channel.GetMessagesAsync().Flatten();
+            foreach (IMessage msg in messages)
+            {
+                var kvp = (msg as IUserMessage).Reactions.FirstOrDefault(r => r.Key.ToString() == emote);
+                int points = kvp.Value.ReactionCount;
+                _pointTable.AddPoints(msg.Author, points);
+            }
+
+            await UpdateTopUsersWithRoles(true);
+        }
+
+        [Command("resetleaderboard")]
+        [HelpData("resetleaderboard", "This command resets the entire command and can't be undone.", AllowedRoles = UserType.Staff)]
+        public async Task ResetLeaderboard()
+        {
+            _pointTable.Reset();
+            await ReplyAsync("The leaderboard has been reset!");
+        }
+
         /// <summary>
         /// Provides utility to navigate the pages of a leaderboard.
         /// </summary>

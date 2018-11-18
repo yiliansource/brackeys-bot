@@ -121,6 +121,11 @@ namespace BrackeysBot
             }
         }
 
+        public void Reset()
+        {
+            Table.Clear();
+        }
+
         /// <summary>
         /// Returns the leaderboard, sorted by user points.
         /// </summary>
