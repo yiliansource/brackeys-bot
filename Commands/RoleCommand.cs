@@ -13,6 +13,8 @@ namespace BrackeysBot.Commands
         private readonly string[] _uniqueRoleNames;
         private readonly string[] _sharedUniqueRoleNames;
 
+        private const int LEVENSHTEIN_THRESHOLD = 4;
+
         public RoleCommand(SettingsTable settingsTable)
         {
             var settings = settingsTable;
@@ -55,7 +57,31 @@ namespace BrackeysBot.Commands
 
             if (role == null)
             {
-                throw new NullReferenceException($"The role \"{roleName}\" could not be found. Please double-check your spelling and try again.");
+                // Check if a the user slightly misspelt the role name
+                string matchingRole = _sharedUniqueRoleNames
+                    .Concat(_uniqueRoleNames)
+                    .ToDictionary(l => l, l => roleName.ToLowerInvariant().ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
+                    .Where(l => l.Value <= LEVENSHTEIN_THRESHOLD)
+                    .OrderBy(l => l.Value)
+                    .FirstOrDefault().Key;
+
+                EmbedBuilder eb = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithTitle("Error");
+
+                if (matchingRole != null)
+                {
+                    eb.WithDescription($"The role \"{roleName}\" could not be found. Did you mean \"{matchingRole}\"?");
+                }
+                else
+                {
+                    eb.WithDescription($"The role \"{roleName}\" could not be found.")
+                        .AddField("Available Teams:", string.Join("\n", _uniqueRoleNames), true)
+                        .AddField("Available Roles:", string.Join("\n", _sharedUniqueRoleNames), true);
+                }
+
+                await ReplyAsync(string.Empty, false, eb);
+                return;
             }
 
             // If the role is not a shared unique role
@@ -161,7 +187,29 @@ namespace BrackeysBot.Commands
             }
             else
             {
-                throw new NullReferenceException($"The role \"{newTeamRoleName}\" could not be found. Please double-check your spelling and try again.");
+                // Check if a the user slightly misspelt the role name
+                string matchingRole = _uniqueRoleNames
+                    .ToDictionary(l => l, l => newTeamRoleName.ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
+                    .Where(l => l.Value <= LEVENSHTEIN_THRESHOLD)
+                    .OrderBy(l => l.Value)
+                    .FirstOrDefault().Key;
+
+                EmbedBuilder eb = new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithTitle("Error");
+
+                if (matchingRole != null)
+                {
+                    eb.WithDescription($"The team \"{uniqueRole}\" could not be found. Did you mean team \"{matchingRole.Substring("Team ".Length)}\"?");
+                }
+                else
+                {
+                    eb.WithDescription($"The team \"{uniqueRole}\" could not be found.")
+                        .AddField("Available Teams:", string.Join("\n", _uniqueRoleNames), true);
+                }
+
+                await ReplyAsync(string.Empty, false, eb);
+                return;
             }
         }
 
