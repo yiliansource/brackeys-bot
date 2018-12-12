@@ -13,7 +13,7 @@ namespace BrackeysBot.Commands
         private readonly string[] _uniqueRoleNames;
         private readonly string[] _sharedUniqueRoleNames;
 
-        private const int LEVENSHTEIN_THRESHOLD = 4;
+        private const int LEVENSHTEIN_TOLERANCE = 4;
 
         public RoleCommand(SettingsTable settingsTable)
         {
@@ -58,12 +58,7 @@ namespace BrackeysBot.Commands
             if (role == null)
             {
                 // Check if a the user slightly misspelt the role name
-                string matchingRole = _sharedUniqueRoleNames
-                    .Concat(_uniqueRoleNames)
-                    .ToDictionary(l => l, l => roleName.ToLowerInvariant().ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
-                    .Where(l => l.Value <= LEVENSHTEIN_THRESHOLD)
-                    .OrderBy(l => l.Value)
-                    .FirstOrDefault().Key;
+                string matchingRole = CheckCloseMatch(roleName, _sharedUniqueRoleNames.Concat(_uniqueRoleNames));
 
                 EmbedBuilder eb = new EmbedBuilder()
                         .WithColor(Color.Red)
@@ -135,14 +130,33 @@ namespace BrackeysBot.Commands
 
             if (roleToRemove == null)
             {
-                throw new NullReferenceException($"The role \"{roleName}\" could not be found. Please double-check your spelling and try again.");
+                // Check if a the user slightly misspelt the role name
+                string matchingRole = CheckCloseMatch(roleName, _sharedUniqueRoleNames.Concat(_uniqueRoleNames));
+
+                EmbedBuilder eb = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithTitle("Error");
+
+                if (matchingRole != null)
+                {
+                    eb.WithDescription($"The role \"{roleName}\" could not be found. Did you mean \"{matchingRole}\"?");
+                }
+                else
+                {
+                    eb.WithDescription($"The role \"{roleName}\" could not be found.")
+                        .AddField("Available Teams:", string.Join("\n", _uniqueRoleNames), true)
+                        .AddField("Available Roles:", string.Join("\n", _sharedUniqueRoleNames), true);
+                }
+
+                await ReplyAsync(string.Empty, false, eb);
+                return;
             }
 
             var guildUser = (IGuildUser) Context.User;
 
             if (!guildUser.HasRole(roleName))
             {
-                throw new Exception($"You don't the \"{roleName}\" role.");
+                throw new Exception($"You don't have the \"{roleName}\" role.");
             }
 
             if (!_sharedUniqueRoleNames.Any(role => string.Equals(role, roleName, StringComparison.CurrentCultureIgnoreCase)) &&
@@ -188,11 +202,7 @@ namespace BrackeysBot.Commands
             else
             {
                 // Check if a the user slightly misspelt the role name
-                string matchingRole = _uniqueRoleNames
-                    .ToDictionary(l => l, l => newTeamRoleName.ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
-                    .Where(l => l.Value <= LEVENSHTEIN_THRESHOLD)
-                    .OrderBy(l => l.Value)
-                    .FirstOrDefault().Key;
+                string matchingRole = CheckCloseMatch(newTeamRoleName, _uniqueRoleNames);
 
                 EmbedBuilder eb = new EmbedBuilder()
                     .WithColor(Color.Red)
@@ -266,6 +276,15 @@ namespace BrackeysBot.Commands
         public static IRole GetRoleByName(IGuild guild, string roleName)
         {
             return guild.Roles.FirstOrDefault(x => string.Equals(x.Name, roleName, StringComparison.CurrentCultureIgnoreCase));
+        }
+
+        private string CheckCloseMatch(string role, IEnumerable<string> validRoles)
+        {
+            return validRoles
+                .ToDictionary(l => l, l => role.ToLowerInvariant().ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
+                .Where(l => l.Value <= LEVENSHTEIN_TOLERANCE)
+                .OrderBy(l => l.Value)
+                .FirstOrDefault().Key;
         }
     }
 }

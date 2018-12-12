@@ -29,18 +29,19 @@ namespace BrackeysBot.Commands
             EmbedBuilder helpDialog = GetHelpDialog(UserType.Everyone);
             try
             {
-                await Context.User.SendMessageAsync(string.Empty, false, commandDialog);
+                if (commandDialog != null)
+                    await Context.User.SendMessageAsync(string.Empty, false, commandDialog);
+
                 await Context.User.SendMessageAsync(string.Empty, false, helpDialog);
 
                 await ReplyAsync("Help has been sent to your DMs! :white_check_mark:");
             }
             catch
             {
-                var msg1 = await ReplyAsync(string.Empty, false, commandDialog);
-                var msg2 = await ReplyAsync(string.Empty, false, helpDialog);
+                if (commandDialog != null)
+                    await ReplyAsync(string.Empty, false, commandDialog);
 
-                _ = msg1.TimedDeletion(30 * 1000);
-                _ = msg2.TimedDeletion(30 * 1000);
+                var msg2 = await ReplyAsync(string.Empty, false, helpDialog);
             }
         }
 
@@ -55,19 +56,24 @@ namespace BrackeysBot.Commands
             }
             catch
             {
-                var msg = await ReplyAsync(string.Empty, false, helpDialog);
-                _ = msg.TimedDeletion(30 * 1000);
+                await ReplyAsync(string.Empty, false, helpDialog);
             }
         }
 
-        [Command("customcommands")]
+        [Command("customcommands"), Alias("cclist")]
         [HelpData("customcommands", "Displays all the registered custom commands.")]
         public async Task CustomCommands()
         {
             EmbedBuilder commandDialog = GetCustomCommandDialog();
+            if (commandDialog == null)
+            {
+                commandDialog = new EmbedBuilder()
+                    .WithColor(new Color(165, 79, 121))
+                    .WithTitle("Custom Commands")
+                    .WithDescription("No custom commands registered!");
+            }
 
-            var msg = await ReplyAsync(string.Empty, false, commandDialog);
-            _ = msg.TimedDeletion(20 * 1000);
+            await ReplyAsync(string.Empty, false, commandDialog);
         }
         
         /// <summary>
@@ -75,6 +81,9 @@ namespace BrackeysBot.Commands
         /// </summary>
         private EmbedBuilder GetCustomCommandDialog()
         {
+            if (_customCommands.CommandNames.Length == 0)
+                return null;
+
             EmbedBuilder eb = new EmbedBuilder()
                 .WithColor(new Color(165, 79, 121))
                 .WithTitle("Custom Commands");
