@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
@@ -55,6 +56,7 @@ namespace BrackeysBot.Modules
 
             if (context.IsPrivate)
             {
+                // Don't allow bot usage in private messages
                 await context.Channel.SendMessageAsync ("I'm sorry but you can't use commands here since they don't work in DMs (not my fault, I swear :eyes:). Please run the commands in our server! :smile:");
                 return;
             }
@@ -62,7 +64,7 @@ namespace BrackeysBot.Modules
             CommandInfo executedCommand = null;
             try
             {
-                executedCommand = _commandService.Search(context, argPos).Commands[0].Command;
+                executedCommand = _commandService.Search(context, argPos).Commands.First().Command;
             }
             catch
             {
@@ -74,16 +76,49 @@ namespace BrackeysBot.Modules
                     string message = _data.CustomCommands.Get(command);
                     await context.Channel.SendMessageAsync(message);
                 }
+                else
+                {
+                    // Also no custom command was found? Check all commands and custom commands if there was a close match somewhere
+
+                    const int LEVENSHTEIN_TOLERANCE = 3;
+
+                    IEnumerable<string> commandNames = _commandService.Commands
+                        .Select(c => c.Name)
+                        .Concat(_data.CustomCommands.CommandNames)
+                        .Distinct();
+
+                    string closeMatch = commandNames
+                        .ToDictionary(l => l, l => command.ToLowerInvariant().ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
+                        .Where(l => l.Value <= LEVENSHTEIN_TOLERANCE)
+                        .OrderBy(l => l.Value)
+                        .FirstOrDefault().Key;
+                    
+                    if (closeMatch != null)
+                    {
+                        // A close match was found! Notify the user.
+                        EmbedBuilder eb = new EmbedBuilder()
+                            .WithColor(Color.Red)
+                            .WithTitle("Error")
+                            .WithDescription($"The command \"{command}\" could not be found. Did you mean \"{closeMatch}\"?");
+
+                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                        return;
+                    }
+                    else
+                    {
+                        // The entered command was just nonsense. Just ignore it.
+                        return;
+                    }
+                }
                 return;
             }
 
             if (executedCommand.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
             {
-                Embed eb = new EmbedBuilder()
-                    .WithTitle("Insufficient permission")
+                EmbedBuilder eb = new EmbedBuilder()
+                    .WithTitle("Insufficient permissions")
                     .WithDescription("You don't have the required permissions to run that command.")
-                    .WithColor(Color.Red)
-                    .Build();
+                    .WithColor(Color.Red);
 
                 switch (data.AllowedRoles)
                 {
