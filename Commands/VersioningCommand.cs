@@ -20,7 +20,7 @@ namespace BrackeysBot.Commands
 
         public static bool CheckNeedsUpdate()
         {
-            var cmd = RunShellScript("shell/checkversion.sh");
+            var cmd = RunShellScript("shell/checkversion.sh origin/master", true);
 
             string result = cmd.StandardOutput.ReadLine();
             cmd.WaitForExit();
@@ -36,7 +36,7 @@ namespace BrackeysBot.Commands
         [HelpData("version", "Checks if an update for the bot is available.", AllowedRoles = UserType.Staff)]
         public async Task Version()
         {
-            var cmd = RunShellScript("shell/checkversion.sh");
+            var cmd = RunShellScript("shell/checkversion.sh origin/master", true);
             
             string result = cmd.StandardOutput.ReadLine();
             cmd.WaitForExit();
@@ -66,19 +66,18 @@ namespace BrackeysBot.Commands
                 await ReplyAsync("Updating! :arrow_down:");
 
                 string pid = Process.GetCurrentProcess().Id.ToString();
-                var cmd = RunShellScript("shell/update.sh", pid);
+                var cmd = RunShellScript("shell/update.sh", false, pid);
             }
         }
 
-
-        private static Process RunShellScript(string shellscript, params string[] args)
+        private static Process RunShellScript(string shellscript, bool redirectStdout, params string[] args)
         {
             ProcessStartInfo psi = new ProcessStartInfo
             {
-                FileName = "cmd.exe",
-                Arguments = $"/C sh { shellscript } { string.Join(' ', args) }",
+                FileName = "/bin/sh",
+                Arguments = $"{ shellscript } { string.Join(' ', args) }",
                 RedirectStandardInput = true,
-                RedirectStandardOutput = true,
+                RedirectStandardOutput = redirectStdout,
                 CreateNoWindow = false,
                 UseShellExecute = false,
                 WorkingDirectory = System.IO.Directory.GetCurrentDirectory()
