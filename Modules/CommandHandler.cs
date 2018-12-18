@@ -80,9 +80,24 @@ namespace BrackeysBot.Modules
                 {
                     // Also no custom command was found? Check all commands and custom commands if there was a close match somewhere
 
-                    const int LEVENSHTEIN_TOLERANCE = 3;
+                    const int LEVENSHTEIN_TOLERANCE = 2;
 
                     IEnumerable<string> commandNames = _commandService.Commands
+                        .Where(c => // Make sure that only commands that can be used by the user get listed
+                        {
+                            if (c.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute hda)
+                            {
+                                switch (hda.AllowedRoles)
+                                {
+                                    case UserType.Everyone: return true;
+                                    case UserType.Staff: return UserHelper.HasStaffRole(s.Author as IGuildUser);
+                                    case UserType.StaffGuru: return UserHelper.HasStaffRole(s.Author as IGuildUser) || UserHelper.HasRole(s.Author as IGuildUser, _data.Settings.Get("guru-role"));
+
+                                    default: return false;
+                                }
+                            }
+                            return true;
+                        })
                         .Select(c => c.Name)
                         .Concat(_data.CustomCommands.CommandNames)
                         .Distinct();
