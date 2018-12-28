@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -20,6 +20,7 @@ namespace BrackeysBot
     public sealed class BrackeysBot
     {
         public static IConfiguration Configuration { get; set; }
+        public const int Version = 3;
 
         public DataModule Data { get; set; }
         public CommandHandler Commands { get; set; }
@@ -46,7 +47,17 @@ namespace BrackeysBot
         /// </summary>
         public async Task Start()
         {
+            Log.Initialize();
+            Log.Settings = new Log.LogSettings
+            {
+                IncludeTimestamp = true
+            };
+
+            Console.WriteLine($"\n  [ ] BrackeysBot v{Version}\n");
+            Log.WriteLine("=== Intializing Startup ===");
+
             _client = new DiscordSocketClient();
+            _client.Log += async logMessage => Log.WriteLine($"[DiscordClient] ({logMessage.Severity.ToString()}) {logMessage.Message}");
 
             Data = new DataModule();
             Data.InitializeDataFiles();
@@ -87,8 +98,8 @@ namespace BrackeysBot
             RegisterStaffPingLogging();
             RegisterLeaderboardNavigationHandle();
 
-            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), System.Threading.CancellationToken.None);
-            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerMinute * 3), System.Threading.CancellationToken.None);
+            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), CancellationToken.None);
+            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerMinute * 3), CancellationToken.None);
 
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
@@ -138,6 +149,8 @@ namespace BrackeysBot
                         string messageContent = msg.Content.Replace(staffRole.Mention, "@" + staffRole.Name);
 
                         await logChannel.SendMessageAsync($"{ author } mentioned staff in the following message! (<{ messageLink }>)\n```\n{ messageContent }\n```");
+
+                        Log.WriteLine($"{author} mentioned @Staff in the following message: {messageLink}");
                     }
                 }
             };
@@ -160,7 +173,7 @@ namespace BrackeysBot
                 await user.Unmute();
         }
 
-        public async Task PeriodicCheckMute(TimeSpan interval, System.Threading.CancellationToken cancellationToken)
+        public async Task PeriodicCheckMute(TimeSpan interval, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -184,7 +197,7 @@ namespace BrackeysBot
             }
         }
 
-        public async Task PeriodicCheckBan(TimeSpan interval, System.Threading.CancellationToken cancellationToken)
+        public async Task PeriodicCheckBan(TimeSpan interval, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -228,7 +241,7 @@ namespace BrackeysBot
         /// </summary>
         private async Task HandleMassiveCodeblock(SocketMessage s)
         {
-            if (!(s is SocketUserMessage msg)) return;
+            if (!(s is SocketUserMessage msg) || msg.Author.IsBot) return;
 
             // Ignore specific channels
             if (Data.Settings.Has("job-channel-ids"))

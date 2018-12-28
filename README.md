@@ -14,4 +14,6 @@ To be able to run the bot, add a new file to the folder before building.
 
 The `[]manual` and `[]scriptapi` commands for searching the Unity Documentation uses the generator (written in D) from [CodeMyst](https://github.com/CodeMyst) found here: https://github.com/CodeMyst/UnityDocumentationGenerator
 
+When run, the bot will attempt to log certain events inside of daily logfiles, to backtrack errors.
+
 If you want to report a bug or suggest an improvement or a feature request, feel free to open an issue.

@@ -15,8 +15,8 @@ namespace BrackeysBot.Commands
             _settings = settings;
         }
 
-        [Command("set")]
-        [HelpData("set <name> <value>", "Updates a setting.", AllowedRoles = UserType.Staff)]
+        [Command("setting"), Alias("set")]
+        [HelpData("setting <name> <value>", "Updates a setting.", AllowedRoles = UserType.Staff)]
         public async Task ApplySetting(string name, [Remainder]string value)
         {
             if (_settings.Has(name))
