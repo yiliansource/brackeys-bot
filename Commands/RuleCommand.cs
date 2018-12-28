@@ -27,7 +27,7 @@ namespace BrackeysBot.Commands
                     .WithColor(new Color(0, 255, 255))
                     .WithTitle($"Rule { id }")
                     .WithDescription(_ruleTable.Get(id))
-                    .WithFooter("To see all the rules go to #info.");
+                    .WithFooter($"To see all the rules go to #info.");
 
                 await ReplyAsync(string.Empty, false, eb.Build());
             }

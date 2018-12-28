@@ -171,26 +171,13 @@ namespace BrackeysBot.Modules
                 {
                     TimeSpan ts = GetTimeUntilCooldownHasExpired(executedCommand.Name.ToLower(), s.Author as IGuildUser, sameParamCommand, parameters);
 
-                    if (executedCommand.Name.ToLower() == "thanks")
-                    {
-                        Embed eb = new EmbedBuilder()
-                            .WithTitle("You can't thank that user yet")
-                            .WithDescription($"{s.Author.Mention}, you can't thank that user yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
-                            .WithColor(Color.Orange);
+                    Embed eb = new EmbedBuilder()
+                        .WithTitle("Cooldown hasn't expired yet")
+                        .WithDescription($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
+                        .WithColor(Color.Orange);
 
-                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                        return;
-                    }
-                    else
-                    {
-                        Embed eb = new EmbedBuilder()
-                            .WithTitle("Cooldown hasn't expired yet")
-                            .WithDescription($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
-                            .WithColor(Color.Orange);
-
-                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                        return;
-                    }
+                    await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                    return;
                 }
             }
 
