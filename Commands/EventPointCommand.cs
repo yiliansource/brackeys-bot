@@ -115,14 +115,18 @@ namespace BrackeysBot.Commands
 
             if (withReply)
             {
+                string newTopX = string.Join(", ", topUsers.Select(u => u.GetDisplayName()).ToArray());
+
                 string topReply = string.Join(", ", newTop.Select(u => u.GetDisplayName()).ToArray());
                 string exReply = string.Join(", ", exTop.Select(u => u.GetDisplayName()).ToArray());
 
                 EmbedBuilder reply = new EmbedBuilder()
                     .WithColor(new Color(162, 219, 160))
                     .WithTitle("Event Roles Updated!")
-                    .AddField($"**New Top { topRoleMaxCount } Users**", string.IsNullOrEmpty(topReply) ? "No changes made." : topReply)
-                    .AddField($"**New Ex { topRoleMaxCount } Users**", string.IsNullOrEmpty(exReply) ? "No changes made." : exReply);
+                    .WithDescription($"**New Top { topRoleMaxCount } Users**\n{ newTopX }");
+
+                    //.AddField($"**New Top { topRoleMaxCount } Users**", string.IsNullOrEmpty(topReply) ? "No changes made." : topReply)
+                    //.AddField($"**New Ex { topRoleMaxCount } Users**", string.IsNullOrEmpty(exReply) ? "No changes made." : exReply);
 
                 await ReplyAsync(string.Empty, false, reply);
             }
@@ -213,24 +217,36 @@ namespace BrackeysBot.Commands
         }
 
         [Command("distributepoints")]
-        [HelpData("distributepoints <channel-id>", "Distributes event points, based on the reactions on a user's message.", AllowedRoles = UserType.Staff)]
-        public async Task DistributePointsPerRatings(ulong channelId)
+        [HelpData("distributepoints <channel>", "Distributes event points, based on the reactions on a user's message.", AllowedRoles = UserType.Staff)]
+        public async Task DistributePointsPerRatings(ISocketMessageChannel channel)
         {
-            ISocketMessageChannel channel = (await Context.Guild.GetChannelAsync(channelId)) as ISocketMessageChannel;
-            if (channel == null)
-            {
-                await ReplyAsync("The channel doesn't exist!");
-                return;
-            }
+            string emoteName = _settings.Get("brackeys-emote").Split(':').First();
 
-            var emote = _settings.Get("brackeys-emote");
+            Dictionary<IUser, int> userScoreLookup = new Dictionary<IUser, int>();
 
             var messages = await channel.GetMessagesAsync().Flatten();
             foreach (IMessage msg in messages)
             {
-                var kvp = (msg as IUserMessage).Reactions.FirstOrDefault(r => r.Key.ToString() == emote);
-                int points = kvp.Value.ReactionCount;
-                _pointTable.AddPoints(msg.Author, points);
+                var kvp = (msg as IUserMessage).Reactions.FirstOrDefault(r => r.Key.Name == emoteName);
+                int score = kvp.Value.ReactionCount;
+
+                if (userScoreLookup.ContainsKey(msg.Author))
+                {
+                    if (userScoreLookup[msg.Author] < score)
+                        userScoreLookup[msg.Author] = score;
+                }
+                else userScoreLookup.Add(msg.Author, score);
+            }
+
+            var sortedPlaces = userScoreLookup.OrderByDescending(k => k.Value).ToArray();
+            for (int i = 0; i < sortedPlaces.Length; i++)
+            {
+                var place = sortedPlaces[i];
+
+                int points = 3;
+                if (i < 3) points += (3 - i) * 3;
+
+                _pointTable.AddPoints(place.Key, points);
             }
 
             await UpdateTopUsersWithRoles(true);

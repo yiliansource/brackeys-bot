@@ -8,8 +8,6 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using BrackeysBot.Commands;
-
 namespace BrackeysBot.Modules
 {
     /// <summary>
@@ -53,6 +51,8 @@ namespace BrackeysBot.Modules
             if (!msg.HasStringPrefix(CommandPrefix, ref argPos)) return;
 
             CommandContext context = new CommandContext(client, msg);
+
+            Log.WriteLine($"{msg.Author} attempted to invoke \"{msg.Content}\".");
 
             if (context.IsPrivate)
             {
@@ -142,6 +142,7 @@ namespace BrackeysBot.Modules
                         {
                             var messg = await context.Channel.SendMessageAsync(string.Empty, false, eb);
                             _ = messg.TimedDeletion(5000);
+                            Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
                             return;
                         }
                         break;
@@ -151,6 +152,7 @@ namespace BrackeysBot.Modules
                         {
                             var messg = await context.Channel.SendMessageAsync(string.Empty, false, eb);
                             _ = messg.TimedDeletion(5000);
+                            Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
                             return;
                         }
                         break;
@@ -184,6 +186,8 @@ namespace BrackeysBot.Modules
             IResult result = await _commandService.ExecuteAsync(context, argPos, ServiceProvider);
             if (!result.IsSuccess)
             {
+                Log.WriteLine($"The command \"{msg.Content}\" failed with the reason {result.Error.Value}: \"{result.ErrorReason}\"");
+
                 if (result.Error == CommandError.UnknownCommand
                     || result.Error == CommandError.BadArgCount 
                     || result.Error == CommandError.ParseFailed)
