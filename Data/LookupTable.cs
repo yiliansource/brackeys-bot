@@ -80,6 +80,8 @@ namespace BrackeysBot
         {
             string contents = JsonConvert.SerializeObject(_lookup, Formatting.Indented);
             File.WriteAllText(FilePath, contents);
+
+            Log.WriteLine($"{this.GetType().Name} was saved!");
         }
         /// <summary>
         /// Loads the lookup data from the disk.
