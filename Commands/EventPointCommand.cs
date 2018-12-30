@@ -177,11 +177,12 @@ namespace BrackeysBot.Commands
                 KeyValuePair<ulong, int> place = places.ElementAt(i);
 
                 IGuildUser user = await guild.GetUserAsync(place.Key);
+                string username = user?.GetDisplayName() ?? "<invalid-user>"; // if the guild doesn't contain the user, return "<invalid-user>"
 
                 string pointsDisplay = $"{ place.Value } point{ (place.Value != 1 ? "s" : "") }";
 
                 string title = GetPlaceStringRepresentation(startIndex + i);
-                string content = $"{ UserHelper.GetDisplayName(user) } with { pointsDisplay }.";
+                string content = $"{ username } with { pointsDisplay }.";
 
                 eb.AddField(title, content);
             }
