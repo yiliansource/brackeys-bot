@@ -19,7 +19,8 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("tempmute")]
-        [HelpData("tempmute <member> <duration in hours> <reason> (optional)", "Mute a member for the specified amount of time.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("tempmute <member> <duration in hours> <reason> (optional)", "Mute a member for the specified amount of time.")]
         public async Task TempMute(IGuildUser user, double duration, [Optional] [Remainder] string reason)
         {
             _mutes.Set(user.Id.ToString() + "," + Context.Guild.Id.ToString(), (DateTime.UtcNow + new TimeSpan((long)(duration * TimeSpan.TicksPerHour))).ToBinary().ToString());
@@ -33,7 +34,8 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("mute")]
-        [HelpData("mute <member> <reason> (optional)", "Mute a member.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("mute <member> <reason> (optional)", "Mute a member.")]
         public async Task Mute(IGuildUser user, [Optional] [Remainder] string reason)
         {
             _mutes.Remove(user.Id.ToString() + "," + Context.Guild.Id.ToString());
@@ -47,7 +49,8 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("unmute")]
-        [HelpData("unmute <member>", "Mute a member.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("unmute <member>", "Mute a member.")]
         public async Task Unmute(IGuildUser user)
         {
             _mutes.Remove(user.Id.ToString() + "," + Context.Guild.Id.ToString());

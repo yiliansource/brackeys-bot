@@ -46,7 +46,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("modhelp")]
-        [HelpData("modhelp", "Displays this menu.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("modhelp", "Displays this menu.")]
         public async Task ModHelp ()
         {
             EmbedBuilder helpDialog = GetHelpDialog(UserType.Staff);
@@ -103,19 +104,26 @@ namespace BrackeysBot.Commands
         /// </summary>
         private EmbedBuilder GetHelpDialog(UserType userType)
         {
+            string title = userType.HasFlag(UserType.Staff)
+                ? "Staff Commands"
+                : "Commands";
+            string description = userType.HasFlag(UserType.Staff)
+                ? "These are the moderation commands:"
+                : "The official Brackeys Discord bot!Commands are:";
+
             EmbedBuilder eb = new EmbedBuilder()
                 .WithColor(new Color(247, 22, 131))
-                .WithTitle("BrackeysBot")
-                .WithDescription("The official Brackeys Discord bot! Commands are:");
-
+                .WithTitle(title)
+                .WithDescription(description);
+            
             string prefix = BrackeysBot.Configuration["prefix"];
 
             var commands = GetCommandDataCollection(userType);
             foreach (var command in commands)
             {
-                string title = prefix + command.Usage;
+                string field = prefix + command.Usage;
                 string content = command.Description;
-                eb.AddField(title, content);
+                eb.AddField(field, content);
             }
 
             return eb;
@@ -128,20 +136,35 @@ namespace BrackeysBot.Commands
         {
             var commandList = new List<HelpDataAttribute>();
 
+            // Iterate over every installed command
             foreach (ModuleInfo module in _commands.Modules)
                 foreach (CommandInfo command in module.Commands)
                 {
-                    if (command.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
+                    // If the command is permission restricted, check if the user is allowed to see it
+                    if (command.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) is PermissionRestrictionAttribute pra)
                     {
-                        if (userType == data.AllowedRoles)
+                        // If the user isn't allowed to see the command, go to the next one
+                        if (!pra.AllowedRoles.HasFlag(userType))
                         {
-                            commandList.Add(data as HelpDataAttribute);
+                            continue;
                         }
+                    }
+                    else if (userType.HasFlag(UserType.Staff))
+                    {
+                        // Make sure normal commands don't show up in the staff menu
+                        continue;
+                    }
+
+                    // If the command has a help data attribute, include it in the collection
+                    if (command.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute helpData)
+                    {
+                        commandList.Add(helpData);
                     }
                 }
 
-            var ordered = commandList.OrderBy(data => data.ListOrder);
-            return ordered;
+            return commandList
+                .OrderBy(data => data.ListOrder)
+                .ThenBy(data => data.Usage);
         }
     }
 }

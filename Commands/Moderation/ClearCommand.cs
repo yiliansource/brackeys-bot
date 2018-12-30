@@ -10,7 +10,8 @@ namespace BrackeysBot.Commands.Moderation
     public class ClearCommand : ModuleBase
     {
         [Command("clear")]
-        [HelpData("clear <amount of messages> <sent by> (optional)", "Clears the specified amount of messages or clears the number of messages sent by a user, if specified.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("clear <amount of messages> <sent by> (optional)", "Clears the specified amount of messages or clears the number of messages sent by a user, if specified.")]
         public async Task Clear(int amount, [Optional] IGuildUser user)
         {
             int count = 0;

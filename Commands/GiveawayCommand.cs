@@ -24,7 +24,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("initgiveaway")]
-        [HelpData("initgiveaway <message>", "Initializes a new giveaway, with a specified message.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("initgiveaway <message>", "Initializes a new giveaway, with a specified message.")]
         public async Task InitializeGiveaway ([Remainder] string message)
         {
             // Delete the invokation message
@@ -46,8 +47,13 @@ namespace BrackeysBot.Commands
         }
 
         [Command("draw")]
-        [HelpData("draw <usercount> <includestaff>", "Performs a giveaway with a set number of winners.", AllowedRoles = UserType.Staff)]
-        public async Task PerformGiveaway (int userCount, bool includeStaff = true)
+        [PermissionRestriction(UserType.Staff)]
+        public async Task PerformGiveaway(int userCount)
+            => await PerformGiveaway(userCount, true);
+
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("draw <usercount> <includestaff>", "Performs a giveaway with a set number of winners.")]
+        public async Task PerformGiveaway (int userCount, bool includeStaff)
         {
             if (!TryParseChannelMessageID(out ulong channelId, out ulong messageId))
                 throw new Exception("Invalid giveaway message ID.");
@@ -81,7 +87,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("draw")]
-        [HelpData("draw", "Draws a single user out of the giveaway pool. Also blacklists the user so he can't be drawn again.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("draw", "Draws a single user out of the giveaway pool. Also blacklists the user so he can't be drawn again.")]
         public async Task Draw (bool includeStaff = true)
         {
             if (!TryParseChannelMessageID(out ulong channelId, out ulong messageId))
@@ -105,7 +112,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("cleardraw")]
-        [HelpData("cleardraw", "Clears the draw blacklist.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("cleardraw", "Clears the draw blacklist.")]
         public async Task ClearDraw()
         {
             int count = _blacklistedUsers.Count;

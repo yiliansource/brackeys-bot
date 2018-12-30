@@ -18,7 +18,8 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("ban")]
-        [HelpData("ban <member> <reason> (optional)", "Ban a member.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("ban <member> <reason> (optional)", "Ban a member.")]
         public async Task Ban(IGuildUser user, [Optional] [Remainder] string reason)
         {
             _bans.Remove(user.Id.ToString() + "," + Context.Guild.Id.ToString());
@@ -31,7 +32,8 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("tempban")]
-        [HelpData("tempban <member> <duration in hours> <reason> (optional)", "Ban a member for the specified amount of time.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("tempban <member> <duration in hours> <reason> (optional)", "Ban a member for the specified amount of time.")]
         public async Task Tempban(IGuildUser user, double duration, [Optional] [Remainder] string reason)
         {
             _bans.Set(user.Id.ToString() + "," + Context.Guild.Id.ToString(), (DateTime.UtcNow + new TimeSpan((long)(duration * TimeSpan.TicksPerHour))).ToBinary().ToString());
@@ -45,7 +47,8 @@ namespace BrackeysBot.Commands.Moderation
         }
 
         [Command("unban")]
-        [HelpData("unban <name#discriminator OR user id>", "Unban a member.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("unban <name#discriminator OR user id>", "Unban a member.")]
         public async Task Unban([Remainder] string identification)
         {
             IUser user = null;

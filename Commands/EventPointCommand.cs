@@ -25,8 +25,8 @@ namespace BrackeysBot.Commands
             _navigator = navigator;
         }
 
-        [Command("points")]
-        [HelpData("points", "Displays your current event points.", AllowedRoles = UserType.Everyone)]
+        [Command("eventpoints"), Alias("points", "ep")]
+        [HelpData("points", "Displays your current event points.")]
         public async Task DisplayEventPoints()
         {
             var user = Context.User;
@@ -36,8 +36,8 @@ namespace BrackeysBot.Commands
             await ReplyAsync($"{ (user as IGuildUser).GetDisplayName() }, you have { pointsDisplay }.");
         }
 
-        [Command("points")]
-        [HelpData("points <user>", "Displays the points of a specific user.", AllowedRoles = UserType.Everyone)]
+        [Command("eventpoints"), Alias("points", "ep")]
+        [HelpData("points <user>", "Displays the points of a specific user.")]
         public async Task DisplayEventPoints(SocketGuildUser user)
         {
             int points = _pointTable.GetPoints(user);
@@ -46,8 +46,9 @@ namespace BrackeysBot.Commands
             await ReplyAsync($"{ (user as IGuildUser).GetDisplayName() } has { pointsDisplay }.");
         }
         
-        [Command("eventpoints"), Alias("ep")]
-        [HelpData("eventpoints (add / remove / set) <user> <value>", "Modifies a user's event points.", AllowedRoles = UserType.Staff)]
+        [Command("eventpoints"), Alias("points", "ep")]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("eventpoints (add / remove / set) <user> <value>", "Modifies a user's event points.")]
         public async Task ModifyKarmaCommand(string operation, SocketGuildUser user, int amount)
         {
             switch (operation.ToLower())
@@ -84,7 +85,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("updateeventroles"), Alias("uer")]
-        [HelpData("updateeventroles [with-reply]", "Updates the top users of the leaderboard with the event top role, and conditionally includes a reply with the updated users.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("updateeventroles [with-reply]", "Updates the top users of the leaderboard with the event top role, and conditionally includes a reply with the updated users.")]
         public async Task UpdateTopUsersWithRoles(bool withReply = true)
         {
             // Fetch the setting variables
@@ -218,7 +220,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("distributepoints")]
-        [HelpData("distributepoints <channel>", "Distributes event points, based on the reactions on a user's message.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("distributepoints <channel>", "Distributes event points, based on the reactions on a user's message.")]
         public async Task DistributePointsPerRatings(ISocketMessageChannel channel)
         {
             string emoteName = _settings.Get("brackeys-emote").Split(':').First();
@@ -254,7 +257,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("resetleaderboard")]
-        [HelpData("resetleaderboard", "This command resets the entire command and can't be undone.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("resetleaderboard", "This command resets the entire command and can't be undone.")]
         public async Task ResetLeaderboard()
         {
             _pointTable.Reset();

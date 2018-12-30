@@ -134,9 +134,8 @@ namespace BrackeysBot
         {
             _client.MessageReceived += async (s) =>
             {
-                if (!(s is SocketUserMessage msg) || s.Author.IsBot) return;
-
-                if (!Data.Settings.Has("staff-role") || !Data.Settings.Has("log-channel-id")) return;
+                if (!(s is SocketUserMessage msg) || s.Author.IsBot) { return; }
+                if (!Data.Settings.Has("staff-role") || !Data.Settings.Has("log-channel-id")) { return; }
 
                 SocketGuild guild = (msg.Channel as SocketGuildChannel).Guild;
                 SocketRole staffRole = guild.Roles.FirstOrDefault(r => r.Name == Data.Settings.Get("staff-role"));
@@ -167,10 +166,8 @@ namespace BrackeysBot
 
         async Task CheckMuteOnJoin(SocketGuildUser user)
         {
-            if (DateTime.UtcNow.ToBinary() < user.GetMuteTime())
-                await user.Mute();
-            else
-                await user.Unmute();
+            if (DateTime.UtcNow.ToBinary() < user.GetMuteTime()) { await user.Mute(); }
+            else { await user.Unmute(); }
         }
 
         public async Task PeriodicCheckMute(TimeSpan interval, CancellationToken cancellationToken)
@@ -193,7 +190,7 @@ namespace BrackeysBot
                        }
                        catch { }
                    });
-                await Task.Delay(interval, cancellationToken);
+                await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
             }
         }
 
