@@ -159,7 +159,7 @@ namespace BrackeysBot.Commands
             _ = message.AddReactionAsync(new Emoji(LEFT_ARROW));
             _ = message.AddReactionAsync(new Emoji(RIGHT_ARROW));
 
-            _navigator.AddTrackedMessage(new LeaderboardNavigator.LeaderboardDisplayData() { DisplayIndex = startingRankIndex, Message = message, Guild = Context.Guild });
+            _navigator.AddTrackedMessage(new LeaderboardNavigator.LeaderboardDisplayData { DisplayIndex = startingRankIndex, Message = message, Guild = Context.Guild });
         }
         
         /// <summary>

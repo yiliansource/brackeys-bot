@@ -334,10 +334,8 @@ namespace BrackeysBot.Modules
             {
                 CommandCooldown<UserCooldown> cmdCool = _data.Cooldowns.Commands.FirstOrDefault(c => c.CommandName == commandName);
                 UserCooldown usrCool = GetUserCooldown<UserCooldown>(commandName, user, false, "");
-                if (usrCool == null)
-                    cmdCool.Users.Add(new UserCooldown { Id = user.Id, CommandExecutedTime = DateTime.UtcNow.ToTimestamp() });
-                else
-                    usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp();
+                if (usrCool == null) { cmdCool.Users.Add(new UserCooldown { Id = user.Id, CommandExecutedTime = DateTime.UtcNow.ToTimestamp() }); }
+                else { usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp(); }
             }
 
             _data.Cooldowns.Save("cooldowns.json");

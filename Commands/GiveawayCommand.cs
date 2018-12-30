@@ -56,7 +56,7 @@ namespace BrackeysBot.Commands
         public async Task PerformGiveaway (int userCount, bool includeStaff)
         {
             // Get the randomized users
-            var randomizedUsers = await GetRandomizedGiveawayUsers(includeStaff);
+            var randomizedUsers = await GetRandomizedGiveawayUsers(includeStaff).ConfigureAwait(false);
             if (randomizedUsers.Count() == 0) { return; }
 
             // Select the users, capped by usercount
@@ -84,7 +84,7 @@ namespace BrackeysBot.Commands
         public async Task Draw (bool includeStaff = true)
         {
             // Get the randomized users
-            var randomizedUsers = await GetRandomizedGiveawayUsers(includeStaff);
+            var randomizedUsers = await GetRandomizedGiveawayUsers(includeStaff).ConfigureAwait(false);
             if (randomizedUsers.Count() == 0) { return; }
 
             // Get the first one (random)
@@ -94,7 +94,6 @@ namespace BrackeysBot.Commands
             string message = $"{ drawnUser.Mention } was drawn!";
             await ReplyAsync(message);
         }
-
         [Command("cleardraw")]
         [PermissionRestriction(UserType.Staff)]
         [HelpData("cleardraw", "Clears the draw blacklist.")]
