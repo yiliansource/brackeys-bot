@@ -9,7 +9,8 @@ namespace BrackeysBot.Commands.Moderation
     public class KickCommand : ModuleBase
     {
         [Command("kick")]
-        [HelpData("kick <member> <reason> (optional)", "Kick a member.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("kick <member> <reason> (optional)", "Kick a member.")]
         public async Task Kick(IGuildUser user, [Optional] [Remainder] string reason)
         {
             string _displayName = user.GetDisplayName();

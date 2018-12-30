@@ -38,7 +38,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("setrule"), Alias("addrule")]
-        [HelpData("setrule <id> <content>", "Updates a rule.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("setrule <id> <content>", "Updates a rule.")]
         public async Task SetRule (int id, [Remainder]string contents)
         {
             if (_ruleTable.Has(id))
@@ -54,7 +55,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("removerule")]
-        [HelpData("removerule <id>", "Removes a rule.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("removerule <id>", "Removes a rule.")]
         public async Task RemoveRule (int id)
         {
             if (_ruleTable.Has(id))
@@ -69,7 +71,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("rules")]
-        [HelpData("rules", "Prints all the rules.", AllowedRoles = UserType.StaffGuru)]
+        [PermissionRestriction(UserType.StaffGuru)]
+        [HelpData("rules", "Prints all the rules.")]
         public async Task PrintAllRules ()
         {
             StringBuilder builder = new StringBuilder();

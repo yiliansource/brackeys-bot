@@ -16,7 +16,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("setting"), Alias("set")]
-        [HelpData("setting <name> <value>", "Updates a setting.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("setting <name> <value>", "Updates a setting.")]
         public async Task ApplySetting(string name, [Remainder]string value)
         {
             if (_settings.Has(name))
@@ -32,7 +33,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("delete"), Alias("del")]
-        [HelpData("delete <name>", "Deletes a setting.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("delete <name>", "Deletes a setting.")]
         public async Task DeleteSetting(string name)
         {
             if (_settings.Has(name))
@@ -47,7 +49,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("viewsettings"), Alias("settings")]
-        [HelpData("viewsettings", "Views all registered settings.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("viewsettings", "Views all registered settings.")]
         public async Task ViewSettings() 
         {
             var allsettings = _settings.Settings;

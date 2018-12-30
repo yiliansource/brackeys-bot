@@ -50,6 +50,7 @@ namespace BrackeysBot.Modules
             int argPos = 0;
             if (!msg.HasStringPrefix(CommandPrefix, ref argPos)) return;
 
+            IGuildUser author = s.Author as IGuildUser;
             CommandContext context = new CommandContext(client, msg);
 
             Log.WriteLine($"{msg.Author} attempted to invoke \"{msg.Content}\".");
@@ -85,16 +86,17 @@ namespace BrackeysBot.Modules
                     IEnumerable<string> commandNames = _commandService.Commands
                         .Where(c => // Make sure that only commands that can be used by the user get listed
                         {
-                            if (c.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute hda)
+                            PermissionRestrictionAttribute pra = c.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+                            if (pra != null)
                             {
-                                switch (hda.AllowedRoles)
-                                {
-                                    case UserType.Everyone: return true;
-                                    case UserType.Staff: return UserHelper.HasStaffRole(s.Author as IGuildUser);
-                                    case UserType.StaffGuru: return UserHelper.HasStaffRole(s.Author as IGuildUser) || UserHelper.HasRole(s.Author as IGuildUser, _data.Settings.Get("guru-role"));
+                                UserType roles = pra.AllowedRoles;
 
-                                    default: return false;
-                                }
+                                // Allow the command usage if anyone can use it, or the user is a staff member
+                                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
+                                // If the command is for gurus, check if the user has the guru role
+                                if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
+
+                                return false;
                             }
                             return true;
                         })
@@ -128,34 +130,28 @@ namespace BrackeysBot.Modules
                 return;
             }
 
-            if (executedCommand.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
+            PermissionRestrictionAttribute restriction = executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+            if (restriction != null)
             {
                 EmbedBuilder eb = new EmbedBuilder()
                     .WithTitle("Insufficient permissions")
                     .WithDescription("You don't have the required permissions to run that command.")
                     .WithColor(Color.Red);
 
-                switch (data.AllowedRoles)
+                bool denyInvokation = true;
+                UserType roles = restriction.AllowedRoles;
+                
+                // Allow the command usage if anyone can use it, or the user is a staff member
+                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { denyInvokation = false; }
+                // If the command is for gurus, check if the user has the guru role
+                if (roles.HasFlag(UserType.Guru) && author.HasGuruRole()) { denyInvokation = false; }
+
+                if (denyInvokation)
                 {
-                    case UserType.Staff:
-                        if (!UserHelper.HasStaffRole(s.Author as IGuildUser))
-                        {
-                            var messg = await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                            _ = messg.TimedDeletion(5000);
-                            Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
-                            return;
-                        }
-                        break;
-                    case UserType.StaffGuru:
-                        if (!UserHelper.HasStaffRole(s.Author as IGuildUser) &&
-                            !UserHelper.HasRole(s.Author as IGuildUser, _data.Settings.Get("guru-role")))
-                        {
-                            var messg = await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                            _ = messg.TimedDeletion(5000);
-                            Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
-                            return;
-                        }
-                        break;
+                    var message = await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                    _ = message.TimedDeletion(5000);
+                    Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
+                    return;
                 }
             }
 
@@ -338,10 +334,8 @@ namespace BrackeysBot.Modules
             {
                 CommandCooldown<UserCooldown> cmdCool = _data.Cooldowns.Commands.FirstOrDefault(c => c.CommandName == commandName);
                 UserCooldown usrCool = GetUserCooldown<UserCooldown>(commandName, user, false, "");
-                if (usrCool == null)
-                    cmdCool.Users.Add(new UserCooldown { Id = user.Id, CommandExecutedTime = DateTime.UtcNow.ToTimestamp() });
-                else
-                    usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp();
+                if (usrCool == null) { cmdCool.Users.Add(new UserCooldown { Id = user.Id, CommandExecutedTime = DateTime.UtcNow.ToTimestamp() }); }
+                else { usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp(); }
             }
 
             _data.Cooldowns.Save("cooldowns.json");
