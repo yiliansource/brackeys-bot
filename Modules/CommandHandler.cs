@@ -86,14 +86,15 @@ namespace BrackeysBot.Modules
                     IEnumerable<string> commandNames = _commandService.Commands
                         .Where(c => // Make sure that only commands that can be used by the user get listed
                         {
-                            if (c.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) is PermissionRestrictionAttribute hda)
+                            PermissionRestrictionAttribute pra = c.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+                            if (pra != null)
                             {
-                                UserType allowedRoles = hda.AllowedRoles;
+                                UserType roles = pra.AllowedRoles;
 
                                 // Allow the command usage if anyone can use it, or the user is a staff member
-                                if (allowedRoles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
+                                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
                                 // If the command is for gurus, check if the user has the guru role
-                                if (allowedRoles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
+                                if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
 
                                 return false;
                             }
@@ -129,7 +130,8 @@ namespace BrackeysBot.Modules
                 return;
             }
 
-            if (executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) is PermissionRestrictionAttribute data)
+            PermissionRestrictionAttribute restriction = executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+            if (restriction != null)
             {
                 EmbedBuilder eb = new EmbedBuilder()
                     .WithTitle("Insufficient permissions")
@@ -137,12 +139,12 @@ namespace BrackeysBot.Modules
                     .WithColor(Color.Red);
 
                 bool denyInvokation = true;
-                UserType allowedRoles = data.AllowedRoles;
+                UserType roles = restriction.AllowedRoles;
                 
                 // Allow the command usage if anyone can use it, or the user is a staff member
-                if (allowedRoles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { denyInvokation = false; }
+                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { denyInvokation = false; }
                 // If the command is for gurus, check if the user has the guru role
-                if (allowedRoles.HasFlag(UserType.Guru) && author.HasGuruRole()) { denyInvokation = false; }
+                if (roles.HasFlag(UserType.Guru) && author.HasGuruRole()) { denyInvokation = false; }
 
                 if (denyInvokation)
                 {

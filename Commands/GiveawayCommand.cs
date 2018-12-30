@@ -49,23 +49,15 @@ namespace BrackeysBot.Commands
         [Command("draw")]
         [PermissionRestriction(UserType.Staff)]
         public async Task PerformGiveaway(int userCount)
-            => await PerformGiveaway(userCount, true);
+            => await PerformGiveaway(userCount, true).ConfigureAwait(false);
 
         [PermissionRestriction(UserType.Staff)]
         [HelpData("draw <usercount> <includestaff>", "Performs a giveaway with a set number of winners.")]
         public async Task PerformGiveaway (int userCount, bool includeStaff)
         {
-            if (!TryParseChannelMessageID(out ulong channelId, out ulong messageId))
-                throw new Exception("Invalid giveaway message ID.");
-
             // Get the randomized users
-            var randomizedUsers = await GetRandomizedGiveawayUsers(channelId, messageId, includeStaff);
-
-            if (randomizedUsers.Count() < 1)
-            {
-                await ReplyAsync("Apparently, no valid user has entered the giveaway yet ...");
-                return;
-            }
+            var randomizedUsers = await GetRandomizedGiveawayUsers(includeStaff);
+            if (randomizedUsers.Count() == 0) { return; }
 
             // Select the users, capped by usercount
             IUser[] selectedUsers = randomizedUsers.Count() > userCount ? randomizedUsers.Take(userCount).ToArray() : randomizedUsers.ToArray();
@@ -91,17 +83,9 @@ namespace BrackeysBot.Commands
         [HelpData("draw", "Draws a single user out of the giveaway pool. Also blacklists the user so he can't be drawn again.")]
         public async Task Draw (bool includeStaff = true)
         {
-            if (!TryParseChannelMessageID(out ulong channelId, out ulong messageId))
-                throw new Exception("Invalid giveaway message ID.");
-
             // Get the randomized users
-            var randomizedUsers = await GetRandomizedGiveawayUsers(channelId, messageId, includeStaff);
-
-            if (randomizedUsers.Count() < 1)
-            {
-                await ReplyAsync("Apparently, no valid user has entered the giveaway yet ...");
-                return;
-            }
+            var randomizedUsers = await GetRandomizedGiveawayUsers(includeStaff);
+            if (randomizedUsers.Count() == 0) { return; }
 
             // Get the first one (random)
             var drawnUser = randomizedUsers.First();
@@ -123,9 +107,12 @@ namespace BrackeysBot.Commands
             string message = $"{ count } users have been cleared from the blacklist.";
             await ReplyAsync(message);
         }
-
-        private async Task<IEnumerable<IGuildUser>> GetRandomizedGiveawayUsers(ulong channelId, ulong messageId, bool includeStaff)
+        
+        private async Task<IEnumerable<IGuildUser>> GetRandomizedGiveawayUsers(bool includeStaff)
         {
+            if (!TryParseChannelMessageID(out ulong channelId, out ulong messageId))
+                throw new Exception("Invalid giveaway message ID.");
+            
             // Get the message by its id
             var giveawayMessage = await (await Context.Guild.GetChannelAsync(channelId) as IMessageChannel).GetMessageAsync(messageId) as IUserMessage;
 
@@ -144,10 +131,19 @@ namespace BrackeysBot.Commands
             // Randomize the users
             Random rng = new Random();
             var randomizedUsers = users.OrderBy(u => rng.Next());
+            
+            if (randomizedUsers.Count() == 0)
+            {
+                await ReplyAsync("Apparently, no valid user has entered the giveaway yet ...");
+                return Enumerable.Empty<IGuildUser>();
+            }
 
             return randomizedUsers;
         }
 
+        /// <summary>
+        /// Attemps to parse the channel id and the message id from the giveaway message in the settings.
+        /// </summary>
         private bool TryParseChannelMessageID(out ulong channelId, out ulong messageId)
         {
             channelId = 0;

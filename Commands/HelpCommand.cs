@@ -3,8 +3,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using Microsoft.Extensions.Configuration;
-
 using Discord;
 using Discord.Commands;
 
@@ -140,8 +138,9 @@ namespace BrackeysBot.Commands
             foreach (ModuleInfo module in _commands.Modules)
                 foreach (CommandInfo command in module.Commands)
                 {
+                    PermissionRestrictionAttribute pra = command.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
                     // If the command is permission restricted, check if the user is allowed to see it
-                    if (command.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) is PermissionRestrictionAttribute pra)
+                    if (pra != null)
                     {
                         // If the user isn't allowed to see the command, go to the next one
                         if (!pra.AllowedRoles.HasFlag(userType))
@@ -155,8 +154,9 @@ namespace BrackeysBot.Commands
                         continue;
                     }
 
+                    HelpDataAttribute helpData = command.Attributes.FirstOrDefault(a => a is HelpDataAttribute) as HelpDataAttribute;
                     // If the command has a help data attribute, include it in the collection
-                    if (command.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute helpData)
+                    if (helpData != null)
                     {
                         commandList.Add(helpData);
                     }
