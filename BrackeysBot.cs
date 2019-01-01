@@ -59,6 +59,8 @@ namespace BrackeysBot
             _client = new DiscordSocketClient();
             _client.Log += async logMessage => Log.WriteLine($"[DiscordClient] ({logMessage.Severity.ToString()}) {logMessage.Message}");
 
+            _client.Ready += OnReady;
+
             Data = new DataModule();
             Data.InitializeDataFiles();
 
@@ -106,6 +108,18 @@ namespace BrackeysBot
             await _client.StartAsync();
         }
 
+        private async Task OnReady ()
+        {
+            // This means that the bot updated last time, so send a message and delete the file
+            if (File.Exists (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt")))
+            {
+                string [] contents = ( await File.ReadAllTextAsync (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"))).Split ('\n');
+                SocketGuild guild = _client.GetGuild (ulong.Parse (contents [0]));
+                SocketGuildChannel channel = guild.GetChannel (ulong.Parse (contents [1]));
+                await ((IMessageChannel) channel).SendMessageAsync ("Successfully updated!");
+                File.Delete (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"));
+            }
+        }
 
         /// <summary>
         /// Registers a method to handle massive codeblocks.
