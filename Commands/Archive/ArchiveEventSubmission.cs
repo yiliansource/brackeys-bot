@@ -22,18 +22,8 @@ namespace BrackeysBot.Commands.Archive
         /// </summary>
         public override string Format()
         {
-            // The header, including the author, and date
-            StringBuilder sb = new StringBuilder()
-                .AppendLine($"{Original.Author.Username}#{Original.Author.Discriminator} ({Original.Author.Id}) - ({Original.CreatedAt.ToString("dd/MM/yyyy")})")
-                .AppendLine();
-
-            // If the message has a content, include it
-            if (!string.IsNullOrWhiteSpace(Original.Content))
-                sb.AppendLine($"{Original.Content}{(Original.EditedTimestamp.HasValue ? " - _(edited)_" : "")}");
-
-            // Include every attached image in the message
-            foreach (ArchiveImage image in GetMessageImages())
-                sb.AppendLine($"![{image.Identifier}](assets/{image.Identifier})");
+            // The base format
+            StringBuilder sb = new StringBuilder(base.Format());
 
             // Include the votes
             if (!string.IsNullOrEmpty(_voteEmote))
