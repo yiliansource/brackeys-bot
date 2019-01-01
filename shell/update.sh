@@ -1,12 +1,7 @@
-# Updates the bot by killing the process, pulling from master and restarting the bot
+#!/bin/sh
 
-kill $1
+git pull https://github.com/YilianSource/brackeys-bot.git
 
-git pull origin master
+echo "Latest changes pulled from git"
 
-echo "Update completed!"
-
-cd ../../../
-dotnet run
-
-echo "New instance started."
+dotnet build > /dev/null

@@ -21,9 +21,9 @@ namespace BrackeysBot.Commands
             _settings = settings;
         }
 
-        [Command("statistics")]
-        [HelpData("statistics", "Displays the most frequently used commands.", AllowedRoles = UserType.Staff)]
-        [Alias("stats")]
+        [Command("statistics"), Alias("stats")]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("statistics", "Displays the most frequently used commands.")]
         public async Task DisplayStatistics()
         {
             int.TryParse(_settings["leaderboard-pagesize"], out int pagesize);
