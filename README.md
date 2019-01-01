@@ -1,4 +1,4 @@
-# BrackeysBot [![Build Status](https://travis-ci.com/YilianSource/brackeys-bot.svg?branch=master)](https://travis-ci.com/YilianSource/brackeys-bot) [![Discord Server](https://discordapp.com/api/guilds/243005537342586880/widget.png)](https://discord.gg/brackeys) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3d07c5e9ff454e998a4d5da4c591465b)](https://www.codacy.com/app/YilianSource/brackeys-bot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=YilianSource/brackeys-bot&amp;utm_campaign=Badge_Grade)
+# BrackeysBot [![Build Status](https://travis-ci.com/YilianSource/brackeys-bot.svg?branch=master)](https://travis-ci.com/YilianSource/brackeys-bot) [![Discord Server](https://discordapp.com/api/guilds/243005537342586880/widget.png)](https://discord.gg/brackeys)
 
 The official Brackeys Discord bot.
 
