@@ -22,8 +22,8 @@ namespace BrackeysBot.Commands.Archive
         /// </summary>
         public bool IsOpen => _isOpen;
 
-        private string _path;
-        private StreamWriter _writer;
+        private readonly string _path;
+        private readonly StreamWriter _writer;
 
         private bool _isStartOfFile = true;
         private bool _isOpen = true;
@@ -108,7 +108,7 @@ namespace BrackeysBot.Commands.Archive
         /// <summary>
         /// Indents the specified text.
         /// </summary>
-        private string Indent(string text)
+        private static string Indent(string text)
         {
             string[] lines = text.Split(Environment.NewLine);
 
@@ -124,7 +124,7 @@ namespace BrackeysBot.Commands.Archive
         /// <summary>
         /// Indents the specified text, and prefixes the first line by the specified character.
         /// </summary>
-        private string Indent(string text, char firstLineChar)
+        private static string Indent(string text, char firstLineChar)
         {
             string[] lines = text.Split(Environment.NewLine);
 
@@ -155,6 +155,7 @@ namespace BrackeysBot.Commands.Archive
         public void Dispose()
         {
             _writer.Close();
+            _isOpen = false;
         }
     }
 }

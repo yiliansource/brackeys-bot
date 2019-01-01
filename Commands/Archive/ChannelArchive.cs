@@ -23,11 +23,11 @@ namespace BrackeysBot.Commands.Archive
         /// </summary>
         public int ArchivedImages => _archivedImages;
 
-        private MarkdownFile _index;
-        private WebClient _assetDownloader;
+        private readonly MarkdownFile _index;
+        private readonly WebClient _assetDownloader;
 
-        private string _localDirectoryPath;
-        private string _localImageSubdirectoryPath;
+        private readonly string _localDirectoryPath;
+        private readonly string _localImageSubdirectoryPath;
         private string _localZippedPath;
 
         private int _archivedMessages;

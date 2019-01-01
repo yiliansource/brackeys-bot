@@ -13,7 +13,7 @@ namespace BrackeysBot.Commands.Archive
         // Detailed format here:
         //   https://github.com/YilianSource/brackeys-bot/issues/138
 
-        private SettingsTable _settings;
+        private readonly SettingsTable _settings;
 
         public ArchiveCommand(SettingsTable settings)
         {
@@ -23,7 +23,7 @@ namespace BrackeysBot.Commands.Archive
         [Command("archive")]
         [PermissionRestriction(UserType.Staff)]
         public async Task ArchiveChannel(ISocketMessageChannel channel)
-            => await ArchiveChannel(channel, channel.Name);
+            => await ArchiveChannel(channel, channel.Name).ConfigureAwait(false);
 
         [Command("archive")]
         [PermissionRestriction(UserType.Staff)]
@@ -50,7 +50,7 @@ namespace BrackeysBot.Commands.Archive
                 string zippedArchive = archive.ZipArchive();
 
                 string reply = $"I archived the channel <#{channel.Id}> for you{(title == channel.Name ? "!" : $", under the name **{title}**!\nThe archive contains {archive.ArchivedMessages} messages and {archive.ArchivedImages} images.")}";
-                IUserMessage message = await Context.Channel.SendFileAsync(zippedArchive, reply);
+                await Context.Channel.SendFileAsync(zippedArchive, reply);
             }
         }
     }
