@@ -16,10 +16,10 @@ namespace BrackeysBot.Commands
             _ruleTable = ruleTable;
             _settings = settings;
         }
-
+        
         [Command("rule")]
         [HelpData("rule <id>", "Quotes a rule.")]
-        public async Task PrintRule (int id)
+        public async Task PrintRule (int id, [Remainder]string _)
         {
             if (_ruleTable.Has(id))
             {
