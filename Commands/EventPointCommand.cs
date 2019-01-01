@@ -119,16 +119,10 @@ namespace BrackeysBot.Commands
             {
                 string newTopX = string.Join(", ", topUsers.Select(u => u.GetDisplayName()).ToArray());
 
-                string topReply = string.Join(", ", newTop.Select(u => u.GetDisplayName()).ToArray());
-                string exReply = string.Join(", ", exTop.Select(u => u.GetDisplayName()).ToArray());
-
                 EmbedBuilder reply = new EmbedBuilder()
                     .WithColor(new Color(162, 219, 160))
                     .WithTitle("Event Roles Updated!")
                     .WithDescription($"**New Top { topRoleMaxCount } Users**\n{ newTopX }");
-
-                    //.AddField($"**New Top { topRoleMaxCount } Users**", string.IsNullOrEmpty(topReply) ? "No changes made." : topReply)
-                    //.AddField($"**New Ex { topRoleMaxCount } Users**", string.IsNullOrEmpty(exReply) ? "No changes made." : exReply);
 
                 await ReplyAsync(string.Empty, false, reply);
             }
