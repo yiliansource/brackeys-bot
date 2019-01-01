@@ -66,6 +66,13 @@ namespace BrackeysBot
         {
             return HasRole(user, Data.Settings["staff-role"]);
         }
+        /// <summary>
+        /// Checks if the user is a guru.
+        /// </summary>
+        public static bool HasGuruRole(this IGuildUser user)
+        {
+            return HasRole(user, Data.Settings["guru-role"]);
+        }
 
         /// <summary>
         /// Mutes a user.

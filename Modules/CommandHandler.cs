@@ -8,8 +8,6 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using BrackeysBot.Commands;
-
 namespace BrackeysBot.Modules
 {
     /// <summary>
@@ -52,7 +50,10 @@ namespace BrackeysBot.Modules
             int argPos = 0;
             if (!msg.HasStringPrefix(CommandPrefix, ref argPos)) return;
 
+            IGuildUser author = s.Author as IGuildUser;
             CommandContext context = new CommandContext(client, msg);
+
+            Log.WriteLine($"{msg.Author} attempted to invoke \"{msg.Content}\".");
 
             if (context.IsPrivate)
             {
@@ -80,9 +81,25 @@ namespace BrackeysBot.Modules
                 {
                     // Also no custom command was found? Check all commands and custom commands if there was a close match somewhere
 
-                    const int LEVENSHTEIN_TOLERANCE = 3;
+                    const int LEVENSHTEIN_TOLERANCE = 2;
 
                     IEnumerable<string> commandNames = _commandService.Commands
+                        .Where(c => // Make sure that only commands that can be used by the user get listed
+                        {
+                            PermissionRestrictionAttribute pra = c.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+                            if (pra != null)
+                            {
+                                UserType roles = pra.AllowedRoles;
+
+                                // Allow the command usage if anyone can use it, or the user is a staff member
+                                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
+                                // If the command is for gurus, check if the user has the guru role
+                                if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
+
+                                return false;
+                            }
+                            return true;
+                        })
                         .Select(c => c.Name)
                         .Concat(_data.CustomCommands.CommandNames)
                         .Distinct();
@@ -113,32 +130,28 @@ namespace BrackeysBot.Modules
                 return;
             }
 
-            if (executedCommand.Attributes.FirstOrDefault(a => a is HelpDataAttribute) is HelpDataAttribute data)
+            PermissionRestrictionAttribute restriction = executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+            if (restriction != null)
             {
                 EmbedBuilder eb = new EmbedBuilder()
                     .WithTitle("Insufficient permissions")
                     .WithDescription("You don't have the required permissions to run that command.")
                     .WithColor(Color.Red);
 
-                switch (data.AllowedRoles)
+                bool denyInvokation = true;
+                UserType roles = restriction.AllowedRoles;
+                
+                // Allow the command usage if anyone can use it, or the user is a staff member
+                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { denyInvokation = false; }
+                // If the command is for gurus, check if the user has the guru role
+                if (roles.HasFlag(UserType.Guru) && author.HasGuruRole()) { denyInvokation = false; }
+
+                if (denyInvokation)
                 {
-                    case UserType.Staff:
-                        if (!UserHelper.HasStaffRole(s.Author as IGuildUser))
-                        {
-                            var messg = await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                            _ = messg.TimedDeletion(5000);
-                            return;
-                        }
-                        break;
-                    case UserType.StaffGuru:
-                        if (!UserHelper.HasStaffRole(s.Author as IGuildUser) &&
-                            !UserHelper.HasRole(s.Author as IGuildUser, _data.Settings.Get("guru-role")))
-                        {
-                            var messg = await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                            _ = messg.TimedDeletion(5000);
-                            return;
-                        }
-                        break;
+                    var message = await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                    _ = message.TimedDeletion(5000);
+                    Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
+                    return;
                 }
             }
 
@@ -156,32 +169,21 @@ namespace BrackeysBot.Modules
                 {
                     TimeSpan ts = GetTimeUntilCooldownHasExpired(executedCommand.Name.ToLower(), s.Author as IGuildUser, sameParamCommand, parameters);
 
-                    if (executedCommand.Name.ToLower() == "thanks")
-                    {
-                        Embed eb = new EmbedBuilder()
-                            .WithTitle("You can't thank that user yet")
-                            .WithDescription($"{s.Author.Mention}, you can't thank that user yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
-                            .WithColor(Color.Orange);
+                    Embed eb = new EmbedBuilder()
+                        .WithTitle("Cooldown hasn't expired yet")
+                        .WithDescription($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
+                        .WithColor(Color.Orange);
 
-                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                        return;
-                    }
-                    else
-                    {
-                        Embed eb = new EmbedBuilder()
-                            .WithTitle("Cooldown hasn't expired yet")
-                            .WithDescription($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
-                            .WithColor(Color.Orange);
-
-                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                        return;
-                    }
+                    await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                    return;
                 }
             }
 
             IResult result = await _commandService.ExecuteAsync(context, argPos, ServiceProvider);
             if (!result.IsSuccess)
             {
+                Log.WriteLine($"The command \"{msg.Content}\" failed with the reason {result.Error.Value}: \"{result.ErrorReason}\"");
+
                 if (result.Error == CommandError.UnknownCommand
                     || result.Error == CommandError.BadArgCount 
                     || result.Error == CommandError.ParseFailed)
@@ -332,10 +334,8 @@ namespace BrackeysBot.Modules
             {
                 CommandCooldown<UserCooldown> cmdCool = _data.Cooldowns.Commands.FirstOrDefault(c => c.CommandName == commandName);
                 UserCooldown usrCool = GetUserCooldown<UserCooldown>(commandName, user, false, "");
-                if (usrCool == null)
-                    cmdCool.Users.Add(new UserCooldown { Id = user.Id, CommandExecutedTime = DateTime.UtcNow.ToTimestamp() });
-                else
-                    usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp();
+                if (usrCool == null) { cmdCool.Users.Add(new UserCooldown { Id = user.Id, CommandExecutedTime = DateTime.UtcNow.ToTimestamp() }); }
+                else { usrCool.CommandExecutedTime = DateTime.UtcNow.ToTimestamp(); }
             }
 
             _data.Cooldowns.Save("cooldowns.json");

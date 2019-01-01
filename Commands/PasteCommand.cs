@@ -46,9 +46,9 @@ namespace BrackeysBot.Commands
         private const string CODEBLOCK_IDENTIFIER = "```";
         private static readonly Regex _codeblockRegex = new Regex($@"(?:{ CODEBLOCK_IDENTIFIER })(\w+)?\n([^{ CODEBLOCK_IDENTIFIER[0] }]*)", RegexOptions.Compiled);
 
-        [Command("modpaste")]
-        [HelpData("modpaste <message_id>", "Paste a specific message.", AllowedRoles = UserType.Staff)]
-        [Alias("modhaste")]
+        [Command("modpaste"), Alias("modhaste")]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("modpaste <message_id>", "Paste a specific message to PasteMyst.")]
         public async Task ModPasteMessage(ulong messageId)
         {
             var message = await Context.Channel.GetMessageAsync(messageId);
@@ -60,9 +60,8 @@ namespace BrackeysBot.Commands
             await message.DeleteAsync();
         }
 
-        [Command("paste")]
-        [HelpData("paste <message>", "Pastes a message to PasteMyst")]
-        [Alias("haste")]
+        [Command("paste"), Alias("haste")]
+        [HelpData("paste <message>", "Pastes a message to PasteMyst.")]
         public async Task PasteMessage([Remainder] string messageContent)
         {
             string content = messageContent.Trim('\n', ' ');

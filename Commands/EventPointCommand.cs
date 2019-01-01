@@ -25,8 +25,8 @@ namespace BrackeysBot.Commands
             _navigator = navigator;
         }
 
-        [Command("points")]
-        [HelpData("points", "Displays your current event points.", AllowedRoles = UserType.Everyone)]
+        [Command("eventpoints"), Alias("points", "ep")]
+        [HelpData("points", "Displays your current event points.")]
         public async Task DisplayEventPoints()
         {
             var user = Context.User;
@@ -36,8 +36,8 @@ namespace BrackeysBot.Commands
             await ReplyAsync($"{ (user as IGuildUser).GetDisplayName() }, you have { pointsDisplay }.");
         }
 
-        [Command("points")]
-        [HelpData("points <user>", "Displays the points of a specific user.", AllowedRoles = UserType.Everyone)]
+        [Command("eventpoints"), Alias("points", "ep")]
+        [HelpData("points <user>", "Displays the points of a specific user.")]
         public async Task DisplayEventPoints(SocketGuildUser user)
         {
             int points = _pointTable.GetPoints(user);
@@ -46,8 +46,9 @@ namespace BrackeysBot.Commands
             await ReplyAsync($"{ (user as IGuildUser).GetDisplayName() } has { pointsDisplay }.");
         }
         
-        [Command("eventpoints"), Alias("ep")]
-        [HelpData("eventpoints (add / remove / set) <user> <value>", "Modifies a user's event points.", AllowedRoles = UserType.Staff)]
+        [Command("eventpoints"), Alias("points", "ep")]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("eventpoints (add / remove / set) <user> <value>", "Modifies a user's event points.")]
         public async Task ModifyKarmaCommand(string operation, SocketGuildUser user, int amount)
         {
             switch (operation.ToLower())
@@ -84,7 +85,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("updateeventroles"), Alias("uer")]
-        [HelpData("updateeventroles [with-reply]", "Updates the top users of the leaderboard with the event top role, and conditionally includes a reply with the updated users.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("updateeventroles [with-reply]", "Updates the top users of the leaderboard with the event top role, and conditionally includes a reply with the updated users.")]
         public async Task UpdateTopUsersWithRoles(bool withReply = true)
         {
             // Fetch the setting variables
@@ -115,14 +117,18 @@ namespace BrackeysBot.Commands
 
             if (withReply)
             {
+                string newTopX = string.Join(", ", topUsers.Select(u => u.GetDisplayName()).ToArray());
+
                 string topReply = string.Join(", ", newTop.Select(u => u.GetDisplayName()).ToArray());
                 string exReply = string.Join(", ", exTop.Select(u => u.GetDisplayName()).ToArray());
 
                 EmbedBuilder reply = new EmbedBuilder()
                     .WithColor(new Color(162, 219, 160))
                     .WithTitle("Event Roles Updated!")
-                    .AddField($"**New Top { topRoleMaxCount } Users**", string.IsNullOrEmpty(topReply) ? "No changes made." : topReply)
-                    .AddField($"**New Ex { topRoleMaxCount } Users**", string.IsNullOrEmpty(exReply) ? "No changes made." : exReply);
+                    .WithDescription($"**New Top { topRoleMaxCount } Users**\n{ newTopX }");
+
+                    //.AddField($"**New Top { topRoleMaxCount } Users**", string.IsNullOrEmpty(topReply) ? "No changes made." : topReply)
+                    //.AddField($"**New Ex { topRoleMaxCount } Users**", string.IsNullOrEmpty(exReply) ? "No changes made." : exReply);
 
                 await ReplyAsync(string.Empty, false, reply);
             }
@@ -153,7 +159,7 @@ namespace BrackeysBot.Commands
             _ = message.AddReactionAsync(new Emoji(LEFT_ARROW));
             _ = message.AddReactionAsync(new Emoji(RIGHT_ARROW));
 
-            _navigator.AddTrackedMessage(new LeaderboardNavigator.LeaderboardDisplayData() { DisplayIndex = startingRankIndex, Message = message, Guild = Context.Guild });
+            _navigator.AddTrackedMessage(new LeaderboardNavigator.LeaderboardDisplayData { DisplayIndex = startingRankIndex, Message = message, Guild = Context.Guild });
         }
         
         /// <summary>
@@ -173,11 +179,12 @@ namespace BrackeysBot.Commands
                 KeyValuePair<ulong, int> place = places.ElementAt(i);
 
                 IGuildUser user = await guild.GetUserAsync(place.Key);
+                string username = user?.GetDisplayName() ?? "<invalid-user>"; // if the guild doesn't contain the user, return "<invalid-user>"
 
                 string pointsDisplay = $"{ place.Value } point{ (place.Value != 1 ? "s" : "") }";
 
                 string title = GetPlaceStringRepresentation(startIndex + i);
-                string content = $"{ UserHelper.GetDisplayName(user) } with { pointsDisplay }.";
+                string content = $"{ username } with { pointsDisplay }.";
 
                 eb.AddField(title, content);
             }
@@ -213,31 +220,45 @@ namespace BrackeysBot.Commands
         }
 
         [Command("distributepoints")]
-        [HelpData("distributepoints <channel-id>", "Distributes event points, based on the reactions on a user's message.", AllowedRoles = UserType.Staff)]
-        public async Task DistributePointsPerRatings(ulong channelId)
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("distributepoints <channel>", "Distributes event points, based on the reactions on a user's message.")]
+        public async Task DistributePointsPerRatings(ISocketMessageChannel channel)
         {
-            ISocketMessageChannel channel = (await Context.Guild.GetChannelAsync(channelId)) as ISocketMessageChannel;
-            if (channel == null)
-            {
-                await ReplyAsync("The channel doesn't exist!");
-                return;
-            }
+            string emoteName = _settings.Get("brackeys-emote").Split(':').First();
 
-            var emote = _settings.Get("brackeys-emote");
+            Dictionary<IUser, int> userScoreLookup = new Dictionary<IUser, int>();
 
             var messages = await channel.GetMessagesAsync().Flatten();
             foreach (IMessage msg in messages)
             {
-                var kvp = (msg as IUserMessage).Reactions.FirstOrDefault(r => r.Key.ToString() == emote);
-                int points = kvp.Value.ReactionCount;
-                _pointTable.AddPoints(msg.Author, points);
+                var kvp = (msg as IUserMessage).Reactions.FirstOrDefault(r => r.Key.Name == emoteName);
+                int score = kvp.Value.ReactionCount;
+
+                if (userScoreLookup.ContainsKey(msg.Author))
+                {
+                    if (userScoreLookup[msg.Author] < score)
+                        userScoreLookup[msg.Author] = score;
+                }
+                else userScoreLookup.Add(msg.Author, score);
+            }
+
+            var sortedPlaces = userScoreLookup.OrderByDescending(k => k.Value).ToArray();
+            for (int i = 0; i < sortedPlaces.Length; i++)
+            {
+                var place = sortedPlaces[i];
+
+                int points = 3;
+                if (i < 3) points += (3 - i) * 3;
+
+                _pointTable.AddPoints(place.Key, points);
             }
 
             await UpdateTopUsersWithRoles(true);
         }
 
         [Command("resetleaderboard")]
-        [HelpData("resetleaderboard", "This command resets the entire command and can't be undone.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("resetleaderboard", "This command resets the entire command and can't be undone.")]
         public async Task ResetLeaderboard()
         {
             _pointTable.Reset();

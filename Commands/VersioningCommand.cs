@@ -33,7 +33,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("version")]
-        [HelpData("version", "Checks if an update for the bot is available.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("version", "Checks if an update for the bot is available.")]
         public async Task Version()
         {
             var cmd = RunShellScript("shell/checkversion.sh origin/master", true);
@@ -54,7 +55,8 @@ namespace BrackeysBot.Commands
         }
 
         [Command("update")]
-        [HelpData("update", "Updates the bot by pulling from git.", AllowedRoles = UserType.Staff)]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("update", "Updates the bot by pulling from git.")]
         public async Task Update()
         {
             if (!CheckNeedsUpdate())

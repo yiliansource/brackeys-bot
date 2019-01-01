@@ -106,6 +106,7 @@ namespace BrackeysBot
                     if (change > 0)
                     {
                         userPoints.Add(dayIndex, change);
+                        SaveData();
                     }
                 }
             }
@@ -124,6 +125,7 @@ namespace BrackeysBot
         public void Reset()
         {
             Table.Clear();
+            SaveData();
         }
 
         /// <summary>
