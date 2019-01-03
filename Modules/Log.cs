@@ -65,18 +65,6 @@ namespace BrackeysBot
             File.AppendAllText(filepath, message);
         }
         /// <summary>
-        /// Returns the path of the current logfile. If no such file exists yet, it will be created.
-        /// </summary>
-        private static string GetCurrentLogfilePath()
-        {
-            string filepath = GetLogfilePathForDate(DateTime.Now);
-            
-            if (!File.Exists(filepath))
-                CreateLogfileForDay(DateTime.Now);
-
-            return filepath;
-        }
-        /// <summary>
         /// Creates a logfile for the specified date.
         /// </summary>
         private static void CreateLogfileForDay(DateTime date)
@@ -86,9 +74,21 @@ namespace BrackeysBot
             File.WriteAllText(path, content);
         }
         /// <summary>
+        /// Returns the path of the current logfile. If no such file exists yet, it will be created.
+        /// </summary>
+        public static string GetCurrentLogfilePath()
+        {
+            string filepath = GetLogfilePathForDate(DateTime.Now);
+            
+            if (!File.Exists(filepath))
+                CreateLogfileForDay(DateTime.Now);
+
+            return filepath;
+        }
+        /// <summary>
         /// Returns the logfile path for the specified date.
         /// </summary>
-        private static string GetLogfilePathForDate(DateTime date)
+        public static string GetLogfilePathForDate(DateTime date)
             => Path.Combine(_logDirectory, GetLogfileNameForDate(date));
         /// <summary>
         /// Returns the logfile name for the specified date.
