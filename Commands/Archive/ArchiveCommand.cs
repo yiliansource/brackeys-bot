@@ -15,8 +15,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
-using WeTransferUploader;
-
 namespace BrackeysBot.Commands.Archive
 {
     public class ArchiveCommand : ModuleBase
