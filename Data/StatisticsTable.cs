@@ -11,7 +11,7 @@ namespace BrackeysBot
         public override string FileName => "statistics";
 
         /// <summary>
-        /// Returns the leaderboard, sorted by points.
+        /// Returns the statistics, sorted by points.
         /// </summary>
         public IEnumerable<KeyValuePair<string, uint>> GetSortedStatistics ()
         {
