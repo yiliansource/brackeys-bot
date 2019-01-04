@@ -69,6 +69,9 @@ namespace BrackeysBot
 
             _services = new ServiceCollection()
 
+                // Add BrackeysBot
+                .AddSingleton(this)
+
                 // Add the command service
                 .AddSingleton(Commands.Service)
 
@@ -105,6 +108,18 @@ namespace BrackeysBot
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
             await _client.StartAsync();
+        }
+
+        /// <summary>
+        /// Asynchronously logs out the bot. Also terminates the application, if specified.
+        /// </summary>
+        public async Task ShutdownAsync(bool terminate)
+        {
+            await _client.LogoutAsync();
+            if (terminate)
+            {
+                Environment.Exit(0);
+            }
         }
 
         private async Task OnReady ()
