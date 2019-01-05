@@ -12,18 +12,11 @@ namespace BrackeysBot.Commands
 {
     public class VersioningCommand : ModuleBase
     {
-        public static bool CheckNeedsUpdate()
-        {
-            var cmd = RunShellScript("shell/checkversion", true, "origin/master");
+        private BrackeysBot _bot;
 
-            string result = cmd.StandardOutput.ReadLine();
-            cmd.WaitForExit();
-            
-            switch (result)
-            {
-                case "Up-to-date": return false;
-                default: return true;
-            }
+        public VersioningCommand(BrackeysBot bot)
+        {
+            _bot = bot;
         }
 
         [Command("version")]
@@ -77,7 +70,23 @@ namespace BrackeysBot.Commands
                 await File.WriteAllTextAsync (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"), Context.Guild.Id + "\n" + Context.Channel.Id);
                 
                 Process.Start ("dotnet", "run " + Assembly.GetExecutingAssembly ().GetName ().CodeBase);
-                Environment.Exit (0);
+
+                // Cleanly shutdown the bot
+                await _bot.ShutdownAsync(true);
+            }
+        }
+
+        public static bool CheckNeedsUpdate()
+        {
+            var cmd = RunShellScript("shell/checkversion", true, "origin/master");
+
+            string result = cmd.StandardOutput.ReadLine();
+            cmd.WaitForExit();
+
+            switch (result)
+            {
+                case "Up-to-date": return false;
+                default: return true;
             }
         }
 
