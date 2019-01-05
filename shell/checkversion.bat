@@ -1,5 +1,7 @@
 @ECHO OFF
 
+CALL git fetch https://github.com/YilianSource/brackeys-bot.git
+
 SET UPSTREAM=%1
 
 git rev-parse @ > local.txt
