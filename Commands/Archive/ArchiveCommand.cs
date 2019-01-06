@@ -20,8 +20,6 @@ namespace BrackeysBot.Commands.Archive
 
         private readonly SettingsTable _settings;
 
-        private const string API_BASEPOINT = "https://dev.wetransfer.com/v2/";
-
         public ArchiveCommand(SettingsTable settings)
         {
             _settings = settings;
