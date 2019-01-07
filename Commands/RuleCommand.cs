@@ -18,8 +18,12 @@ namespace BrackeysBot.Commands
         }
         
         [Command("rule")]
-        [HelpData("rule <id>", "Quotes a rule.")]
         public async Task PrintRule (int id, [Remainder]string _)
+            => await PrintRule(id);
+        
+        [Command("rule")]
+        [HelpData("rule <id>", "Quotes a rule.")]
+        public async Task PrintRule (int id) 
         {
             if (_ruleTable.Has(id))
             {
