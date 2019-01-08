@@ -93,7 +93,7 @@ namespace BrackeysBot.Commands
             response.EnsureSuccessStatusCode ();
             string json = await response.Content.ReadAsStringAsync ();
             PasteMystResultInfo result = JsonConvert.DeserializeObject<PasteMystResultInfo> (json);
-            return $"{new Uri (new Uri (PASTEMYST_BASE_URL), "paste")}?id={result.Id}";
+            return new Uri (new Uri (PASTEMYST_BASE_URL), result.Id).ToString ();
         }
 
         /// <summary>
