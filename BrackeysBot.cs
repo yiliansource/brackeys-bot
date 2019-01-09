@@ -115,7 +115,7 @@ namespace BrackeysBot
         /// </summary>
         public async Task ShutdownAsync(bool terminate)
         {
-            await _client.LogoutAsync();
+            await _client.StopAsync();
             if (terminate)
             {
                 Environment.Exit(0);

@@ -45,7 +45,8 @@ namespace BrackeysBot.Commands
                 // The channel ID is used so the bot knows where to send the updated message on startup
                 await File.WriteAllTextAsync (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"), Context.Guild.Id + "\n" + Context.Channel.Id);
                 
-                RunShellScript("dotnet", false, "run");
+                var runProcess = RunShellScript("dotnet", true, "run");	
+                _ = runProcess.StandardOutput.BaseStream.CopyToAsync(Console.OpenStandardOutput());
 
                 // Cleanly shutdown the bot
                 await _bot.ShutdownAsync(true);
