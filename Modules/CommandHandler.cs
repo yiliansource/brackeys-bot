@@ -71,7 +71,7 @@ namespace BrackeysBot.Modules
             {
                 // The executed command wasnt found in the modules, therefore look if any custom commands are registered.
 
-                string command = msg.Content.Substring(argPos).Split(' ')[0];
+                string command = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
                 if (_data.CustomCommands.Has(command))
                 {
                     string message = _data.CustomCommands.Get(command);
