@@ -36,7 +36,7 @@ namespace BrackeysBot.Commands
             string output = await cmd.StandardOutput.ReadToEndAsync ();
             Log.WriteLine (output);
 
-            if (output.Substring(output.Length - upToDate.Length) != upToDate) // If the output doesn't end with "Already up to date.\n"
+            if (!output.EndsWith(upToDate)) // If the output doesn't end with "Already up to date.\n"
             {
                 await ReplyAsync ("Restarting the bot... :arrows_counterclockwise: ");
                 Log.WriteLine ("Restarting the bot...");
