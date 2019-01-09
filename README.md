@@ -16,11 +16,10 @@ To be able to run the bot, add a new file to the folder before building.
 
 ## Versioning commands
 
-The bot is able to be updated straight from Discord with the `[]update` command. To check if an update is required you can use the `[]version` command.
+The bot is able to be updated straight from Discord with the `[]update` command.
+It will inform you whether the bot is up to date, and if it isn't, it will update itself.
 
-This works only on Windows and Linux.
-
-*Note: On Linux make sure to make `shell/checkversion.sh` and `shell/update.sh` files an executable with `sudo chmod +x shell/checkversion.sh` and `sudo chmod +x shell/update.sh`.
+This functionality requires you to have Git installed.
 
 ## Unity manual
 
