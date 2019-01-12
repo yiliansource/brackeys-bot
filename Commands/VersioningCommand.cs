@@ -128,6 +128,8 @@ namespace BrackeysBot.Commands
         {
             try
             {
+                if (child != null)
+                    child.EnableRaisingEvents = false;
                 ProcessHelper.KillAndDispose(int.Parse(File.ReadAllText(pidPath)));
                 File.Delete(pidPath);
             }
