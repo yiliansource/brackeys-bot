@@ -1,3 +1,4 @@
+#pragma warning disable CS1998
 using System;
 using System.IO;
 using System.Linq;
@@ -21,13 +22,16 @@ namespace BrackeysBot
         public static IConfiguration Configuration { get; set; }
         public const int Version = 3;
 
+        public bool OriginalProcess = true;
+
         public DataModule Data { get; set; }
         public CommandHandler Commands { get; set; }
 
         private IServiceProvider _services;
-        private DiscordSocketClient _client;
+        public DiscordSocketClient _client;
 
         private EventPointCommand.LeaderboardNavigator _leaderboardNavigator;
+
 
         /// <summary>
         /// Creates a new instance of the bot and initializes the configuration.
@@ -92,10 +96,10 @@ namespace BrackeysBot
                 .BuildServiceProvider();
 
             UserHelper.Data = Data;
-            
+
             Commands.ServiceProvider = _services;
             await Commands.InstallCommands(_client);
-            
+
             RegisterMuteOnJoin();
             RegisterMassiveCodeblockHandle();
             RegisterMentionMessage();
@@ -113,25 +117,38 @@ namespace BrackeysBot
         /// <summary>
         /// Asynchronously logs out the bot. Also terminates the application, if specified.
         /// </summary>
-        public async Task ShutdownAsync(bool terminate)
+        public Task Shutdown(bool terminate)
         {
-            await _client.StopAsync();
             if (terminate)
-            {
-                Environment.Exit(0);
-            }
+                _client.Disconnected += Terminate;
+            _ = _client.StopAsync();
+            return Task.CompletedTask;
         }
 
-        private async Task OnReady ()
+        public Task Terminate(Exception e)
         {
-            // This means that the bot updated last time, so send a message and delete the file
-            if (File.Exists (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt")))
+            Environment.Exit(0);
+            return Task.CompletedTask;
+        }
+
+        private async Task OnReady()
+        {
+            // This means that the bot updated last time, so send a message, kill the useless process and delete the file
+            if (File.Exists(Path.Combine(Directory.GetCurrentDirectory(), "updated.txt")))
             {
-                string [] contents = ( await File.ReadAllTextAsync (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"))).Split ('\n');
-                SocketGuild guild = _client.GetGuild (ulong.Parse (contents [0]));
-                SocketGuildChannel channel = guild.GetChannel (ulong.Parse (contents [1]));
-                await ((IMessageChannel) channel).SendMessageAsync ("Successfully updated!");
-                File.Delete (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"));
+                OriginalProcess = false;
+                string[] contents = (await File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "updated.txt"))).Split('\n');
+
+                SocketGuild guild = _client.GetGuild(ulong.Parse(contents[0]));
+                SocketGuildChannel channel = guild.GetChannel(ulong.Parse(contents[1]));
+
+                await ((IMessageChannel)channel).SendMessageAsync("Successfully updated! :white_check_mark:");
+                File.Delete(Path.Combine(Directory.GetCurrentDirectory(), "updated.txt"));
+            }
+            // Bot didn't shut down gracefully, close leftover process
+            if (File.Exists(VersioningCommand.pidPath) && OriginalProcess)
+            {
+                VersioningCommand.CloseChild(null, null);
             }
         }
 
@@ -160,14 +177,14 @@ namespace BrackeysBot
 
         private void RegisterStaffPingLogging()
         {
-            _client.MessageReceived += async (s) =>
+           _client.MessageReceived += async (s) =>
             {
                 if (!(s is SocketUserMessage msg) || s.Author.IsBot) { return; }
                 if (!Data.Settings.Has("staff-role") || !Data.Settings.Has("log-channel-id")) { return; }
 
                 SocketGuild guild = (msg.Channel as SocketGuildChannel).Guild;
                 SocketRole staffRole = guild.Roles.FirstOrDefault(r => r.Name == Data.Settings.Get("staff-role"));
-                if(staffRole != null && s.MentionedRoles.Contains(staffRole))
+                if (staffRole != null && s.MentionedRoles.Contains(staffRole))
                 {
                     if (guild.Channels.FirstOrDefault(c => c.Id == ulong.Parse(Data.Settings.Get("log-channel-id"))) is IMessageChannel logChannel)
                     {
