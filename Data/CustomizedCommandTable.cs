@@ -5,7 +5,7 @@ namespace BrackeysBot
     /// <summary>
     /// Provides a table to store custom commands.
     /// </summary>
-    public sealed class CustomizedCommandTable : LookupTable<string, string>
+    public sealed class CustomCommandsTable : LookupTable<string, string>
     {
         public override string FileName => "custom-commands";
 

@@ -8,9 +8,9 @@ namespace BrackeysBot.Commands
 {
     public class CustomizedCommand : ModuleBase
     {
-        private readonly CustomizedCommandTable _customCommands;
+        private readonly CustomCommandsTable _customCommands;
 
-        public CustomizedCommand(CustomizedCommandTable customCommands)
+        public CustomizedCommand(CustomCommandsTable customCommands)
         {
             _customCommands = customCommands;
         }
@@ -47,6 +47,14 @@ namespace BrackeysBot.Commands
             {
                 await ReplyAsync("Custom command does not exist.");
             }
+        }
+
+        [Command("ccclear")]
+        [PermissionRestriction(UserType.Staff)]
+        [HelpData("ccclear", "Deletes all custom commands.")]
+        public async Task ClearCustomCommands()
+        {
+            _customCommands.Clear();
         }
     }
 }
