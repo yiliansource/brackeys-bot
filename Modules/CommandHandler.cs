@@ -22,13 +22,15 @@ namespace BrackeysBot.Modules
         public string CommandPrefix { get; set; }
         
         private DataModule _data;
+        private CustomCommandModule _customCommandModule;
 
         public CommandHandler(DataModule data, string commandPrefix)
         {
-            _data = data;
             CommandPrefix = commandPrefix;
 
+            _data = data;
             _commandService = new CommandService();
+            _customCommandModule = new CustomCommandModule(data.CustomCommands);
         }
 
         /// <summary>
@@ -70,19 +72,27 @@ namespace BrackeysBot.Modules
             catch
             {
                 // The executed command wasnt found in the modules, therefore look if any custom commands are registered.
-
-                string command = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
-                if (_data.CustomCommands.Has(command))
+                string commandName = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
+                CustomCommand command = _customCommandModule.FindCommand(commandName);
+                if (command != null)
                 {
-                    string message = _data.CustomCommands.Get(command);
-                    await context.Channel.SendMessageAsync(message);
+                    // Attempt to execute the custom command
+                    try { await command.Execute(author, context.Channel); }
+                    // If an exception occurs, print it
+                    catch (Exception ex)
+                    {
+                        EmbedBuilder eb = new EmbedBuilder()
+                            .WithColor(Color.Red)
+                            .WithTitle("Error")
+                            .WithDescription(ex.Message);
+
+                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                    }
+                    return;
                 }
                 else
                 {
                     // Also no custom command was found? Check all commands and custom commands if there was a close match somewhere
-
-                    const int LEVENSHTEIN_TOLERANCE = 2;
-
                     IEnumerable<string> commandNames = _commandService.Commands
                         .Where(c => // Make sure that only commands that can be used by the user get listed
                         {
@@ -104,12 +114,14 @@ namespace BrackeysBot.Modules
                         .Concat(_data.CustomCommands.CommandNames)
                         .Distinct();
 
+                    const int LEVENSHTEIN_TOLERANCE = 2;
+
                     string closeMatch = commandNames
-                        .ToDictionary(l => l, l => command.ToLowerInvariant().ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
+                        .ToDictionary(l => l, l => commandName.ToLowerInvariant().ComputeLevenshtein(l.ToLowerInvariant())) // Use lower casing to avoid too high intolerance
                         .Where(l => l.Value <= LEVENSHTEIN_TOLERANCE)
                         .OrderBy(l => l.Value)
                         .FirstOrDefault().Key;
-                    
+
                     if (closeMatch != null)
                     {
                         // A close match was found! Notify the user.
@@ -119,15 +131,11 @@ namespace BrackeysBot.Modules
                             .WithDescription($"The command \"{command}\" could not be found. Did you mean \"{closeMatch}\"?");
 
                         await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                        return;
                     }
-                    else
-                    {
-                        // The entered command was just nonsense. Just ignore it.
-                        return;
-                    }
+
+                    // The entered command was just nonsense. Just ignore it.
+                    return;
                 }
-                return;
             }
 
             PermissionRestrictionAttribute restriction = executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;

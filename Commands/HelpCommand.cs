@@ -11,9 +11,9 @@ namespace BrackeysBot.Commands
     public class HelpCommand : ModuleBase
     {
         private readonly CommandService _commands;
-        private readonly CustomizedCommandTable _customCommands;
+        private readonly CustomCommandsTable _customCommands;
 
-        public HelpCommand(CommandService commands, CustomizedCommandTable customCommands)
+        public HelpCommand(CommandService commands, CustomCommandsTable customCommands)
         {
             _commands = commands;
             _customCommands = customCommands;
