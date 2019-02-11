@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using Newtonsoft.Json;
 
@@ -8,24 +7,8 @@ namespace BrackeysBot
     /// <summary>
     /// Provides a lookup table that will be serialized into a JSON file.
     /// </summary>
-    public abstract class LookupTable<TKey, TValue> : ILookupTable<TKey, TValue>
+    public abstract class LookupTable<TKey, TValue> : DataFile, ILookupTable<TKey, TValue>
     {
-        /// <summary>
-        /// Returns the path of the lookup file.
-        /// </summary>
-        public string FilePath => $"{ FileName }.{ FILETYPE }";
-        /// <summary>
-        /// Returns the name of the lookup file (without the extension).
-        /// </summary>
-        public abstract string FileName { get; }
-        /// <summary>
-        /// Determines whether the lookup file requires a template file.
-        /// </summary>
-        public virtual bool RequiresTemplateFile => false;
-
-        private const string FILETYPE = "json";
-        private const string TEMPLATE_IDENTIFIER = "template-";
-
         protected Dictionary<TKey, TValue> Table => _lookup;
         private Dictionary<TKey, TValue> _lookup;
 
@@ -35,8 +18,16 @@ namespace BrackeysBot
         }
 
         /// <summary>
-        /// Gets or sets a value in the lookup.
+        /// Serializes the contents of the lookup table to a string.
         /// </summary>
+        protected override string SaveToString()
+            => JsonConvert.SerializeObject(_lookup, Formatting.Indented);
+        /// <summary>
+        /// Deserializes the contents of the lookup table from a string.
+        /// </summary>
+        protected override void LoadFromString(string value)
+            => _lookup = JsonConvert.DeserializeObject<Dictionary<TKey, TValue>>(value);
+        
         public virtual TValue this[TKey index]
         {
             get => _lookup[index];
@@ -71,57 +62,6 @@ namespace BrackeysBot
             bool exists = _lookup.Remove(key);
             SaveData();
             return exists;    
-        }
-
-        /// <summary>
-        /// Saves the lookup data to the disk.
-        /// </summary>
-        protected virtual void SaveData()
-        {
-            string contents = JsonConvert.SerializeObject(_lookup, Formatting.Indented);
-            File.WriteAllText(FilePath, contents);
-
-            Log.WriteLine($"{this.GetType().Name} was saved!");
-        }
-        /// <summary>
-        /// Loads the lookup data from the disk.
-        /// </summary>
-        protected virtual void LoadData()
-        {
-            // Check if the file exists
-            if (!File.Exists(FilePath))
-            {
-                // If the file requires a template, load the template
-                if (RequiresTemplateFile)
-                {
-                    string templatePath = TEMPLATE_IDENTIFIER + FilePath;
-                    if (File.Exists(templatePath))
-                    {
-                        string filename = templatePath.Substring(TEMPLATE_IDENTIFIER.Length);
-                        File.Copy(templatePath, FilePath);
-                    }
-                    else
-                    {
-                        throw new FileNotFoundException($"Template file for { GetType().Name } was requested, but not found.");
-                    }
-                }
-                // If not, ensure an empty storage file
-                else
-                {
-                    EnsureStorageFile();
-                }
-            }
-
-            string json = File.ReadAllText(FilePath);
-            _lookup = JsonConvert.DeserializeObject<Dictionary<TKey, TValue>>(json);
-        }
-        /// <summary>
-        /// Ensures that a lookup file exist at the filepath.
-        /// </summary>
-        protected virtual void EnsureStorageFile()
-        {
-            if (!File.Exists(FilePath))
-                File.WriteAllText(FilePath, "{}");
         }
     }
 }
