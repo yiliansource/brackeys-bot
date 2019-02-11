@@ -19,16 +19,25 @@ namespace BrackeysBot.Modules
         /// <summary>
         /// A result than can be returned from a role operation.
         /// </summary>
-        protected class RoleOperationErrorResult
+        protected class RoleOperationResult
         {
             /// <summary>
-            /// The name of the role that caused the error.
+            /// Represents a successful result.
             /// </summary>
-            public string RoleName { get; set; }
+            public static RoleOperationResult Success => new RoleOperationResult { IsError = false };
+
             /// <summary>
-            /// Does the user already have the role?
+            /// The names of the conflicting roles that the user has.
             /// </summary>
-            public bool HasRole { get; set; }
+            public string[] ConflictingOwnedRoles { get; set; }
+            /// <summary>
+            /// The names of the conflicting roles that the user doesn't have.
+            /// </summary>
+            public string[] ConflictingUnownedRoles { get; set; }
+            /// <summary>
+            /// Is the result an error?
+            /// </summary>
+            public bool IsError { get; set; }
         }
 
         /// <summary>
@@ -52,15 +61,15 @@ namespace BrackeysBot.Modules
         /// </summary>
         public async Task Execute(IGuildUser user, IMessageChannel channel)
         {
-            RoleOperationErrorResult[] results = await PerformRoleOperations(user);
-            if (results.Length > 0)
+            RoleOperationResult result = await PerformRoleOperations(user);
+            if (result.IsError)
             {
                 // If there are any error results, print the errors.
                 EmbedBuilder eb = new EmbedBuilder()
                     .WithTitle("Info")
-                    .WithDescription(string.Join('\n', results.Select(r => r.HasRole 
-                        ? $"You already have the role {r.RoleName}!"
-                        : $"You don't have the role {r.RoleName}!")));
+                    .WithDescription(string.Join('\n',
+                        result.ConflictingOwnedRoles.Select(r => $"You already have the role {r}!")
+                            .Concat(result.ConflictingUnownedRoles.Select(r => $"You don't have the role {r}!"))));
 
                 await channel.SendMessageAsync(string.Empty, false, eb);
             }
@@ -85,12 +94,13 @@ namespace BrackeysBot.Modules
         /// <summary>
         /// Adds roles prefixed with '+' to the user and removes roles prefixed with '-' from the user.
         /// </summary>
-        private async Task<RoleOperationErrorResult[]> PerformRoleOperations(IGuildUser user)
+        private async Task<RoleOperationResult> PerformRoleOperations(IGuildUser user)
         {
-            if (string.IsNullOrEmpty(RoleOperations)) return new RoleOperationErrorResult[0];
+            if (string.IsNullOrEmpty(RoleOperations)) return RoleOperationResult.Success;
 
-            List<RoleOperationErrorResult> results = new List<RoleOperationErrorResult>();
-            
+            List<string> conflictingOwnedRoles = new List<string>();
+            List<string> conflictingUnownedRoles = new List<string>();
+
             foreach (string roleOperation in RoleOperations.Split(','))
             {
                 string trimmed = roleOperation.Trim();
@@ -108,11 +118,11 @@ namespace BrackeysBot.Modules
                 {
                     case '+':
                         if (!user.HasRole(roleName)) await user.AddRoleAsync(role);
-                        else results.Add(new RoleOperationErrorResult { RoleName = role.Name, HasRole = true });
+                        else conflictingOwnedRoles.Add(roleName);
                         break;
                     case '-':
                         if (user.HasRole(roleName)) await user.RemoveRoleAsync(role);
-                        else results.Add(new RoleOperationErrorResult { RoleName = role.Name, HasRole = false });
+                        else conflictingUnownedRoles.Add(roleName);
                         break;
 
                     default:
@@ -120,7 +130,12 @@ namespace BrackeysBot.Modules
                 }
             }
 
-            return results.ToArray();
+            return new RoleOperationResult
+            {
+                ConflictingOwnedRoles = conflictingOwnedRoles.ToArray(),
+                ConflictingUnownedRoles = conflictingUnownedRoles.ToArray(),
+                IsError = (conflictingOwnedRoles.Count + conflictingUnownedRoles.Count) > 0
+            };
         }
 
         public override string ToString()
