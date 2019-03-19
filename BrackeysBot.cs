@@ -57,8 +57,8 @@ namespace BrackeysBot
 
             _client = new DiscordSocketClient();
             _client.Log += async logMessage => Log.WriteLine($"[DiscordClient] ({logMessage.Severity.ToString()}) {logMessage.Message}");
-
             _client.Ready += OnReady;
+            _client.UserJoined += OnUserJoinedServer;
 
             Data = new DataModule();
             Data.InitializeDataFiles();
@@ -132,6 +132,25 @@ namespace BrackeysBot
                 SocketGuildChannel channel = guild.GetChannel (ulong.Parse (contents [1]));
                 await ((IMessageChannel) channel).SendMessageAsync ("Successfully updated!");
                 File.Delete (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"));
+            }
+        }
+
+        private async Task OnUserJoinedServer(SocketGuildUser arg)
+        {
+            if (!Data.Settings.Has("greeting-message"))
+                return;
+
+            try
+            {
+                string message = Data.Settings.Get("greeting-message");
+                message = message.Replace("[user]", arg.Username);
+                await arg.SendMessageAsync(message);
+
+                Log.WriteLine($"User {arg.Id} was greeted in his DMs!");
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"I attempted to greet User {arg.Id} in his DMs but something went wrong.\n{ex.ToString()}");
             }
         }
 

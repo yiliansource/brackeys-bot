@@ -54,20 +54,38 @@ namespace BrackeysBot.Commands
         public async Task ViewSettings() 
         {
             var allsettings = _settings.Settings;
+            const int maxMessageLength = 2000;
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("```");
-            sb.AppendLine("Settings:");
-            sb.AppendLine();
+            StringBuilder settingsVisual = new StringBuilder();
+            settingsVisual.AppendLine("```");
+            settingsVisual.AppendLine("Settings:");
+            settingsVisual.AppendLine();
+
+            int length = settingsVisual.ToString().Length;
 
             foreach (KeyValuePair<string, string> setting in allsettings) 
             {
-                sb.AppendLine($"\"{ setting.Key }\": \"{ setting.Value }\"");
+                string visual = $"\"{ setting.Key }\": \"{ setting.Value }\"";
+                if (length + visual.Length + 5 < maxMessageLength)
+                {
+                    settingsVisual.AppendLine(visual);
+                }
+                else
+                {
+                    settingsVisual.AppendLine("```");
+                    await ReplyAsync(settingsVisual.ToString());
+
+                    settingsVisual.Clear();
+                    settingsVisual.AppendLine("```");
+                    settingsVisual.AppendLine(visual);
+
+                    length = settingsVisual.Length;
+                }
             }
 
-            sb.AppendLine("```");
+            settingsVisual.AppendLine("```");
 
-            await ReplyAsync(sb.ToString());
+            await ReplyAsync(settingsVisual.ToString());
         }
     }
 }
