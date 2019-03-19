@@ -44,7 +44,7 @@ namespace BrackeysBot.Modules
         /// The message that will be printed by the command.
         /// </summary>
         [JsonProperty("message")]
-        public string Message { get; set; } = string.Empty;
+        public string[] Message { get; set; }
         /// <summary>
         /// Should the sent message be sent as an embed?
         /// </summary>
@@ -85,11 +85,13 @@ namespace BrackeysBot.Modules
         /// </summary>
         private async Task PerformMessageOperation(IMessageChannel channel)
         {
-            if (string.IsNullOrEmpty(Message)) return;
+            if (Message == null) return;
+
+            string parsedMessage = string.Join('\n', Message);
 
             // Conditionally encapsulate the message in an embed
-            if (Embed) await channel.SendMessageAsync(string.Empty, false, new EmbedBuilder().WithDescription(Message));
-            else await channel.SendMessageAsync(Message);
+            if (Embed) await channel.SendMessageAsync(string.Empty, false, new EmbedBuilder().WithDescription(parsedMessage));
+            else await channel.SendMessageAsync(parsedMessage);
         }
         /// <summary>
         /// Adds roles prefixed with '+' to the user and removes roles prefixed with '-' from the user.
