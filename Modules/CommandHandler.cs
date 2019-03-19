@@ -128,7 +128,7 @@ namespace BrackeysBot.Modules
                         EmbedBuilder eb = new EmbedBuilder()
                             .WithColor(Color.Red)
                             .WithTitle("Error")
-                            .WithDescription($"The command \"{command}\" could not be found. Did you mean \"{closeMatch}\"?");
+                            .WithDescription($"The command \"{commandName}\" could not be found. Did you mean \"{closeMatch}\"?");
 
                         await context.Channel.SendMessageAsync(string.Empty, false, eb);
                     }

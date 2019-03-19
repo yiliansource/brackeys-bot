@@ -97,9 +97,13 @@ namespace BrackeysBot.Commands
                         }
 
                         string value = arguments[++i];
-                        string propertyValue = value;
+                        object propertyValue;
 
-                        if (value.StartsWith('"'))
+                        if (!value.StartsWith('"'))
+                        {
+                            propertyValue = value.Split("\\n");
+                        }
+                        else
                         {
                             // Treat as string, read until there are no more arguments, or another " is found.
 
@@ -112,7 +116,7 @@ namespace BrackeysBot.Commands
                                 valueList.Add(currentInspectedArgument);
                             }
 
-                            propertyValue = string.Join(' ', valueList.ToArray()).Trim('"');
+                            propertyValue = string.Join(' ', valueList.ToArray()).Trim('"').Split("\\n");
                         }
 
                         command.Add(identifier, JToken.FromObject(propertyValue));

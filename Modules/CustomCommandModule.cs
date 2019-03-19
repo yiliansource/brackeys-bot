@@ -18,7 +18,7 @@ namespace BrackeysBot.Modules
 
         private CustomCommandsTable _table;
 
-        private static CustomCommand _errorResponse = new CustomCommand { Message = "The specified command has syntax errors.", Embed = true };
+        private static CustomCommand _errorResponse = new CustomCommand { Message = new string[1] { "The specified command has syntax errors." }, Embed = true };
 
         /// <summary>
         /// Creates a new custom command module, with data from a reference table.
