@@ -9,19 +9,6 @@ namespace BrackeysBot
     /// </summary>
     public abstract class LookupTable<TKey, TValue> : DataFile, ILookupTable<TKey, TValue>
     {
-        /// <summary>
-        /// Returns the path of the lookup file.
-        /// </summary>
-        public string FilePath => $"{ FileName }.{ FILETYPE }";
-        /// <summary>
-        /// Returns the name of the lookup file (without the extension).
-        /// </summary>
-        public abstract string FileName { get; }
-        /// <summary>
-        /// Determines whether the lookup file requires a template file.
-        /// </summary>
-        public virtual bool RequiresTemplateFile => false;
-
         protected const string FILETYPE = "json";
         protected const string TEMPLATE_IDENTIFIER = "template-";
 
@@ -106,57 +93,6 @@ namespace BrackeysBot
         {
             _lookup.Clear();
             SaveData();
-        }
-
-        /// <summary>
-        /// Saves the lookup data to the disk.
-        /// </summary>
-        protected virtual void SaveData()
-        {
-            string contents = JsonConvert.SerializeObject(_lookup, Formatting.Indented);
-            File.WriteAllText(FilePath, contents);
-
-            Log.WriteLine($"{this.GetType().Name} was saved!");
-        }
-        /// <summary>
-        /// Loads the lookup data from the disk.
-        /// </summary>
-        protected virtual void LoadData()
-        {
-            // Check if the file exists
-            if (!File.Exists(FilePath))
-            {
-                // If the file requires a template, load the template
-                if (RequiresTemplateFile)
-                {
-                    string templatePath = TEMPLATE_IDENTIFIER + FilePath;
-                    if (File.Exists(templatePath))
-                    {
-                        string filename = templatePath.Substring(TEMPLATE_IDENTIFIER.Length);
-                        File.Copy(templatePath, FilePath);
-                    }
-                    else
-                    {
-                        throw new FileNotFoundException($"Template file for { GetType().Name } was requested, but not found.");
-                    }
-                }
-                // If not, ensure an empty storage file
-                else
-                {
-                    EnsureStorageFile();
-                }
-            }
-
-            string json = File.ReadAllText(FilePath);
-            _lookup = JsonConvert.DeserializeObject<Dictionary<TKey, TValue>>(json);
-        }
-        /// <summary>
-        /// Ensures that a lookup file exist at the filepath.
-        /// </summary>
-        protected virtual void EnsureStorageFile()
-        {
-            if (!File.Exists(FilePath))
-                File.WriteAllText(FilePath, "{}");
         }
     }
 }
