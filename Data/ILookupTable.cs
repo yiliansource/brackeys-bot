@@ -23,8 +23,6 @@
         /// <summary>
         /// Gets a value from the lookup table. Returns the default value for <see cref="TValue"/> if the key doesn't exist.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
         TValue GetOrDefault(TKey key);
 
         /// <summary>
