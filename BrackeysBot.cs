@@ -28,6 +28,7 @@ namespace BrackeysBot
         private DiscordSocketClient _client;
 
         private EventPointCommand.LeaderboardNavigator _leaderboardNavigator;
+        private VideoSuggestionsHandler _videoSuggestionsHandler;
 
         /// <summary>
         /// Creates a new instance of the bot and initializes the configuration.
@@ -47,10 +48,7 @@ namespace BrackeysBot
         public async Task Start()
         {
             Log.Initialize();
-            Log.Settings = new Log.LogSettings
-            {
-                IncludeTimestamp = true
-            };
+            Log.Settings = new Log.LogSettings { IncludeTimestamp = true };
 
             Console.WriteLine($"\n  [ ] BrackeysBot v{Version}\n");
             Log.WriteLine("=== Intializing Startup ===");
@@ -102,9 +100,6 @@ namespace BrackeysBot
             RegisterStaffPingLogging();
             RegisterLeaderboardNavigationHandle();
 
-            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerMinute * 2), CancellationToken.None);
-            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerMinute * 3), CancellationToken.None);
-
             await _client.LoginAsync(TokenType.Bot, Configuration["token"]);
             await _client.SetGameAsync($"{ Configuration["prefix"] }help");
             await _client.StartAsync();
@@ -133,6 +128,10 @@ namespace BrackeysBot
                 await ((IMessageChannel) channel).SendMessageAsync ("Successfully updated!");
                 File.Delete (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"));
             }
+            
+            _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerHour * 1), CancellationToken.None);
+            _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerHour * 1), CancellationToken.None);
+            _ = PeriodicCheckVideoSuggestions(new TimeSpan(TimeSpan.TicksPerHour * 4), CancellationToken.None);
         }
 
         private async Task OnUserJoinedServer(SocketGuildUser arg)
@@ -237,6 +236,7 @@ namespace BrackeysBot
                        }
                        catch { }
                    });
+                Log.WriteLine("Checked mutes.");
                 await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
             }
         }
@@ -268,6 +268,30 @@ namespace BrackeysBot
                        }
                        catch { }
                    });
+                Log.WriteLine("Checked bans.");
+                await Task.Delay(interval, cancellationToken);
+            }
+        }
+
+        public async Task PeriodicCheckVideoSuggestions(TimeSpan interval, CancellationToken cancellationToken)
+        {
+            ulong guildId = ulong.Parse(Data.Settings["server-id"]);
+            IGuild mainGuild = _client.GetGuild(guildId);
+
+            _videoSuggestionsHandler = new VideoSuggestionsHandler(mainGuild);
+            await _videoSuggestionsHandler.InitializeAsync();
+
+            while (true)
+            {
+                bool valid = _videoSuggestionsHandler.IsChannelStateValid();
+                if (!valid)
+                {
+                    await _videoSuggestionsHandler.UpdateChannelStateToValid();
+                }
+
+                Func<bool, string> FormatValid = v => $"'{(v ? "Valid" : "Invalid")}'";
+
+                Log.WriteLine($"Checked VideoSuggestions state and transitioned from state {FormatValid(valid)} to state {FormatValid(_videoSuggestionsHandler.IsChannelStateValid())}.");
                 await Task.Delay(interval, cancellationToken);
             }
         }

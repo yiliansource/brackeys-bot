@@ -9,7 +9,7 @@
         public SettingsTable Settings { get; private set; }
         public StatisticsTable Statistics { get; private set; }
         public RuleTable Rules { get; private set; }
-        public CustomizedCommandTable CustomCommands { get; private set; }
+        public CustomCommandsTable CustomCommands { get; private set; }
         public UnityDocs UnityDocs { get; private set; }
         public CooldownData Cooldowns { get; private set; }
 
@@ -32,7 +32,7 @@
             EventPoints = new EventPointTable();
             Settings = new SettingsTable();
             Statistics = new StatisticsTable();
-            CustomCommands = new CustomizedCommandTable();
+            CustomCommands = new CustomCommandsTable();
             Rules = new RuleTable();
             Mutes = new MuteTable();
             Bans = new BanTable();
