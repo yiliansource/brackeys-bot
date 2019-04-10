@@ -3,19 +3,22 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Linq;
 
-using Discord.Commands;
 using Discord;
+using Discord.Commands;
+
+using BrackeysBot.Modules;
 
 namespace BrackeysBot.Commands.Moderation
 {
     public class MuteCommand : ModuleBase
     {
-
         private readonly MuteTable _mutes;
+        private readonly AuditLog _auditLog;
 
-        public MuteCommand(MuteTable mutes)
+        public MuteCommand(MuteTable mutes, AuditLog log)
         {
             _mutes = mutes;
+            _auditLog = log;
         }
 
         [Command("tempmute")]
@@ -31,6 +34,8 @@ namespace BrackeysBot.Commands.Moderation
             IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully muted {_displayName} for {duration} hours.");
             _ = messageToDel.TimedDeletion(3000);
             await Context.Message.DeleteAsync();
+            
+            await _auditLog.AddEntry($"{_displayName} was muted for {duration} hours.");
         }
 
         [Command("mute")]
@@ -46,6 +51,8 @@ namespace BrackeysBot.Commands.Moderation
             IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully muted {_displayName}.");
             _ = messageToDel.TimedDeletion(3000);
             await Context.Message.DeleteAsync();
+
+            await _auditLog.AddEntry($"{_displayName} was muted.");
         }
 
         [Command("unmute")]
@@ -61,6 +68,8 @@ namespace BrackeysBot.Commands.Moderation
             IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully unmuted {_displayName}.");
             _ = messageToDel.TimedDeletion(3000);
             await Context.Message.DeleteAsync();
+
+            await _auditLog.AddEntry($"{_displayName} was unmuted.");
         }
     }
 }
