@@ -26,9 +26,7 @@ namespace BrackeysBot.Commands.Moderation
             string _displayName = user.GetDisplayName();
             await Context.Guild.AddBanAsync(user, 7, reason);
 
-            IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully banned {_displayName}.");
-            _ = messageToDel.TimedDeletion(3000);
-            await Context.Message.DeleteAsync();
+            await ReplyAsync($":white_check_mark: Successfully banned {_displayName}.");
         }
 
         [Command("tempban")]
@@ -41,9 +39,7 @@ namespace BrackeysBot.Commands.Moderation
 
             await Context.Guild.AddBanAsync(user, 7, reason);
 
-            IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully banned {_displayName} for {duration} hours.");
-            _ = messageToDel.TimedDeletion(3000);
-            await Context.Message.DeleteAsync();
+            await ReplyAsync($":white_check_mark: Successfully banned {_displayName} for {duration} hours.");
         }
 
         [Command("unban")]
@@ -52,11 +48,10 @@ namespace BrackeysBot.Commands.Moderation
         public async Task Unban([Remainder] string identification)
         {
             IUser user = null;
-            ulong id;
             bool _idMode = false;
             string response = "User not found.";
 
-            if (ulong.TryParse(identification, out id))
+            if (ulong.TryParse(identification, out ulong id))
                 _idMode = true;
 
             var bans = await Context.Guild.GetBansAsync();
@@ -85,9 +80,8 @@ namespace BrackeysBot.Commands.Moderation
                 await Context.Guild.RemoveBanAsync(user);
                 _bans.Remove(user.Id.ToString() + "," + Context.Guild.Id.ToString());
             }
-            IMessage messageToDel = await ReplyAsync(response);
-            _ = messageToDel.TimedDeletion(3000);
-            await Context.Message.DeleteAsync();
+
+            await ReplyAsync(response);
         }
     }
 }
