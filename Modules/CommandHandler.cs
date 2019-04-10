@@ -64,35 +64,36 @@ namespace BrackeysBot.Modules
                 return;
             }
 
-            CommandInfo executedCommand = null;
-            try
+            // Check if there is a custom command registered under the name
+            string commandName = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
+            CustomCommand customCommand = _customCommandModule.FindCommand(commandName);
+            if (customCommand != null)
             {
-                executedCommand = _commandService.Search(context, argPos).Commands.First().Command;
-            }
-            catch
-            {
-                // The executed command wasnt found in the modules, therefore look if any custom commands are registered.
-                string commandName = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
-                CustomCommand command = _customCommandModule.FindCommand(commandName);
-                if (command != null)
+                // Attempt to execute the custom command
+                try { await customCommand.Execute(author, context.Channel); }
+                // If an exception occurs, print it
+                catch (Exception ex)
                 {
-                    // Attempt to execute the custom command
-                    try { await command.Execute(author, context.Channel); }
-                    // If an exception occurs, print it
-                    catch (Exception ex)
-                    {
-                        EmbedBuilder eb = new EmbedBuilder()
-                            .WithColor(Color.Red)
-                            .WithTitle("Error")
-                            .WithDescription(ex.Message);
+                    EmbedBuilder eb = new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithTitle("Error")
+                        .WithDescription(ex.Message);
 
-                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                    }
-                    return;
+                    await context.Channel.SendMessageAsync(string.Empty, false, eb);
                 }
-                else
+                return;
+            }
+            else
+            {
+                // No custom command was found? Search the commands from the command modules.
+                CommandInfo executedCommand = null;
+                try
                 {
-                    // Also no custom command was found? Check all commands and custom commands if there was a close match somewhere
+                    executedCommand = _commandService.Search(context, argPos).Commands.First().Command;
+                }
+                catch
+                {
+                    // Also no regular command was found? Check all commands and custom commands if there was a close match somewhere
                     IEnumerable<string> commandNames = _commandService.Commands
                         .Where(c => // Make sure that only commands that can be used by the user get listed
                         {
@@ -101,10 +102,10 @@ namespace BrackeysBot.Modules
                             {
                                 UserType roles = pra.AllowedRoles;
 
-                                // Allow the command usage if anyone can use it, or the user is a staff member
-                                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
-                                // If the command is for gurus, check if the user has the guru role
-                                if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
+                            // Allow the command usage if anyone can use it, or the user is a staff member
+                            if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
+                            // If the command is for gurus, check if the user has the guru role
+                            if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
 
                                 return false;
                             }
@@ -136,88 +137,88 @@ namespace BrackeysBot.Modules
                     // The entered command was just nonsense. Just ignore it.
                     return;
                 }
-            }
 
-            PermissionRestrictionAttribute restriction = executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
-            if (restriction != null)
-            {
-                EmbedBuilder eb = new EmbedBuilder()
-                    .WithTitle("Insufficient permissions")
-                    .WithDescription("You don't have the required permissions to run that command.")
-                    .WithColor(Color.Red);
-
-                bool denyInvokation = true;
-                UserType roles = restriction.AllowedRoles;
-                
-                // Allow the command usage if anyone can use it, or the user is a staff member
-                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { denyInvokation = false; }
-                // If the command is for gurus, check if the user has the guru role
-                if (roles.HasFlag(UserType.Guru) && author.HasGuruRole()) { denyInvokation = false; }
-
-                if (denyInvokation)
+                PermissionRestrictionAttribute restriction = executedCommand.Attributes.FirstOrDefault(a => a is PermissionRestrictionAttribute) as PermissionRestrictionAttribute;
+                if (restriction != null)
                 {
-                    var message = await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                    _ = message.TimedDeletion(5000);
-                    Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
-                    return;
-                }
-            }
+                    EmbedBuilder eb = new EmbedBuilder()
+                        .WithTitle("Insufficient permissions")
+                        .WithDescription("You don't have the required permissions to run that command.")
+                        .WithColor(Color.Red);
 
-            bool cooldownCommand = CheckIfCommandHasCooldown(executedCommand.Name.ToLower());
-            bool sameParamCommand = false;
-            bool cooldownExpired = false;
-            string parameters = "";
+                    bool denyInvokation = true;
+                    UserType roles = restriction.AllowedRoles;
 
-            if (cooldownCommand && !UserHelper.HasStaffRole(s.Author as IGuildUser))
-            {
-                sameParamCommand = CheckIfSameParameterCommand(executedCommand.Name.ToLower());
-                parameters = s.ToString().Remove(0, s.ToString().IndexOf(' ') + 1);
-                cooldownExpired = HasCooldownExpired(executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
-                if (!cooldownExpired)
-                {
-                    TimeSpan ts = GetTimeUntilCooldownHasExpired(executedCommand.Name.ToLower(), s.Author as IGuildUser, sameParamCommand, parameters);
+                    // Allow the command usage if anyone can use it, or the user is a staff member
+                    if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { denyInvokation = false; }
+                    // If the command is for gurus, check if the user has the guru role
+                    if (roles.HasFlag(UserType.Guru) && author.HasGuruRole()) { denyInvokation = false; }
 
-                    Embed eb = new EmbedBuilder()
-                        .WithTitle("Cooldown hasn't expired yet")
-                        .WithDescription($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
-                        .WithColor(Color.Orange);
-
-                    await context.Channel.SendMessageAsync(string.Empty, false, eb);
-                    return;
-                }
-            }
-
-            IResult result = await _commandService.ExecuteAsync(context, argPos, ServiceProvider);
-            if (!result.IsSuccess)
-            {
-                Log.WriteLine($"The command \"{msg.Content}\" failed with the reason {result.Error.Value}: \"{result.ErrorReason}\"");
-
-                if (result.Error == CommandError.UnknownCommand
-                    || result.Error == CommandError.BadArgCount 
-                    || result.Error == CommandError.ParseFailed)
-                {
-                    return;
+                    if (denyInvokation)
+                    {
+                        var message = await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                        _ = message.TimedDeletion(5000);
+                        Log.WriteLine($"The command \"{msg.Content}\" failed with the reason InsufficientPermissions.");
+                        return;
+                    }
                 }
 
-                EmbedBuilder builder = new EmbedBuilder()
-                    .WithTitle("Error")
-                    .WithDescription(result.ErrorReason)
-                    .WithColor(Color.Red);
+                bool cooldownCommand = CheckIfCommandHasCooldown(executedCommand.Name.ToLower());
+                bool sameParamCommand = false;
+                bool cooldownExpired = false;
+                string parameters = "";
 
-                IMessage errorMsg = await context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
-            }
-            else
-            {
                 if (cooldownCommand && !UserHelper.HasStaffRole(s.Author as IGuildUser))
-                    AddUserToCooldown(executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
-                string command = executedCommand.Name;
-                if (_data.Statistics.Has(command))
                 {
-                    _data.Statistics.Set(command, _data.Statistics.Get(command) + 1);
+                    sameParamCommand = CheckIfSameParameterCommand(executedCommand.Name.ToLower());
+                    parameters = s.ToString().Remove(0, s.ToString().IndexOf(' ') + 1);
+                    cooldownExpired = HasCooldownExpired(executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
+                    if (!cooldownExpired)
+                    {
+                        TimeSpan ts = GetTimeUntilCooldownHasExpired(executedCommand.Name.ToLower(), s.Author as IGuildUser, sameParamCommand, parameters);
+
+                        Embed eb = new EmbedBuilder()
+                            .WithTitle("Cooldown hasn't expired yet")
+                            .WithDescription($"{s.Author.Mention}, you can't run this command yet. Please wait {ts.Hours} hours, {ts.Minutes} minutes and {ts.Seconds} seconds.")
+                            .WithColor(Color.Orange);
+
+                        await context.Channel.SendMessageAsync(string.Empty, false, eb);
+                        return;
+                    }
+                }
+
+                IResult result = await _commandService.ExecuteAsync(context, argPos, ServiceProvider);
+                if (!result.IsSuccess)
+                {
+                    Log.WriteLine($"The command \"{msg.Content}\" failed with the reason {result.Error.Value}: \"{result.ErrorReason}\"");
+
+                    if (result.Error == CommandError.UnknownCommand
+                        || result.Error == CommandError.BadArgCount
+                        || result.Error == CommandError.ParseFailed)
+                    {
+                        return;
+                    }
+
+                    EmbedBuilder builder = new EmbedBuilder()
+                        .WithTitle("Error")
+                        .WithDescription(result.ErrorReason)
+                        .WithColor(Color.Red);
+
+                    IMessage errorMsg = await context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
                 }
                 else
                 {
-                    _data.Statistics.Add(command, 1);
+                    if (cooldownCommand && !UserHelper.HasStaffRole(s.Author as IGuildUser))
+                        AddUserToCooldown(executedCommand.Name, s.Author as IGuildUser, sameParamCommand, parameters);
+                    string command = executedCommand.Name;
+                    if (_data.Statistics.Has(command))
+                    {
+                        _data.Statistics.Set(command, _data.Statistics.Get(command) + 1);
+                    }
+                    else
+                    {
+                        _data.Statistics.Add(command, 1);
+                    }
                 }
             }
         }

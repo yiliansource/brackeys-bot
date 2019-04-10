@@ -221,8 +221,7 @@ namespace BrackeysBot
         }
 
         /// <summary>
-        /// Registers a method to mute people who were muted but decided to be clever
-        /// and wanted to rejoin to lose the muted role.
+        /// Registers a method to mute people who were muted but decided to be clever and wanted to rejoin to lose the muted role.
         /// </summary>
         private void RegisterMuteOnJoin()
         {
