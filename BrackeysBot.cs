@@ -29,6 +29,7 @@ namespace BrackeysBot
 
         private EventPointCommand.LeaderboardNavigator _leaderboardNavigator;
         private VideoSuggestionsHandler _videoSuggestionsHandler;
+        private AuditLog _auditLog;
 
         /// <summary>
         /// Creates a new instance of the bot and initializes the configuration.
@@ -64,6 +65,7 @@ namespace BrackeysBot
             Commands = new CommandHandler(Data, Configuration["prefix"]);
 
             _leaderboardNavigator = new EventPointCommand.LeaderboardNavigator(Data.EventPoints, Data.Settings);
+            _auditLog = new AuditLog();
 
             _services = new ServiceCollection()
 
@@ -85,6 +87,7 @@ namespace BrackeysBot
                 .AddSingleton(Data.Bans)
 
                 .AddSingleton(_leaderboardNavigator)
+                .AddSingleton(_auditLog)
 
                 // Finally, build the provider
                 .BuildServiceProvider();
@@ -128,7 +131,23 @@ namespace BrackeysBot
                 await ((IMessageChannel) channel).SendMessageAsync ("Successfully updated!");
                 File.Delete (Path.Combine (Directory.GetCurrentDirectory (), "updated.txt"));
             }
-            
+
+            // Intialize the audit log
+            if (Data.Settings.Has("server-id") && Data.Settings.Has("log-channel-id"))
+            {
+                ulong guildId = ulong.Parse(Data.Settings["server-id"]);
+                ulong logChannelId = ulong.Parse(Data.Settings["log-channel-id"]);
+
+                IGuild mainGuild = _client.GetGuild(guildId);
+                IMessageChannel auditLogChannel = await mainGuild.GetTextChannelAsync(logChannelId);
+
+                _auditLog.Channel = auditLogChannel;
+            }
+            else
+            {
+                Log.WriteLine("Can't initialize the video settings handler: Either the server ID or the log channel ID has not been assigned.");
+            }
+
             _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerHour * 1), CancellationToken.None);
             _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerHour * 1), CancellationToken.None);
             _ = PeriodicCheckVideoSuggestions(new TimeSpan(TimeSpan.TicksPerHour * 4), CancellationToken.None);
@@ -160,7 +179,9 @@ namespace BrackeysBot
         {
             _client.MessageReceived += HandleMassiveCodeblock;
         }
-
+        /// <summary>
+        /// Registers a method that is called once the bot is mentioned.
+        /// </summary>
         private void RegisterMentionMessage()
         {
             _client.MessageReceived += async (s) =>
@@ -175,28 +196,26 @@ namespace BrackeysBot
                 }
             };
         }
-
+        /// <summary>
+        /// Registers a method that will log messages that include staff mentions.
+        /// </summary>
         private void RegisterStaffPingLogging()
         {
             _client.MessageReceived += async (s) =>
             {
                 if (!(s is SocketUserMessage msg) || s.Author.IsBot) { return; }
-                if (!Data.Settings.Has("staff-role") || !Data.Settings.Has("log-channel-id")) { return; }
+                if (!Data.Settings.Has("staff-role")) { return; }
 
                 SocketGuild guild = (msg.Channel as SocketGuildChannel).Guild;
                 SocketRole staffRole = guild.Roles.FirstOrDefault(r => r.Name == Data.Settings.Get("staff-role"));
                 if(staffRole != null && s.MentionedRoles.Contains(staffRole))
                 {
-                    if (guild.Channels.FirstOrDefault(c => c.Id == ulong.Parse(Data.Settings.Get("log-channel-id"))) is IMessageChannel logChannel)
-                    {
-                        string author = msg.Author.Mention;
-                        string messageLink = $@"https://discordapp.com/channels/{ guild.Id }/{ msg.Channel.Id }/{ msg.Id }";
-                        string messageContent = msg.Content.Replace(staffRole.Mention, "@" + staffRole.Name);
+                    string author = msg.Author.Mention;
+                    string messageLink = $@"https://discordapp.com/channels/{ guild.Id }/{ msg.Channel.Id }/{ msg.Id }";
+                    string messageContent = msg.Content.Replace(staffRole.Mention, "@" + staffRole.Name);
 
-                        await logChannel.SendMessageAsync($"{ author } mentioned staff in the following message! (<{ messageLink }>)\n```\n{ messageContent }\n```");
-
-                        Log.WriteLine($"{author} mentioned @Staff in the following message: {messageLink}");
-                    }
+                    await _auditLog.AddEntry($"{ author } mentioned staff in the following message! (<{ messageLink }>)\n```\n{ messageContent }\n```");
+                    Log.WriteLine($"{author} mentioned @Staff in the following message: {messageLink}");
                 }
             };
         }
@@ -210,7 +229,7 @@ namespace BrackeysBot
             _client.UserJoined += CheckMuteOnJoin;
         }
 
-        async Task CheckMuteOnJoin(SocketGuildUser user)
+        private async Task CheckMuteOnJoin(SocketGuildUser user)
         {
             if (DateTime.UtcNow.ToBinary() < user.GetMuteTime()) { await user.Mute(); }
             else { await user.Unmute(); }
@@ -275,6 +294,12 @@ namespace BrackeysBot
 
         public async Task PeriodicCheckVideoSuggestions(TimeSpan interval, CancellationToken cancellationToken)
         {
+            if (!Data.Settings.Has("server-id"))
+            {
+                Log.WriteLine("Can't initialize the video settings handler: The setting 'server-id' has not been assigned.");
+                return;
+            }
+            
             ulong guildId = ulong.Parse(Data.Settings["server-id"]);
             IGuild mainGuild = _client.GetGuild(guildId);
 
@@ -289,7 +314,7 @@ namespace BrackeysBot
                     await _videoSuggestionsHandler.UpdateChannelStateToValid();
                 }
 
-                Func<bool, string> FormatValid = v => $"'{(v ? "Valid" : "Invalid")}'";
+                string FormatValid(bool v) => $"'{(v ? "Valid" : "Invalid")}'";
 
                 Log.WriteLine($"Checked VideoSuggestions state and transitioned from state {FormatValid(valid)} to state {FormatValid(_videoSuggestionsHandler.IsChannelStateValid())}.");
                 await Task.Delay(interval, cancellationToken);
