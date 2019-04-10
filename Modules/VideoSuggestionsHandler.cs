@@ -30,7 +30,7 @@ namespace BrackeysBot.Modules
 
         private const ulong READ_MESSAGE_PERMISSION = 1024u;
         private const string EVERYONE = "@everyone";
-        private const string CHANNEL_NAME = "video-suggestions";
+        private const string CHANNEL_NAME = "video_suggestions";
 
         public VideoSuggestionsHandler(IGuild guild)
         {
