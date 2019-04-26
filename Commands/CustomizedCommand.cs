@@ -46,6 +46,9 @@ namespace BrackeysBot.Commands
         [HelpData("ccdelete <name>", "Deletes the specified custom command.")]
         public async Task DeleteCustomCommand (string name)
         {
+            // Converts name from plain text to text with special characters
+            name = CommandConversion.FromConverted(name);
+
             if (_customCommands.Has(name))
             {
                 _customCommands.Remove(name);
