@@ -28,6 +28,9 @@ namespace BrackeysBot.Commands
         [HelpData("initgiveaway <message>", "Initializes a new giveaway, with a specified message.")]
         public async Task InitializeGiveaway ([Remainder] string message)
         {
+            // Converts from plain text to text with special characters
+            message = CommandConversion.FromConverted(message);
+
             // Delete the invokation message
             await Context.Message.DeleteAsync();
 

@@ -13,6 +13,10 @@ namespace BrackeysBot.Commands
         [HelpData("say <channel-id> <message>", "Makes the bot say the specified message in the specified channel.")]
         public async Task Say(ulong channel, [Remainder]string message)
         {
+
+            // Converts from plain text to text with special characters
+            message = CommandConversion.FromConverted(message);
+
             var channels = await Context.Guild.GetChannelsAsync();
             var targetChannel = channels.FirstOrDefault(c => c.Id == channel);
 

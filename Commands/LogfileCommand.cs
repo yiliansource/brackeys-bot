@@ -33,6 +33,9 @@ namespace BrackeysBot.Commands
         [HelpData("logfile <date>", "Fetches the logfile for a specific date.")]
         public async Task GetLogfile(string dateString)
         {
+            // Converts from plain text to text with special characters
+            dateString = CommandConversion.FromConverted(dateString);
+
             DateTime date;
             if (DateTime.TryParseExact(dateString, "dd/MM/yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out date))
             {

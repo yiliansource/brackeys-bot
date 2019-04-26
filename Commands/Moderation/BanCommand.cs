@@ -22,6 +22,9 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("ban <member> <reason> (optional)", "Ban a member.")]
         public async Task Ban(IGuildUser user, [Optional] [Remainder] string reason)
         {
+            // Converts from plain text to text with special characters
+            reason = CommandConversion.FromConverted(reason);
+
             _bans.Remove(user.Id.ToString() + "," + Context.Guild.Id.ToString());
             string _displayName = user.GetDisplayName();
             await Context.Guild.AddBanAsync(user, 7, reason);
@@ -34,6 +37,9 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("tempban <member> <duration in hours> <reason> (optional)", "Ban a member for the specified amount of time.")]
         public async Task Tempban(IGuildUser user, double duration, [Optional] [Remainder] string reason)
         {
+            // Converts from plain text to text with special characters
+            reason = CommandConversion.FromConverted(reason);
+
             _bans.Set(user.Id.ToString() + "," + Context.Guild.Id.ToString(), (DateTime.UtcNow + new TimeSpan((long)(duration * TimeSpan.TicksPerHour))).ToBinary().ToString());
             string _displayName = user.GetDisplayName();
 
@@ -47,6 +53,9 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("unban <name#discriminator OR user id>", "Unban a member.")]
         public async Task Unban([Remainder] string identification)
         {
+            // Converts from plain text to text with special characters
+            identification = CommandConversion.FromConverted(identification);
+
             IUser user = null;
             bool _idMode = false;
             string response = "User not found.";

@@ -35,6 +35,9 @@ namespace BrackeysBot.Commands.Archive
         [HelpData("archive <channel> <title>", "Archives the given channel.")]
         public async Task ArchiveChannel(ISocketMessageChannel channel, [Remainder]string title)
         {
+            // Converts from plain text to text with special characters
+            title = CommandConversion.FromConverted(title);
+
             var messages = await channel.GetMessagesAsync().Flatten();
 
             using (ChannelArchive archive = new ChannelArchive(title))

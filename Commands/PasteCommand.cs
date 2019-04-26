@@ -64,6 +64,9 @@ namespace BrackeysBot.Commands
         [HelpData("paste <message>", "Pastes a message to PasteMyst.")]
         public async Task PasteMessage([Remainder] string messageContent)
         {
+            // Converts from plain text to text with special characters
+            messageContent = CommandConversion.FromConverted(messageContent);
+
             string content = messageContent.Trim('\n', ' ');
             RemoveCodeblockFormat(ref content);
             string url = await CreatePaste(content);

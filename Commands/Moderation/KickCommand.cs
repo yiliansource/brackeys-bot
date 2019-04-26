@@ -22,6 +22,9 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("kick <member> <reason> (optional)", "Kick a member.")]
         public async Task Kick(IGuildUser user, [Optional] [Remainder] string reason)
         {
+            // Converts from plain text to text with special characters
+            reason = CommandConversion.FromConverted(reason);
+
             string _displayName = user.GetDisplayName();
             await user.KickAsync(reason);
             IMessage messageToDel = await ReplyAsync($":white_check_mark: {_displayName} was kicked.");

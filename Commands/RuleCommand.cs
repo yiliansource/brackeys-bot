@@ -46,6 +46,9 @@ namespace BrackeysBot.Commands
         [HelpData("setrule <id> <content>", "Updates a rule.")]
         public async Task SetRule (int id, [Remainder]string contents)
         {
+            // Converts from plain text to text with special characters
+            contents = CommandConversion.FromConverted(contents);
+
             if (_ruleTable.Has(id))
             {
                 _ruleTable.Set(id, contents);

@@ -26,6 +26,9 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("tempmute <member> <duration in hours> <reason> (optional)", "Mute a member for the specified amount of time.")]
         public async Task TempMute(IGuildUser user, double duration, [Optional] [Remainder] string reason)
         {
+            // Converts from plain text to text with special characters
+            reason = CommandConversion.FromConverted(reason);
+
             _mutes.Set(user.Id.ToString() + "," + Context.Guild.Id.ToString(), (DateTime.UtcNow + new TimeSpan((long)(duration * TimeSpan.TicksPerHour))).ToBinary().ToString());
             string _displayName = user.GetDisplayName();
 
@@ -43,6 +46,9 @@ namespace BrackeysBot.Commands.Moderation
         [HelpData("mute <member> <reason> (optional)", "Mute a member.")]
         public async Task Mute(IGuildUser user, [Optional] [Remainder] string reason)
         {
+            // Converts from plain text to text with special characters
+            reason = CommandConversion.FromConverted(reason);
+
             _mutes.Remove(user.Id.ToString() + "," + Context.Guild.Id.ToString());
             string _displayName = user.GetDisplayName();
 
