@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BrackeysBot.Helpers
+namespace BrackeysBot
 {
     /// <summary>
     /// Utility to handle conversion from text with special characters to plain text and vice versa

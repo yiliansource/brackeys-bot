@@ -6,7 +6,6 @@ using Discord.Commands;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using BrackeysBot.Helpers;
 
 namespace BrackeysBot.Commands
 {
