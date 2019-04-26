@@ -34,7 +34,8 @@ namespace BrackeysBot.Modules
         /// </summary>
         public CustomCommand FindCommand(string name)
         {
-            string commandName = _table.CommandNames.FirstOrDefault(n => Regex.IsMatch(name, n, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+            // Matches name agains regexes in CommandNames, ^ and & is used to ensure that match can't be satisfied by part of the name
+            string commandName = _table.CommandNames.FirstOrDefault(n => Regex.IsMatch(name, $"^{n}$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
             if (commandName == null) return null;
 
             string json = _table.Get(commandName);

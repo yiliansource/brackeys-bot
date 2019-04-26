@@ -21,13 +21,15 @@ namespace BrackeysBot.Modules
 
         public IServiceProvider ServiceProvider { get; set; }
         public string CommandPrefix { get; set; }
-        
+        public string IgnoreCustomCommandPrefix { get; set; }
+
         private DataModule _data;
         private CustomCommandModule _customCommandModule;
 
-        public CommandHandler(DataModule data, string commandPrefix)
+        public CommandHandler(DataModule data, string commandPrefix, string ignoreCustomCommandPrefix)
         {
             CommandPrefix = commandPrefix;
+            IgnoreCustomCommandPrefix = ignoreCustomCommandPrefix;
 
             _data = data;
             _commandService = new CommandService();
@@ -65,10 +67,24 @@ namespace BrackeysBot.Modules
                 return;
             }
 
-            // Check if there is a custom command registered under the name
-            string commandName = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
-            string convertedCommand = CommandConversion.ToConverted(msg.Content.Substring(argPos));
-            CustomCommand customCommand = _customCommandModule.FindCommand(commandName);
+            // Removes prefix and creates converted command (without special characters)
+            string msgWithoutPrefix = msg.Content.Substring(argPos);
+            string commandName = msgWithoutPrefix.Split(' ')[0].ToLowerInvariant();
+            string convertedCommand = CommandConversion.ToConverted(msgWithoutPrefix);
+
+            CustomCommand customCommand = null;
+
+            // Checks if custom commands should be ignored
+            if (convertedCommand.StartsWith(IgnoreCustomCommandPrefix)) 
+            {
+                // Removes CustomCommandIgnorePrefix from command 
+                convertedCommand = convertedCommand.Substring(IgnoreCustomCommandPrefix.Length);
+            } else 
+            {
+                // Check if there is a custom command registered under the name
+                customCommand = _customCommandModule.FindCommand(commandName);
+            }
+
             if (customCommand != null)
             {
                 // Attempt to execute the custom command

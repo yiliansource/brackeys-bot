@@ -24,6 +24,7 @@ namespace BrackeysBot.Commands
         [HelpData("ccadd <name> <message>", "Adds a command that can be customized with various features.")]
         public async Task AddCustomCommand (string name, [Remainder]string message)
         {
+            // Converts name and message from plain text to text with special characters
             name = CommandConversion.FromConverted(name);
             message = CommandConversion.FromConverted(message);
             string parsedCommand = ParseCommandInputToJSONString(message);

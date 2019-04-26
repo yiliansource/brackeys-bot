@@ -1,4 +1,5 @@
 {
     "prefix": "[]",
+    "ignore_cc_prefix": "nocc_",
     "token": ""
-  }
+}

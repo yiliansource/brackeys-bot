@@ -62,7 +62,7 @@ namespace BrackeysBot
             Data = new DataModule();
             Data.InitializeDataFiles();
 
-            Commands = new CommandHandler(Data, Configuration["prefix"]);
+            Commands = new CommandHandler(Data, Configuration["prefix"], Configuration["ignore_cc_prefix"]);
 
             _leaderboardNavigator = new EventPointCommand.LeaderboardNavigator(Data.EventPoints, Data.Settings);
             _auditLog = new AuditLog();
