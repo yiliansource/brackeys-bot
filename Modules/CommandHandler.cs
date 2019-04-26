@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using BrackeysBot.Helpers;
 
 namespace BrackeysBot.Modules
 {
@@ -66,6 +67,7 @@ namespace BrackeysBot.Modules
 
             // Check if there is a custom command registered under the name
             string commandName = msg.Content.Substring(argPos).Split(' ')[0].ToLowerInvariant();
+            string convertedCommand = CommandConversion.ToConverted(msg.Content.Substring(argPos));
             CustomCommand customCommand = _customCommandModule.FindCommand(commandName);
             if (customCommand != null)
             {
@@ -89,7 +91,7 @@ namespace BrackeysBot.Modules
                 CommandInfo executedCommand = null;
                 try
                 {
-                    executedCommand = _commandService.Search(context, argPos).Commands.First().Command;
+                    executedCommand = _commandService.Search(context, convertedCommand).Commands.First().Command;
                 }
                 catch
                 {
@@ -187,7 +189,7 @@ namespace BrackeysBot.Modules
                     }
                 }
 
-                IResult result = await _commandService.ExecuteAsync(context, argPos, ServiceProvider);
+                IResult result = await _commandService.ExecuteAsync(context, convertedCommand, ServiceProvider);
                 if (!result.IsSuccess)
                 {
                     Log.WriteLine($"The command \"{msg.Content}\" failed with the reason {result.Error.Value}: \"{result.ErrorReason}\"");

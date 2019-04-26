@@ -6,6 +6,7 @@ using Discord.Commands;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using BrackeysBot.Helpers;
 
 namespace BrackeysBot.Commands
 {
@@ -23,6 +24,8 @@ namespace BrackeysBot.Commands
         [HelpData("ccadd <name> <message>", "Adds a command that can be customized with various features.")]
         public async Task AddCustomCommand (string name, [Remainder]string message)
         {
+            name = CommandConversion.FromConverted(name);
+            message = CommandConversion.FromConverted(message);
             string parsedCommand = ParseCommandInputToJSONString(message);
 
             if (_customCommands.Has(name))
