@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace BrackeysBot.Modules
 {
@@ -33,7 +34,8 @@ namespace BrackeysBot.Modules
         /// </summary>
         public CustomCommand FindCommand(string name)
         {
-            string commandName = _table.CommandNames.FirstOrDefault(n => string.Equals(name, n, StringComparison.InvariantCultureIgnoreCase));
+            // Compares name agains regexes storred in command names, ^ and $ is used to ensure that match can't be satisfied by part of the name
+            string commandName = _table.CommandNames.FirstOrDefault(n => Regex.IsMatch(name, $"^{n}$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase));
             if (commandName == null) return null;
 
             string json = _table.Get(commandName);
