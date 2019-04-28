@@ -23,6 +23,9 @@ namespace BrackeysBot.Commands
         [HelpData("ccadd <name> <message>", "Adds a command that can be customized with various features.")]
         public async Task AddCustomCommand (string name, [Remainder]string message)
         {
+            // Converts \\ to \ (because single \ can't be passed by discord)
+            name = name.Replace(@"\\", @"\");
+
             string parsedCommand = ParseCommandInputToJSONString(message);
 
             if (_customCommands.Has(name))
@@ -42,6 +45,9 @@ namespace BrackeysBot.Commands
         [HelpData("ccdelete <name>", "Deletes the specified custom command.")]
         public async Task DeleteCustomCommand (string name)
         {
+            // Converts \\ to \ (because single \ can't be passed by discord)
+            name = name.Replace(@"\\", @"\");
+
             if (_customCommands.Has(name))
             {
                 _customCommands.Remove(name);
