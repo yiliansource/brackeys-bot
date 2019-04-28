@@ -26,6 +26,11 @@ namespace BrackeysBot
             // Replace all "a|b" to "a"
             pattern = Regex.Replace(pattern, OrWithNoParentheses, @"$1");
 
+            // Replaces characters classes
+            pattern = pattern.Replace(@"\d", @"0");
+            pattern = pattern.Replace(@"\w", @"a");
+            pattern = pattern.Replace(@"\s", @" ");
+
             // Change all "[" to ACSII tags (needed for parentheses conversion)
             pattern = pattern.Replace(@"\[", $"<{(int)'['}>");
 
