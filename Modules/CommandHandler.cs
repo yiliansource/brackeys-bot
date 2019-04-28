@@ -102,17 +102,17 @@ namespace BrackeysBot.Modules
                             {
                                 UserType roles = pra.AllowedRoles;
 
-                            // Allow the command usage if anyone can use it, or the user is a staff member
-                            if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
-                            // If the command is for gurus, check if the user has the guru role
-                            if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
+                                // Allow the command usage if anyone can use it, or the user is a staff member
+                                if (roles.HasFlag(UserType.Everyone) || author.HasStaffRole()) { return true; }
+                                // If the command is for gurus, check if the user has the guru role
+                                if (roles.HasFlag(UserType.Guru)) { return author.HasGuruRole(); }
 
                                 return false;
                             }
                             return true;
                         })
                         .Select(c => c.Name)
-                        .Concat(_data.CustomCommands.CommandNames)
+                        .Concat(_data.CustomCommands.CommandNames.Select(command => RegexUtils.GetExample(command))) // Converts commands from regex form to normal string form
                         .Distinct();
 
                     const int LEVENSHTEIN_TOLERANCE = 2;
