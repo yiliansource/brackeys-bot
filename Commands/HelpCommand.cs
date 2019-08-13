@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
+using System.Text.RegularExpressions;
 
 namespace BrackeysBot.Commands
 {
@@ -61,11 +62,27 @@ namespace BrackeysBot.Commands
 
         [Command("customcommands"), Alias("cclist")]
         [HelpData("customcommands", "Displays all the registered custom commands.")]
-        public async Task CustomCommands()
+        public async Task CustomCommandsNoRegex()
         {
-            EmbedBuilder commandDialog = GetCustomCommandDialog();
-            if (commandDialog == null)
-            {
+            await CustomCommandsGeneric(false);
+        }
+
+        [Command("customcommands_regex"), Alias("cclist_regex")]
+        [HelpData("customcommands_regex", "Displays all the registered custom commands in Regex form.")]
+        public async Task CustomCommandsRegex() 
+        {
+            await CustomCommandsGeneric(true);
+        }
+
+        /// <summary>
+        /// Task for showing custom command embeded with or without a Regex for
+        /// </summary>
+        /// <param name="regex">Specifies if Regex form should be added</param>
+        /// <returns></returns>
+        async Task CustomCommandsGeneric(bool regex) 
+        {
+            EmbedBuilder commandDialog = GetCustomCommandDialog(regex);
+            if (commandDialog == null){
                 commandDialog = new EmbedBuilder()
                     .WithColor(new Color(165, 79, 121))
                     .WithTitle("Custom Commands")
@@ -74,11 +91,12 @@ namespace BrackeysBot.Commands
 
             await ReplyAsync(string.Empty, false, commandDialog);
         }
-        
+
         /// <summary>
         /// Returns the dialog displaying the custom commands.
         /// </summary>
-        private EmbedBuilder GetCustomCommandDialog()
+        /// <param name="showRegex">Specifies if Regex form should be shown in custom command dialog (default is false)</param>
+        private EmbedBuilder GetCustomCommandDialog(bool showRegex = false)
         {
             if (_customCommands.CommandNames.Length == 0)
                 return null;
@@ -90,7 +108,17 @@ namespace BrackeysBot.Commands
             StringBuilder commands = new StringBuilder();
             foreach (string command in _customCommands.CommandNames)
             {
-                commands.AppendLine($"{command}");
+                if (showRegex) 
+                {
+                    // Checks if command is in fact a Regex
+                    string example = RegexUtils.GetExample(command);
+                    if (!command.Equals(example)) 
+                    {
+                        commands.AppendLine($"{command} ({example})");
+                        continue;
+                    }
+                }
+                commands.AppendLine($"{RegexUtils.GetExample(command)}");
             }
             eb.WithDescription(commands.ToString());
 
