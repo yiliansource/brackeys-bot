@@ -52,9 +52,8 @@ namespace BrackeysBot.Commands.Moderation
             int clearedMessages = user == null ? amount : count;
 
             IMessage messageToDel = await ReplyAsync($":white_check_mark: Successfully cleared {clearedMessages} messages{((user != null) ? $" sent by {user.GetDisplayName()}" : string.Empty)}.");
-            _ = messageToDel.TimedDeletion(3000);
-            
             await _auditLog.AddEntry($"{(Context.User as IGuildUser).GetDisplayName()} cleared {clearedMessages} messages{((user != null) ? $" sent by {user.GetDisplayName()}" : string.Empty)} in <#{Context.Channel.Id}>.");
+            await messageToDel.TimedDeletion(3000);
         }
     }
 }

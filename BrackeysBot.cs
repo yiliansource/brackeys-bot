@@ -150,7 +150,6 @@ namespace BrackeysBot
 
             _ = PeriodicCheckMute(new TimeSpan(TimeSpan.TicksPerHour * 1), CancellationToken.None);
             _ = PeriodicCheckBan(new TimeSpan(TimeSpan.TicksPerHour * 1), CancellationToken.None);
-            _ = PeriodicCheckVideoSuggestions(new TimeSpan(TimeSpan.TicksPerHour * 4), CancellationToken.None);
         }
 
         private async Task OnUserJoinedServer(SocketGuildUser arg)
@@ -287,35 +286,6 @@ namespace BrackeysBot
                        catch { }
                    });
                 Log.WriteLine("Checked bans.");
-                await Task.Delay(interval, cancellationToken);
-            }
-        }
-
-        public async Task PeriodicCheckVideoSuggestions(TimeSpan interval, CancellationToken cancellationToken)
-        {
-            if (!Data.Settings.Has("server-id"))
-            {
-                Log.WriteLine("Can't initialize the video settings handler: The setting 'server-id' has not been assigned.");
-                return;
-            }
-            
-            ulong guildId = ulong.Parse(Data.Settings["server-id"]);
-            IGuild mainGuild = _client.GetGuild(guildId);
-
-            _videoSuggestionsHandler = new VideoSuggestionsHandler(mainGuild);
-            await _videoSuggestionsHandler.InitializeAsync();
-
-            while (true)
-            {
-                bool valid = _videoSuggestionsHandler.IsChannelStateValid();
-                if (!valid)
-                {
-                    await _videoSuggestionsHandler.UpdateChannelStateToValid();
-                }
-
-                string FormatValid(bool v) => $"'{(v ? "Valid" : "Invalid")}'";
-
-                Log.WriteLine($"Checked VideoSuggestions state and transitioned from state {FormatValid(valid)} to state {FormatValid(_videoSuggestionsHandler.IsChannelStateValid())}.");
                 await Task.Delay(interval, cancellationToken);
             }
         }
