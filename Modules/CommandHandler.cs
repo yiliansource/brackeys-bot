@@ -51,6 +51,7 @@ namespace BrackeysBot.Modules
 
             int argPos = 0;
             if (!msg.HasStringPrefix(CommandPrefix, ref argPos)) return;
+            if (msg.Content.Length - argPos <= 0) return;
 
             IGuildUser author = s.Author as IGuildUser;
             CommandContext context = new CommandContext(client, msg);
