@@ -41,7 +41,7 @@ namespace BrackeysBot.Commands
                     else
                     {
                         bool active = action == ModuleActionType.Enable;
-                        Modules.SetModuleState(name, active);
+                        await Modules.SetModuleState(name, active);
                         await ReplyAsync($"The module **{name}** is now **{(active ? "enabled" : "disabled")}**!");
                     }
                 }

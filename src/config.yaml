@@ -1,4 +1,5 @@
-token:
-prefix: "[]"
+token: ''
+prefix: '[]'
+guild: 0
 modLogChannel: 0
-moduleConfigs: 
+moduleConfigs: {}

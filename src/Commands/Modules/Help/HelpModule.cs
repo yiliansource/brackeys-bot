@@ -16,24 +16,50 @@ namespace BrackeysBot.Commands
     {
         public CommandService Commands { get; set; }
         public ModuleService Modules { get; set; }
+        public IServiceProvider Provider { get; set; }
 
         [Command("help")]
+        [Summary("Displays a list of useable commands and modules.")]
         public async Task HelpAsync()
         {
-            throw new NotImplementedException();
+
         }
 
         [Command("help")]
-        public async Task HelpAsync(string command)
+        [Summary("Displays more information about a module or command.")]
+        public async Task HelpAsync(string identifier)
         {
-            CommandInfo target = GetTargetCommand(command);
-            await CommandHelpAsync(target, Context);
+            CommandInfo commandInfo = GetTargetCommand(identifier);
+            ModuleInfo moduleInfo = GetTargetModule(identifier);
+
+            if (commandInfo == null && moduleInfo == null)
+            {
+                await ReplyAsync($"A command or module with the name **{identifier}** could not be found.");
+            }
+            if (commandInfo != null && moduleInfo == null)
+            {
+                await DisplayCommandHelpAsync(commandInfo, Context);
+            }
+            if (commandInfo == null && moduleInfo != null)
+            {
+                await DisplayModuleHelpAsync(moduleInfo, Context);
+            }
+            if (commandInfo != null && moduleInfo != null)
+            {
+                StringBuilder reply = new StringBuilder()
+                    .AppendLine("Both a module and a command were found, here are short summaries of both!")
+                    .AppendLine()
+                    .AppendLine($"**Command**: {commandInfo.Summary.WithAlternative("No description provided.")}")
+                    .AppendLine($"**Module**: {moduleInfo.Summary.WithAlternative("No description provided.")}");
+
+                await ReplyAsync(reply.ToString());
+            }
         }
 
-        public static async Task CommandHelpAsync(CommandInfo command, ICommandContext context)
+        public static async Task DisplayCommandHelpAsync(CommandInfo command, ICommandContext context)
         {
             string title = command.Name;
-            if (command.Aliases.Count > 0)
+            if (command.Aliases.Count > 1)
                 title += $" ({string.Join('|', command.Aliases)})";
 
             string prefix = (context as BrackeysBotContext).Configuration.Prefix;
@@ -51,11 +77,17 @@ namespace BrackeysBot.Commands
                 .Build()
                 .SendToChannel(context.Channel);
         }
+        public static async Task DisplayModuleHelpAsync(ModuleInfo module, ICommandContext context)
+        {
+
+        }
 
         private CommandInfo GetTargetCommand(string name)
-            => Commands.Commands.FirstOrDefault(c => c.Aliases.Any(a => string.Equals(name, a, StringComparison.InvariantCultureIgnoreCase)));
+            => Commands.Commands
+                .FirstOrDefault(c => c.Aliases.Any(a => string.Equals(name, a, StringComparison.InvariantCultureIgnoreCase)));
         private ModuleInfo GetTargetModule(string name)
-            => Commands.Modules.FirstOrDefault(m => string.Equals(name, ModuleService.SanitizeModuleName(m.Name), StringComparison.InvariantCultureIgnoreCase));
+            => Commands.Modules
+                .FirstOrDefault(m => string.Equals(name, ModuleService.SanitizeModuleName(m.Name), StringComparison.InvariantCultureIgnoreCase));
 
         private static EmbedFieldBuilder ParameterToEmbedField(ParameterInfo info)
             => new EmbedFieldBuilder()

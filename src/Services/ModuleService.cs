@@ -74,18 +74,19 @@ namespace BrackeysBot.Services
             }
             return false;
         }
-        public void SetModuleState(string name, bool active)
+        public async Task SetModuleState(string name, bool active)
         {
             if (!_data.Configuration.ModuleConfigurations.TryAdd(name, active))
             {
                 _data.Configuration.ModuleConfigurations[name] = active;
-
-                Type target = GetModuleTypeByName(name);
-                if (active)
-                    _commands.AddModuleAsync(target, _services);
-                else
-                    _commands.RemoveModuleAsync(target);
             }
+
+            Type target = GetModuleTypeByName(name);
+            if (active)
+                await _commands.AddModuleAsync(target, _services);
+            else
+                await _commands.RemoveModuleAsync(target);
+
             _data.SaveConfiguration();
         }
 

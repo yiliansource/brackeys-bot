@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System;
 
 using Discord;
@@ -38,7 +37,7 @@ namespace BrackeysBot.Services
             {
                 if (result.Error == CommandError.BadArgCount)
                 {
-                    await HelpModule.CommandHelpAsync(command.Value, context);
+                    await HelpModule.DisplayCommandHelpAsync(command.Value, context);
                 }
                 else
                 {

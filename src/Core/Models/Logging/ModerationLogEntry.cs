@@ -12,6 +12,7 @@ namespace BrackeysBot
         public ICommandContext Context { get; set; }
         public IUser Moderator { get; set; }
         public IUser Target { get; set; }
+        public ulong TargetID { get; set; }
         public ITextChannel Channel { get; set; }
         public ModerationActionType ActionType { get; set; }
         public string Reason { get; set; }
@@ -20,6 +21,11 @@ namespace BrackeysBot
 
         public static ModerationLogEntry New
             => new ModerationLogEntry();
+
+        public bool HasTarget => Target != null || TargetID != 0;
+        public string TargetMention => Target != null
+            ? Target.Mention
+            : $"<@{TargetID}>";
 
         public ModerationLogEntry WithContext(ICommandContext context)
         {
@@ -44,6 +50,12 @@ namespace BrackeysBot
         public ModerationLogEntry WithTarget(IUser target)
         {
             Target = target;
+            TargetID = target.Id;
+            return this;
+        }
+        public ModerationLogEntry WithTarget(ulong id)
+        {
+            TargetID = id;
             return this;
         }
         public ModerationLogEntry WithReason(string reason)

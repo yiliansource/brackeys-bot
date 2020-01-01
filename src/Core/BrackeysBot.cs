@@ -5,7 +5,6 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using BrackeysBot.Services;
@@ -33,6 +32,7 @@ namespace BrackeysBot
             var provider = services.BuildServiceProvider();
             provider.GetRequiredService<LoggingService>();
             provider.GetRequiredService<CommandHandlerService>();
+            provider.GetRequiredService<TemporaryInfractionService>();
 
             await provider.GetRequiredService<ModuleService>().Initialize();
             await provider.GetRequiredService<StartupService>().StartAsync();
