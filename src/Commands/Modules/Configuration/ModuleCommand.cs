@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
-
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 using Discord;
 using Discord.Commands;
@@ -19,7 +18,7 @@ namespace BrackeysBot.Commands
         [Command("module"), Alias("mod")]
         [Remarks("module <state> <name>")]
         [Summary("Performs an action on a module.")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireAdministrator]
         public async Task ModifyModuleAsync(
             [Summary("The action to perform on the module.")] ModuleActionType action, 
             [Summary("The name of the module."), Remainder] string name)
@@ -54,6 +53,7 @@ namespace BrackeysBot.Commands
 
         [Command("modules")]
         [Summary("Lists all modules.")]
+        [HideFromHelp]
         public async Task ListModulesAsync()
             => await new EmbedBuilder()
                 .WithTitle("Modules")
@@ -65,6 +65,9 @@ namespace BrackeysBot.Commands
                 .SendToChannel(Context.Channel);
 
         private EmbedFieldBuilder CreateModuleListField(string name, string[] moduleList)
-            => new EmbedFieldBuilder().WithName(name).WithValue(string.Join("\n", moduleList).WithAlternative("<none>")).WithIsInline(true);
+            => new EmbedFieldBuilder()
+                .WithName(name)
+                .WithValue(string.Join("\n", moduleList).WithAlternative("<none>"))
+                .WithIsInline(true);
     }
 }

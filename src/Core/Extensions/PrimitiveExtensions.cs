@@ -10,9 +10,15 @@ namespace BrackeysBot
             => string.IsNullOrEmpty(s) ? null : s;
         public static string WithAlternative(this string s, string alternative)
             => s.AsNullIfEmpty() ?? alternative;
+
         public static string Envelop(this string s, string outer)
             => new StringBuilder().Append(outer).Append(s).Append(outer).ToString();
         public static string Envelop(this string s, string prefix, string postfix)
             => new StringBuilder().Append(prefix).Append(s).Append(postfix).ToString();
+
+        public static string Sanitize(this string typeName)
+            => typeName
+                .Replace("Module", string.Empty)
+                .Replace("Command", string.Empty);
     }
 }

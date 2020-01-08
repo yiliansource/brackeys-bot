@@ -59,7 +59,7 @@ namespace BrackeysBot.Services
             Type match = GetModuleTypeByName(name);
             if (match != null)
             {
-                name = SanitizeModuleName(match.Name);
+                name = match.Name.Sanitize();
                 return true;
             }
             return false;
@@ -91,7 +91,7 @@ namespace BrackeysBot.Services
         }
 
         public string[] GetAllModuleNames()
-            => _moduleTypes.Select(m => SanitizeModuleName(m.Name)).ToArray();
+            => _moduleTypes.Select(m => m.Name.Sanitize()).ToArray();
         public string[] GetEnabledModules()
             => _data.Configuration.ModuleConfigurations
                 .Where(k => k.Value)
@@ -102,7 +102,7 @@ namespace BrackeysBot.Services
         public string[] GetEssentialModules()
             => _moduleTypes
                 .Where(m => m.HasAttribute<EssentialModuleAttribute>())
-                .Select(m => SanitizeModuleName(m.Name))
+                .Select(m => m.Name.Sanitize())
                 .ToArray();
 
         private Type[] GetModuleTypes()
@@ -110,9 +110,6 @@ namespace BrackeysBot.Services
                 .Where(t => !t.HasAttribute<ObsoleteAttribute>() && typeof(BrackeysBotModule).IsAssignableFrom(t) && !t.IsAbstract)
                 .ToArray();
         private Type GetModuleTypeByName(string name)
-            => _moduleTypes.FirstOrDefault(m => string.Equals(SanitizeModuleName(m.Name), name, StringComparison.InvariantCultureIgnoreCase));
-        
-        public static string SanitizeModuleName(string typeName)
-            => typeName.Replace("Module", string.Empty);
+            => _moduleTypes.FirstOrDefault(m => string.Equals(m.Name.Sanitize(), name, StringComparison.InvariantCultureIgnoreCase));
     }
 }

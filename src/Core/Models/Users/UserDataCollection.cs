@@ -9,8 +9,10 @@ namespace BrackeysBot
     public class UserDataCollection
     {
         [JsonPropertyName("users")]
-        public List<UserData> Users { get; set; }
+        public List<UserData> Users { get; set; } = new List<UserData>();
 
+        public bool HasUser(ulong id)
+            => Users.Any(u => u.ID == id);
         public UserData GetUser(ulong id)
             => Users.FirstOrDefault(u => u.ID == id);
         public UserData CreateUser(ulong id)

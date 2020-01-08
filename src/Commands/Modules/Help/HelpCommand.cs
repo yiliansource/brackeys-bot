@@ -12,7 +12,8 @@ using BrackeysBot.Services;
 
 namespace BrackeysBot.Commands
 {
-    public sealed class HelpModule : BrackeysBotModule
+    [HideFromHelp]
+    public sealed class HelpCommand : BrackeysBotModule
     {
         public CommandService Commands { get; set; }
         public ModuleService Modules { get; set; }
@@ -22,7 +23,10 @@ namespace BrackeysBot.Commands
         [Summary("Displays a list of useable commands and modules.")]
         public async Task HelpAsync()
         {
-
+            foreach (ModuleInfo module in Commands.Modules)
+            {
+                await DisplayModuleHelpAsync(module, Context);
+            }
         }
 
         [Command("help")]
@@ -62,24 +66,46 @@ namespace BrackeysBot.Commands
             if (command.Aliases.Count > 1)
                 title += $" ({string.Join('|', command.Aliases)})";
 
-            string prefix = (context as BrackeysBotContext).Configuration.Prefix;
+            string prefix = ExtractPrefixFromContext(context);
 
             StringBuilder description = new StringBuilder()
                 .AppendLine(command.Summary.WithAlternative("No description provided."))
                 .AppendLine()
-                .AppendLine("**Module**: " + ModuleService.SanitizeModuleName(command.Module.Name))
+                .AppendLine("**Module**: " + command.Module.Name.Sanitize())
                 .AppendLine("**Usage**: " + (prefix + command.Remarks).WithAlternative("No usage provided."));
 
             await new EmbedBuilder()
                 .WithTitle(title)
                 .WithDescription(description.ToString())
-                .WithFields(command.Parameters.Select(ParameterToEmbedField))
+                .WithFields(command.Parameters.Select(InfoToEmbedField))
                 .Build()
                 .SendToChannel(context.Channel);
         }
         public static async Task DisplayModuleHelpAsync(ModuleInfo module, ICommandContext context)
         {
+            string prefix = ExtractPrefixFromContext(context);
 
+            IEnumerable<CommandInfo> displayable = module.Commands
+                .Where(c => c.CheckPreconditionsAsync(context).GetAwaiter().GetResult().IsSuccess
+                    && !c.HasAttribute<HideFromHelpAttribute>());
+
+            bool displayModuleHelp = displayable.Count() > 0 && !module.HasAttribute<HideFromHelpAttribute>();
+            if (displayModuleHelp)
+            {
+                EmbedBuilder builder = new EmbedBuilder()
+                    .WithTitle(module.Name.Sanitize())
+                    .WithFields(displayable.Select(c => InfoToEmbedField(c, prefix)));
+
+                ModuleColorAttribute moduleColor = module.GetAttribute<ModuleColorAttribute>();
+                if (moduleColor != null)
+                    builder.WithColor(moduleColor.Color);
+
+                if (!string.IsNullOrEmpty(module.Summary))
+                    builder.WithDescription(module.Summary);
+
+                await builder.Build()
+                    .SendToChannel(context.Channel);
+            }
         }
 
         private CommandInfo GetTargetCommand(string name)
@@ -87,12 +113,20 @@ namespace BrackeysBot.Commands
                 .FirstOrDefault(c => c.Aliases.Any(a => string.Equals(name, a, StringComparison.InvariantCultureIgnoreCase)));
         private ModuleInfo GetTargetModule(string name)
             => Commands.Modules
-                .FirstOrDefault(m => string.Equals(name, ModuleService.SanitizeModuleName(m.Name), StringComparison.InvariantCultureIgnoreCase));
+                .FirstOrDefault(m => string.Equals(name, m.Name.Sanitize(), StringComparison.InvariantCultureIgnoreCase));
 
-        private static EmbedFieldBuilder ParameterToEmbedField(ParameterInfo info)
+        private static string ExtractPrefixFromContext(ICommandContext context)
+            => (context as BrackeysBotContext)?.Configuration.Prefix ?? string.Empty;
+
+        private static EmbedFieldBuilder InfoToEmbedField(ParameterInfo info)
             => new EmbedFieldBuilder()
                 .WithName(info.Name)
                 .WithValue(info.Summary.WithAlternative("No description provided."))
                 .WithIsInline(true);
+        private static EmbedFieldBuilder InfoToEmbedField(CommandInfo info, string prefix)
+            => new EmbedFieldBuilder()
+                .WithName(string.Concat(prefix, info.Remarks.WithAlternative(info.Name)))
+                .WithValue(info.Summary.WithAlternative("No description provided."))
+                .WithIsInline(false);
     }
 }

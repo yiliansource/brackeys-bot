@@ -8,7 +8,11 @@ namespace BrackeysBot
     {
         public static string ToTimeString(this DateTimeOffset dt)
             => dt.ToString("HH:mm:ss");
+        public static string ToTimeString(this DateTime dt)
+            => dt.ToString("HH:mm:ss");
         public static string ToDateString(this DateTimeOffset dt)
+            => dt.ToString("dddd, dd.MM.yyyy");
+        public static string ToDateString(this DateTime dt)
             => dt.ToString("dddd, dd.MM.yyyy");
     }
 }

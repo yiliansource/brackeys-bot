@@ -4,6 +4,8 @@ namespace BrackeysBot
 {
     public enum ModerationActionType
     {
+        [Description("Warned user")]
+        Warn,
         [Description("Muted user")]
         Mute,
         [Description("Banned user")]

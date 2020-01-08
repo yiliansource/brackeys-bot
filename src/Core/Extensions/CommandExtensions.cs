@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
@@ -11,5 +12,14 @@ namespace BrackeysBot
 {
     public static class CommandExtensions
     {
+        public static bool HasAttribute<T>(this ModuleInfo info) where T : Attribute
+            => info.Attributes.Any(a => a.GetType() == typeof(T));
+        public static bool HasAttribute<T>(this CommandInfo info) where T : Attribute
+            => info.Attributes.Any(a => a.GetType() == typeof(T));
+
+        public static T GetAttribute<T>(this ModuleInfo info) where T : Attribute
+            => info.Attributes.FirstOrDefault(a => a.GetType() == typeof(T)) as T;
+        public static T GetAttribute<T>(this CommandInfo info) where T : Attribute
+            => info.Attributes.FirstOrDefault(a => a.GetType() == typeof(T)) as T;
     }
 }

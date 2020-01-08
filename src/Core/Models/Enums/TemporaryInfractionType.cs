@@ -7,6 +7,6 @@ namespace BrackeysBot
     public enum TemporaryInfractionType
     {
         TempBan,
-        Tempmute
+        TempMute
     }
 }

@@ -18,7 +18,8 @@ namespace BrackeysBot.Services
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
-            IgnoreNullValues = true
+            IgnoreNullValues = true,
+            WriteIndented = true
         };
 
         private const string _databasePath = "users.json";
@@ -38,6 +39,13 @@ namespace BrackeysBot.Services
         }
         public void LoadConfiguration()
         {
+            if (!File.Exists(_configPath))
+            {
+                _configuration = new BotConfiguration();
+                SaveConfiguration();
+                return;
+            }
+
             var deserializer = new DeserializerBuilder().Build();
             _configuration = deserializer.Deserialize<BotConfiguration>(File.ReadAllText(_configPath));
         }
@@ -49,6 +57,13 @@ namespace BrackeysBot.Services
         }
         public void LoadUserData()
         {
+            if (!File.Exists(_databasePath))
+            {
+                _userData = new UserDataCollection();
+                SaveUserData();
+                return;
+            }
+
             string json = File.ReadAllText(_databasePath);
             _userData = JsonSerializer.Deserialize<UserDataCollection>(json, _jsonOptions);
         }

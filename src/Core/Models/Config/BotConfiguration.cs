@@ -11,10 +11,14 @@ namespace BrackeysBot
         [YamlMember(Alias = "prefix")]
         public string Prefix { get; set; } = "[]";
 
-        [YamlMember(Alias = "guild")]
-        public ulong Guild { get; set; } = 0;
-        [YamlMember(Alias = "modLogChannel")]
-        public ulong ModerationLogChannel { get; set; } = 0;
+        [YamlMember(Alias = "guildId")]
+        public ulong GuildID { get; set; }
+        [YamlMember(Alias = "moderatorRoleId")]
+        public ulong ModeratorRoleID { get; set; }
+        [YamlMember(Alias = "mutedRoleId")]
+        public ulong MutedRoleID { get; set; }
+        [YamlMember(Alias = "modLogChannelId")]
+        public ulong ModerationLogChannelID { get; set; }
 
         [YamlMember(Alias = "moduleConfigs")]
         public Dictionary<string, bool> ModuleConfigurations { get; set; } = new Dictionary<string, bool>();

@@ -37,7 +37,7 @@ namespace BrackeysBot.Services
             {
                 if (result.Error == CommandError.BadArgCount)
                 {
-                    await HelpModule.DisplayCommandHelpAsync(command.Value, context);
+                    await HelpCommand.DisplayCommandHelpAsync(command.Value, context);
                 }
                 else
                 {

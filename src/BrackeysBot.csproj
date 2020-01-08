@@ -12,13 +12,4 @@
     <PackageReference Include="YamlDotNet" Version="8.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="config.yaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="users.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

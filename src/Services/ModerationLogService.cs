@@ -32,23 +32,23 @@ namespace BrackeysBot.Services
 
         private async Task PostToLogChannelAsync(ModerationLogEntry logEntry)
         {
-            ulong moderationLogChannelID = _data.Configuration.ModerationLogChannel;
+            ulong moderationLogChannelID = _data.Configuration.ModerationLogChannelID;
             if (moderationLogChannelID == 0)
                 throw new Exception("Invalid moderation log channel ID.");
 
             Embed embed = CreateEmbedFromLogEntry(logEntry);
 
-            IGuild guild = _client.GetGuild(_data.Configuration.Guild);
+            IGuild guild = _client.GetGuild(_data.Configuration.GuildID);
             ITextChannel channel = await guild.GetTextChannelAsync(moderationLogChannelID);
             await embed.SendToChannel(channel);
         }
 
         private Embed CreateEmbedFromLogEntry(ModerationLogEntry logEntry)
             => new EmbedBuilder()
-                .WithAuthor(logEntry.ActionType.Humanize(), logEntry.Target?.GetAvatarUrl())
+                .WithAuthor(logEntry.ActionType.Humanize(), logEntry.Target?.GetAvatarUrl().WithAlternative(logEntry.Target?.GetDefaultAvatarUrl()))
                 .WithColor(GetColorForAction(logEntry.ActionType))
-                .AddField("Moderator", logEntry.Moderator.Mention, true)
                 .AddFieldConditional(logEntry.HasTarget, "User", logEntry.TargetMention, true)
+                .AddField("Moderator", logEntry.Moderator.Mention, true)
                 .AddFieldConditional(!string.IsNullOrEmpty(logEntry.Reason), "Reason", logEntry.Reason, true)
                 .AddFieldConditional(logEntry.Channel != null, "Channel", logEntry.Channel?.Mention, true)
                 .AddFieldConditional(logEntry.Duration != null, "Duration", (logEntry.Duration ?? TimeSpan.Zero).Humanize(7), true)
@@ -69,6 +69,9 @@ namespace BrackeysBot.Services
                 case ModerationActionType.Unban:
                 case ModerationActionType.Unmute:
                     return Color.Green;
+
+                case ModerationActionType.Warn:
+                    return Color.Orange;
 
                 case ModerationActionType.ClearMessages:
                     return new Color(1, 1, 1);
