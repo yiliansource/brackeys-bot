@@ -74,12 +74,16 @@ namespace BrackeysBot.Commands
                 .AppendLine("**Module**: " + command.Module.Name.Sanitize())
                 .AppendLine("**Usage**: " + (prefix + command.Remarks).WithAlternative("No usage provided."));
 
-            await new EmbedBuilder()
+            EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle(title)
                 .WithDescription(description.ToString())
-                .WithFields(command.Parameters.Select(InfoToEmbedField))
-                .Build()
-                .SendToChannel(context.Channel);
+                .WithFields(command.Parameters.Select(InfoToEmbedField));
+
+            ModuleColorAttribute moduleColor = command.Module.GetAttribute<ModuleColorAttribute>();
+            if (moduleColor != null)
+                builder.WithColor(moduleColor.Color);
+
+            await builder.Build().SendToChannel(context.Channel);
         }
         public static async Task DisplayModuleHelpAsync(ModuleInfo module, ICommandContext context)
         {

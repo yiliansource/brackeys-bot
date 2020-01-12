@@ -39,7 +39,7 @@ namespace BrackeysBot.Services
 
         private void CheckTemporaryInfractions()
         {
-            DateTime now = DateTime.Now;
+            DateTime now = DateTime.UtcNow;
             SocketGuild guild = _client.GetGuild(_data.Configuration.GuildID);
 
             int resolvedCounter = 0;
@@ -108,7 +108,7 @@ namespace BrackeysBot.Services
                 if (data.TemporaryInfractions != null && data.TemporaryInfractions.Any(t => t.Type == TemporaryInfractionType.TempMute))
                 {
                     TemporaryInfraction infraction = data.TemporaryInfractions.First(t => t.Type == TemporaryInfractionType.TempMute);
-                    if (infraction.Expire > DateTime.Now)
+                    if (infraction.Expire > DateTime.UtcNow)
                     {
                         IRole mutedRole = _client.GetGuild(_data.Configuration.GuildID).GetRole(_data.Configuration.MutedRoleID);
                         await user.AddRoleAsync(mutedRole);

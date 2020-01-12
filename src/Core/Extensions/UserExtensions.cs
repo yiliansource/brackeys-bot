@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
@@ -23,5 +24,22 @@ namespace BrackeysBot
 
         public static string Mention(this ulong userId) 
             => $"<@{userId}>";
+
+        public static PermissionLevel GetPermissionLevel(this IGuildUser user, ICommandContext context)
+        {
+            if (context is BrackeysBotContext botContext)
+            {
+                BotConfiguration config = botContext.Configuration;
+
+                if (user.GuildPermissions.Has(GuildPermission.Administrator))
+                    return PermissionLevel.Administrator;
+                if (user.RoleIds.Contains(config.ModeratorRoleID))
+                    return PermissionLevel.Moderator;
+                if (user.RoleIds.Contains(config.GuruRoleID))
+                    return PermissionLevel.Guru;
+            }
+
+            return PermissionLevel.Default;
+        }
     }
 }

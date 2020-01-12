@@ -15,6 +15,12 @@ namespace BrackeysBot
             => Users.Any(u => u.ID == id);
         public UserData GetUser(ulong id)
             => Users.FirstOrDefault(u => u.ID == id);
+        public bool TryGetUser(ulong id, out UserData data)
+        {
+            bool hasUser = HasUser(id);
+            data = hasUser ? GetUser(id) : null;
+            return hasUser;
+        }
         public UserData CreateUser(ulong id)
         {
             UserData data = new UserData(id);

@@ -13,6 +13,8 @@ namespace BrackeysBot
 
         [YamlMember(Alias = "guildId")]
         public ulong GuildID { get; set; }
+        [YamlMember(Alias = "guruRoleId")]
+        public ulong GuruRoleID { get; set; }
         [YamlMember(Alias = "moderatorRoleId")]
         public ulong ModeratorRoleID { get; set; }
         [YamlMember(Alias = "mutedRoleId")]

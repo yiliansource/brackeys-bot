@@ -29,7 +29,7 @@ namespace BrackeysBot.Services
         public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "")
         {
             var userData = _data.UserData.GetOrCreate(user.Id);
-            userData.TemporaryInfractions.Add(TemporaryInfraction.Create(type, DateTime.Now.Add(duration)));
+            userData.TemporaryInfractions.Add(TemporaryInfraction.Create(type, DateTime.UtcNow.Add(duration)));
             userData.Infractions.Add(Infraction.Create(RequestInfractionID())
                 .WithType(type.AsInfractionType())
                 .WithModerator(moderator)

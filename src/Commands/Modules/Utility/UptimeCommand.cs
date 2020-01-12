@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 
 using Humanizer;
+using Humanizer.Localisation;
 
 namespace BrackeysBot.Commands
 {
@@ -16,7 +17,7 @@ namespace BrackeysBot.Commands
         {
             TimeSpan uptime = DateTime.Now - Process.GetCurrentProcess().StartTime;
 
-            await ReplyAsync($"I've been up and running for {uptime.Humanize(3)}.");
+            await ReplyAsync($"I've been up and running for {uptime.Humanize(precision: 3, minUnit: TimeUnit.Second)}.");
         }
     }
 }

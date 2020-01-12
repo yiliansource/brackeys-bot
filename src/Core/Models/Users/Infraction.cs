@@ -26,7 +26,7 @@ namespace BrackeysBot
             => new Infraction
             { 
                 ID = id,
-                Time = DateTime.Now 
+                Time = DateTime.UtcNow 
             };
 
         public Infraction WithModerator(IUser moderator)
@@ -51,6 +51,6 @@ namespace BrackeysBot
         }
 
         public override string ToString()
-            => $"[{ID}] {Description} • {Type.Humanize()} • {Time.Humanize(dateToCompareAgainst: DateTime.Now)}";
+            => $"[{ID}] {Description} • {Type.Humanize()} • {Time.Humanize()}";
     }
 }
