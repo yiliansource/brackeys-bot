@@ -77,11 +77,8 @@ namespace BrackeysBot.Commands
             EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle(title)
                 .WithDescription(description.ToString())
+                .WithColor(command.GetColor())
                 .WithFields(command.Parameters.Select(InfoToEmbedField));
-
-            ModuleColorAttribute moduleColor = command.Module.GetAttribute<ModuleColorAttribute>();
-            if (moduleColor != null)
-                builder.WithColor(moduleColor.Color);
 
             await builder.Build().SendToChannel(context.Channel);
         }
@@ -98,11 +95,8 @@ namespace BrackeysBot.Commands
             {
                 EmbedBuilder builder = new EmbedBuilder()
                     .WithTitle(module.Name.Sanitize())
+                    .WithColor(module.GetColor())
                     .WithFields(displayable.Select(c => InfoToEmbedField(c, prefix)));
-
-                ModuleColorAttribute moduleColor = module.GetAttribute<ModuleColorAttribute>();
-                if (moduleColor != null)
-                    builder.WithColor(moduleColor.Color);
 
                 if (!string.IsNullOrEmpty(module.Summary))
                     builder.WithDescription(module.Summary);

@@ -21,5 +21,10 @@ namespace BrackeysBot
             => info.Attributes.FirstOrDefault(a => a.GetType() == typeof(T)) as T;
         public static T GetAttribute<T>(this CommandInfo info) where T : Attribute
             => info.Attributes.FirstOrDefault(a => a.GetType() == typeof(T)) as T;
+
+        public static Color GetColor(this ModuleInfo info)
+            => info.GetAttribute<ModuleColorAttribute>()?.Color ?? Color.DarkerGrey;
+        public static Color GetColor(this CommandInfo info)
+            => info.Module.GetColor();
     }
 }
