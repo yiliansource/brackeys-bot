@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
@@ -20,19 +17,18 @@ namespace BrackeysBot.Commands
             [Summary("The user to kick.")] SocketGuildUser user,
             [Summary("The reason to kick the user for."), Remainder] string reason = DefaultReason)
         {
-            await ReplyAsync($"I kicked {user} because of **{reason}**.");
-
             await user.KickAsync(reason);
 
             Moderation.AddInfraction(user, Infraction.Create(Moderation.RequestInfractionID())
                 .WithType(InfractionType.Kick)
                 .WithModerator(Context.User)
                 .WithDescription(reason));
-            ModerationLog.CreateEntry(ModerationLogEntry.New
+
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Kick)
                 .WithReason(reason)
-                .WithTarget(user));
+                .WithTarget(user), Context.Channel);
         }
     }
 }

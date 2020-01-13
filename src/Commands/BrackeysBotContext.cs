@@ -12,9 +12,6 @@ namespace BrackeysBot.Commands
 {
     public class BrackeysBotContext : ICommandContext
     {
-        public static BrackeysBotContext Create(SocketMessage msg, IServiceProvider provider)
-            => new BrackeysBotContext(msg, provider);
-
         public IDiscordClient Client { get; }
         public IGuild Guild { get; }
         public IMessageChannel Channel { get; }
@@ -26,13 +23,13 @@ namespace BrackeysBot.Commands
 
         private readonly DataService _dataService;
 
-        public BrackeysBotContext(SocketMessage msg, IServiceProvider provider)
+        public BrackeysBotContext(SocketUserMessage msg, IServiceProvider provider)
         {
             Client = (IDiscordClient)provider.GetService(typeof(DiscordSocketClient));
             Channel = msg.Channel;
             Guild = (Channel as SocketTextChannel)?.Guild;
             User = msg.Author;
-            Message = msg as IUserMessage;
+            Message = msg;
 
             _dataService = provider.GetService(typeof(DataService)) as DataService;
         }

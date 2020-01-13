@@ -1,22 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Text;
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-using BrackeysBot.Services;
-
-using Humanizer;
-
 namespace BrackeysBot.Commands
 {
     public sealed partial class ModerationModule : BrackeysBotModule
     {
-        private const string _defaultMuteReason = "Unspecified.";
-
         [Command("mute")]
         [Summary("Mutes a member, with an optional reason and duration.")]
         [Remarks("mute <user> [duration] [reason]")]
@@ -26,7 +18,7 @@ namespace BrackeysBot.Commands
         public async Task MuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
             [Summary("The duration for the mute."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
-            [Summary("The reason why to mute the user."), Remainder] string reason = _defaultMuteReason)
+            [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
             => await TempmuteAsync(user, duration, reason);
 
         [Command("mute")]
@@ -37,20 +29,20 @@ namespace BrackeysBot.Commands
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task MuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
-            [Summary("The reason why to mute the user."), Remainder] string reason = _defaultMuteReason)
+            [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
         {
             await user.MuteAsync(Context);
-            await ReplyAsync($"I muted {user.Mention} because of **{reason}**.");
 
             Moderation.AddInfraction(user, Infraction.Create(Moderation.RequestInfractionID())
                 .WithType(InfractionType.Mute)
                 .WithModerator(Context.User)
                 .WithDescription(reason));
-            ModerationLog.CreateEntry(ModerationLogEntry.New
+            
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Mute)
                 .WithTarget(user)
-                .WithReason(reason));
+                .WithReason(reason), Context.Channel);
         }
 
         [Command("tempmute")]
@@ -63,18 +55,18 @@ namespace BrackeysBot.Commands
         public async Task TempmuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
             [Summary("The duration for the mute."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
-            [Summary("The reason why to mute the user."), Remainder] string reason = _defaultMuteReason)
+            [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
         {
             await user.MuteAsync(Context);
-            await ReplyAsync($"I muted {user.Mention} for {duration.Humanize(7)} because of **{reason}**.");
 
             Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user, Context.User, duration, reason);
-            ModerationLog.CreateEntry(ModerationLogEntry.New
+            
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.TempMute)
                 .WithTarget(user)
                 .WithDuration(duration)
-                .WithReason(reason));
+                .WithReason(reason), Context.Channel);
         }
 
         [Command("unmute")]
@@ -86,13 +78,13 @@ namespace BrackeysBot.Commands
             [Summary("The user to unmute.")] SocketGuildUser user)
         {
             await user.UnmuteAsync(Context);
-            await ReplyAsync($"I unmuted {user.Mention}!");
 
             Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempMute, user);
-            ModerationLog.CreateEntry(ModerationLogEntry.New
+            
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Unmute)
-                .WithTarget(user));
+                .WithTarget(user), Context.Channel);
         }
     }
 }

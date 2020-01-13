@@ -28,7 +28,7 @@ namespace BrackeysBot.Commands
 
             EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle($"Information about {user}:")
-                .WithThumbnailUrl(user.GetAvatarUrl().WithAlternative(user.GetDefaultAvatarUrl()))
+                .WithThumbnailUrl(user.EnsureAvatarUrl())
                 .WithColor(userColor)
                 .AddField("Username", user.ToString(), true)
                 .AddField("ID", user.Id.ToString(), true)

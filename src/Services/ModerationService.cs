@@ -76,18 +76,11 @@ namespace BrackeysBot.Services
         public bool TryGetInfraction(int id, out Infraction infraction, out ulong userId)
         {
             UserData data = _data.UserData.Users.FirstOrDefault(u => u.Infractions.Any(i => i.ID == id));
-            if (data != null)
-            {
-                infraction = data.Infractions.First(i => i.ID == id);
-                userId = data.ID;
-                return true;
-            }
-            else
-            {
-                infraction = default;
-                userId = 0;
-                return false;
-            }
+
+            infraction = data?.Infractions.FirstOrDefault(i => i.ID == id) ?? default;
+            userId = data?.ID ?? 0;
+
+            return data != null;
         }
 
         public int RequestInfractionID()

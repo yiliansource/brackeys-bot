@@ -1,14 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Text;
 
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-
-using BrackeysBot.Services;
 
 using Humanizer;
 
@@ -30,7 +25,7 @@ namespace BrackeysBot.Commands
 
             if (data != null && data.Infractions?.Count > 0)
             {
-                builder.WithAuthor($"{user} has {data.Infractions.Count} infraction(s)", user.GetAvatarUrl().WithAlternative(user.GetDefaultAvatarUrl()));
+                builder.WithAuthor($"{user} has {data.Infractions.Count} infraction(s)", user.EnsureAvatarUrl());
                 builder.WithDescription(string.Join('\n', data.Infractions.OrderByDescending(i => i.Time).Select(i => i.ToString())));
             }
             else

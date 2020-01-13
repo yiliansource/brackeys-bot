@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Text;
 
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 using BrackeysBot.Commands;
 
@@ -24,6 +21,8 @@ namespace BrackeysBot
 
         public static string Mention(this ulong userId) 
             => $"<@{userId}>";
+        public static string EnsureAvatarUrl(this IUser user)
+            => user.GetAvatarUrl().WithAlternative(user.GetDefaultAvatarUrl());
 
         public static PermissionLevel GetPermissionLevel(this IGuildUser user, ICommandContext context)
         {

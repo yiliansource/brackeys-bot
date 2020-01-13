@@ -53,7 +53,7 @@ namespace BrackeysBot.Services
                     {
                         guild.RemoveBanAsync(user.ID);
 
-                        _modLog.CreateEntry(ModerationLogEntry.New
+                        _ = _modLog.CreateEntry(ModerationLogEntry.New
                             .WithActionType(ModerationActionType.Unban)
                             .WithTarget(user.ID)
                             .WithReason("Temporary ban timed out.")
@@ -86,7 +86,7 @@ namespace BrackeysBot.Services
                         else
                             entry = entry.WithTarget(user.ID);
 
-                        _modLog.CreateEntry(entry);
+                        _ = _modLog.CreateEntry(entry);
 
                         user.TemporaryInfractions.RemoveAll(i => i.Type == TemporaryInfractionType.TempMute);
                         resolvedCounter++;
