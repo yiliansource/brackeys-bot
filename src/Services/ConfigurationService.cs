@@ -9,6 +9,11 @@ namespace BrackeysBot.Services
     {
         private DataService _data;
         private BotConfiguration _config;
+
+        private static readonly HashSet<Type> _exposedPropertyTypes
+            = new HashSet<Type>() { typeof(string), typeof(bool), 
+                typeof(int), typeof(uint), typeof(short), typeof(ushort), typeof(long), typeof(ulong),
+                typeof(float), typeof(double) };
         
         public ConfigurationService(DataService data)
         {
@@ -28,6 +33,6 @@ namespace BrackeysBot.Services
 
         private IEnumerable<PropertyInfo> GetConfigProperties()
             => typeof(BotConfiguration).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.SetProperty)
-                .Where(p => typeof(IConvertible).IsAssignableFrom(p.PropertyType));
+                .Where(p => _exposedPropertyTypes.Contains(p.PropertyType) || (p.PropertyType.IsArray && _exposedPropertyTypes.Contains(p.PropertyType.GetElementType())));
     }
 }

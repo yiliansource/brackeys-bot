@@ -6,6 +6,8 @@ namespace BrackeysBot
 {
     public class BotConfiguration
     {
+        #region General Configuration
+
         [YamlMember(Alias = "token"), Confidential]
         [Description("The token that is used to log in the bot.")]
         public string Token { get; set; }
@@ -13,6 +15,10 @@ namespace BrackeysBot
         [YamlMember(Alias = "prefix")]
         [Description("The prefix that the bot commands will use.")]
         public string Prefix { get; set; } = "[]";
+
+        #endregion
+
+        #region IDs
 
         [YamlMember(Alias = "guildId")]
         [Description("The ID of the guild the bot is meant to act in.")]
@@ -33,6 +39,16 @@ namespace BrackeysBot
         [YamlMember(Alias = "modLogChannelId")]
         [Description("The ID of the channel where moderation actions are logged.")]
         public ulong ModerationLogChannelID { get; set; }
+
+        [YamlMember(Alias = "teamRoleIds")]
+        [Description("A list of team role IDs.")]
+        public ulong[] TeamRoleIDs { get; set; }
+
+        [YamlMember(Alias = "userRoleIds")]
+        [Description("A list of user role IDs.")]
+        public ulong[] UserRoleIDs { get; set; }
+
+        #endregion
 
         [YamlMember(Alias = "moduleConfigs")]
         [Description("The configurations of the modules the bot uses.")]

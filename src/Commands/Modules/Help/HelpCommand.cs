@@ -19,6 +19,9 @@ namespace BrackeysBot.Commands
         public ModuleService Modules { get; set; }
         public IServiceProvider Provider { get; set; }
 
+        private const string _noDescription = "No description provided.";
+        private const string _noUsage = "No usage provided.";
+
         [Command("help")]
         [Summary("Displays a list of useable commands and modules.")]
         public async Task HelpAsync()
@@ -53,8 +56,8 @@ namespace BrackeysBot.Commands
                 StringBuilder reply = new StringBuilder()
                     .AppendLine("Both a module and a command were found, here are short summaries of both!")
                     .AppendLine()
-                    .AppendLine($"**Command**: {commandInfo.Summary.WithAlternative("No description provided.")}")
-                    .AppendLine($"**Module**: {moduleInfo.Summary.WithAlternative("No description provided.")}");
+                    .AppendLine($"**Command**: {commandInfo.Summary.WithAlternative(_noDescription)}")
+                    .AppendLine($"**Module**: {moduleInfo.Summary.WithAlternative(_noDescription)}");
 
                 await ReplyAsync(reply.ToString());
             }
@@ -69,10 +72,10 @@ namespace BrackeysBot.Commands
             string prefix = ExtractPrefixFromContext(context);
 
             StringBuilder description = new StringBuilder()
-                .AppendLine(command.Summary.WithAlternative("No description provided."))
+                .AppendLine(command.Summary.WithAlternative(_noDescription))
                 .AppendLine()
                 .AppendLine("**Module**: " + command.Module.Name.Sanitize())
-                .AppendLine("**Usage**: " + (prefix + command.Remarks).WithAlternative("No usage provided."));
+                .AppendLine("**Usage**: " + (prefix + command.Remarks).WithAlternative(_noUsage));
 
             EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle(title)
@@ -119,12 +122,12 @@ namespace BrackeysBot.Commands
         private static EmbedFieldBuilder InfoToEmbedField(ParameterInfo info)
             => new EmbedFieldBuilder()
                 .WithName(info.Name)
-                .WithValue(info.Summary.WithAlternative("No description provided."))
+                .WithValue(info.Summary.WithAlternative(_noDescription))
                 .WithIsInline(true);
         private static EmbedFieldBuilder InfoToEmbedField(CommandInfo info, string prefix)
             => new EmbedFieldBuilder()
                 .WithName(string.Concat(prefix, info.Remarks.WithAlternative(info.Name)))
-                .WithValue(info.Summary.WithAlternative("No description provided."))
+                .WithValue(info.Summary.WithAlternative(_noDescription))
                 .WithIsInline(false);
     }
 }

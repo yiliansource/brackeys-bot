@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,5 +14,9 @@ namespace BrackeysBot.Commands
     {
         public DataService Data { get; set; }
         public ModerationLogService ModerationLog { get; set; }
+
+        protected EmbedBuilder GetDefaultBuilder()
+            => new EmbedBuilder()
+                .WithColor(this.GetType().GetCustomAttribute<ModuleColorAttribute>()?.Color ?? Color.DarkerGrey);
     }
 }

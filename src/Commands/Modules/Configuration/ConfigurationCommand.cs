@@ -12,21 +12,18 @@ namespace BrackeysBot.Commands
     {
         public ConfigurationService Config { get; set; }
 
-        private const string _confidential = "`[hidden]`";
-
         [Command("config"), Alias("configuration", "c")]
         [Remarks("config [name] [value]")]
         [Summary("Shows the entire configuration, or just a single value, or changes a value.")]
         [RequireModerator]
         public async Task DisplayConfigAllAsync()
         {
-            EmbedBuilder builder = new EmbedBuilder()
+            EmbedBuilder builder = GetDefaultBuilder()
                 .WithTitle("Configuration")
-                .WithColor(Color.DarkerGrey)
                 .WithFields(Config.GetConfigurationValues()
                     .Select(v => new EmbedFieldBuilder()
                         .WithName(v.Name)
-                        .WithValue(v.Confidential ? _confidential : v.Value.ToString())
+                        .WithValue(v.ToString())
                         .WithIsInline(true)));
 
             await builder.Build().SendToChannel(Context.Channel);
@@ -40,14 +37,13 @@ namespace BrackeysBot.Commands
         public async Task DisplayConfigAsync(
             [Summary("The name of the configuration entry.")] string name)
         {
-            EmbedBuilder builder = new EmbedBuilder();
+            EmbedBuilder builder = GetDefaultBuilder();
 
             if (Config.TryGetValue(name, out ConfigurationValue configValue))
             {
                 builder.WithTitle(configValue.Name)
                     .WithDescription(configValue.Description)
-                    .WithColor(Color.DarkerGrey)
-                    .AddField("Value", configValue.Confidential ? _confidential : configValue.Value);
+                    .AddField("Value", configValue.ToString());
             }
             else
             {
@@ -67,7 +63,7 @@ namespace BrackeysBot.Commands
             [Summary("The name of the configuration entry.")] string name, 
             [Summary("The value to set the entry to."), Remainder] string value)
         {
-            EmbedBuilder builder = new EmbedBuilder();
+            EmbedBuilder builder = GetDefaultBuilder();
 
             if (Config.TryGetValue(name, out ConfigurationValue configValue))
             {
@@ -98,9 +94,8 @@ namespace BrackeysBot.Commands
         {
             Config.Save();
 
-            await new EmbedBuilder()
+            await GetDefaultBuilder()
                 .WithDescription("Configuration was saved!")
-                .WithColor(Color.Green)
                 .Build()
                 .SendToChannel(Context.Channel);
         }
