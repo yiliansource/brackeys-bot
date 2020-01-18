@@ -75,7 +75,7 @@ namespace BrackeysBot.Commands
                 .AppendLine(command.Summary.WithAlternative(_noDescription))
                 .AppendLine()
                 .AppendLine("**Module**: " + command.Module.Name.Sanitize())
-                .AppendLine("**Usage**: " + (prefix + command.Remarks).WithAlternative(_noUsage));
+                .AppendLine("**Usage**: " + (string.IsNullOrEmpty(command.Remarks) ? _noUsage : prefix + command.Remarks));
 
             EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle(title)

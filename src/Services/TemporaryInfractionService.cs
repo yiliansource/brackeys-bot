@@ -44,7 +44,7 @@ namespace BrackeysBot.Services
 
             int resolvedCounter = 0;
 
-            foreach (UserData user in _data.UserData.GetUsersWithTemporalInfractions())
+            foreach (UserData user in _data.UserData.GetUsersWithTemporaryInfractions())
             {
                 if (user.HasTemporaryInfraction(TemporaryInfractionType.TempBan))
                 {

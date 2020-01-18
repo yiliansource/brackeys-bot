@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace BrackeysBot
@@ -30,8 +28,7 @@ namespace BrackeysBot
         public UserData GetOrCreate(ulong id)
             => GetUser(id) ?? CreateUser(id);
 
-        public IEnumerable<UserData> GetUsersWithTemporalInfractions()
+        public IEnumerable<UserData> GetUsersWithTemporaryInfractions()
             => Users.Where(u => (u.TemporaryInfractions?.Count ?? 0) > 0);
-
     }
 }

@@ -53,5 +53,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "moduleConfigs")]
         [Description("The configurations of the modules the bot uses.")]
         public Dictionary<string, bool> ModuleConfigurations { get; set; } = new Dictionary<string, bool>();
+
+        [YamlMember(Alias = "rules")]
+        [Description("The rules that members in the servers should follow.")]
+        public string[] Rules { get; set; }
     }
 }
