@@ -57,5 +57,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "rules")]
         [Description("The rules that members in the servers should follow.")]
         public string[] Rules { get; set; }
+
+        [YamlMember(Alias = "codeblockThreshold")]
+        [Description("The minimum length of a message to be seen as a codeblock.")]
+        public int CodeblockThreshold { get; set; }
     }
 }

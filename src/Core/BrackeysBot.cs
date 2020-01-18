@@ -26,11 +26,8 @@ namespace BrackeysBot
             var services = CreateServices();
 
             var provider = services.BuildServiceProvider();
-            provider.GetRequiredService<LoggingService>();
-            provider.GetRequiredService<CommandHandlerService>();
-            provider.GetRequiredService<TemporaryInfractionService>();
+            provider.InitializeServices();
 
-            await provider.GetRequiredService<ModuleService>().Initialize();
             await provider.GetRequiredService<StartupService>().StartAsync();
 
             await Task.Delay(-1);
@@ -48,7 +45,6 @@ namespace BrackeysBot
                     LogLevel = LogSeverity.Verbose,
                     DefaultRunMode = RunMode.Async
                 }))
-                .AddSingleton<DataService>()
                 .AddBrackeysBotServices();
         }
     }

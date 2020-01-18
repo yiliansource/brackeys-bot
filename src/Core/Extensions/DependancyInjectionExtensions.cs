@@ -14,12 +14,23 @@ namespace BrackeysBot
     {
         public static IServiceCollection AddBrackeysBotServices(this IServiceCollection col)
         {
-            foreach (var service in Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => !t.HasAttribute<ObsoleteAttribute>() && t.Inherits<BrackeysBotService>() && !t.IsAbstract))
+            foreach (var service in GetServiceTypes())
             {
                 col.TryAddSingleton(service);
             }
             return col;
         }
+        public static void InitializeServices(this IServiceProvider provider)
+        {
+            foreach (var service in GetServiceTypes().Where(t => typeof(IInitializeableService).IsAssignableFrom(t)))
+            {
+                object instance = provider.GetService(service);
+                (instance as IInitializeableService).Initialize();
+            }
+        }
+
+        private static IEnumerable<Type> GetServiceTypes()
+            => Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => !t.HasAttribute<ObsoleteAttribute>() && t.Inherits<BrackeysBotService>() && !t.IsAbstract);
     }
 }

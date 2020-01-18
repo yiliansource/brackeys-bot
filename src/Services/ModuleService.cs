@@ -7,13 +7,12 @@ using System.Text.Json;
 
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 using BrackeysBot.Commands;
 
 namespace BrackeysBot.Services
 {
-    public class ModuleService : BrackeysBotService
+    public class ModuleService : BrackeysBotService, IInitializeableService
     {
         private readonly CommandService _commands;
         private readonly DataService _data;
@@ -32,7 +31,7 @@ namespace BrackeysBot.Services
             _moduleTypes = GetModuleTypes();
         }
 
-        public async Task Initialize()
+        public async void Initialize()
         {
             int essentialCount = 0, otherCount = 0;
 

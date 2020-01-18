@@ -9,7 +9,7 @@ using BrackeysBot.Commands;
 
 namespace BrackeysBot.Services
 {
-    public class CommandHandlerService : BrackeysBotService
+    public class CommandHandlerService : BrackeysBotService, IInitializeableService
     {
         private readonly DiscordSocketClient _discord;
         private readonly CommandService _commands;
@@ -26,7 +26,10 @@ namespace BrackeysBot.Services
             _commands = commands;
             _dataService = dataService;
             _provider = provider;
+        }
 
+        public void Initialize()
+        {
             _discord.MessageReceived += HandleCommandAsync;
             _commands.CommandExecuted += OnCommandExecutedAsync;
         }

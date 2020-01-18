@@ -10,14 +10,14 @@ using Discord.WebSocket;
 
 namespace BrackeysBot.Services
 {
-    public class TemporaryInfractionService : BrackeysBotService
+    public class TemporaryInfractionService : BrackeysBotService, IInitializeableService
     {
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
         private readonly LoggingService _log;
         private readonly ModerationLogService _modLog;
 
-        private readonly Timer _checkTimer;
+        private Timer _checkTimer;
 
         public TemporaryInfractionService(DataService data, DiscordSocketClient client, LoggingService log, ModerationLogService modLog)
         {
@@ -25,7 +25,9 @@ namespace BrackeysBot.Services
             _client = client;
             _log = log;
             _modLog = modLog;
-
+        }
+        public void Initialize()
+        {
             _checkTimer = new Timer(TimeSpan.FromSeconds(20).TotalMilliseconds)
             {
                 AutoReset = true,

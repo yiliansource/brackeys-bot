@@ -8,7 +8,7 @@ using Discord.WebSocket;
 
 namespace BrackeysBot.Services
 {
-    public class LoggingService : BrackeysBotService
+    public class LoggingService : BrackeysBotService, IInitializeableService
     {
         private readonly DiscordSocketClient _discord;
         private readonly CommandService _commands;
@@ -24,7 +24,9 @@ namespace BrackeysBot.Services
 
             _discord = discord;
             _commands = commands;
-
+        }
+        public void Initialize()
+        {
             _discord.Log += LogMessageAsync;
             _commands.Log += LogMessageAsync;
         }
