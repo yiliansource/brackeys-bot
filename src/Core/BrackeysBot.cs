@@ -16,13 +16,9 @@ namespace BrackeysBot
         public static Task StartAsync()
             => new BrackeysBot().RunAsync();
 
-        private DataService _dataService;
-
         public BrackeysBot()
         {
-            _dataService = new DataService();
-
-            Console.Title = nameof(BrackeysBot);
+            Console.Title = $"{nameof(BrackeysBot)} v{Version.ShortVersion} (Discord.Net v{Version.DiscordVersion})";
         }
 
         public async Task RunAsync()
@@ -52,7 +48,7 @@ namespace BrackeysBot
                     LogLevel = LogSeverity.Verbose,
                     DefaultRunMode = RunMode.Async
                 }))
-                .AddSingleton(_dataService)
+                .AddSingleton<DataService>()
                 .AddBrackeysBotServices();
         }
     }
