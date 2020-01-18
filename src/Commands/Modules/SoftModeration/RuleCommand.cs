@@ -46,7 +46,8 @@ namespace BrackeysBot.Commands
 
             if (rules != null && rules.Length > 0)
             {
-                builder.WithDescription(string.Join('\n', rules.Select((r, i) => $"{i + 1} - {r}").ToArray()));
+                builder.WithDescription(string.Join('\n', rules.Select((r, i) => $"{i + 1} - {r}").ToArray()))
+                    .WithTitle("Rules");
             }
             else
             {

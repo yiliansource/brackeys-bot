@@ -23,7 +23,7 @@ namespace BrackeysBot.Commands
                 .WithFields(Config.GetConfigurationValues()
                     .Select(v => new EmbedFieldBuilder()
                         .WithName(v.Name)
-                        .WithValue(v.ToString())
+                        .WithValue(LimitFieldLength(v.ToString()))
                         .WithIsInline(true)));
 
             await builder.Build().SendToChannel(Context.Channel);
@@ -43,7 +43,7 @@ namespace BrackeysBot.Commands
             {
                 builder.WithTitle(configValue.Name)
                     .WithDescription(configValue.Description)
-                    .AddField("Value", configValue.ToString());
+                    .AddField("Value", LimitFieldLength(configValue.ToString()));
             }
             else
             {
@@ -98,6 +98,17 @@ namespace BrackeysBot.Commands
                 .WithDescription("Configuration was saved!")
                 .Build()
                 .SendToChannel(Context.Channel);
+        }
+
+        private static string LimitFieldLength(string content)
+        {
+            const int maxLength = EmbedFieldBuilder.MaxFieldValueLength;
+            const string truncator = "[...]";
+            if (content.Length > maxLength)
+            {
+                content = content[0..(maxLength - truncator.Length)] + truncator;
+            }
+            return content;
         }
     }
 }
