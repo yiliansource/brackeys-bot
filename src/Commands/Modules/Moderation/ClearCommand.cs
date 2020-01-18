@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
@@ -16,7 +18,8 @@ namespace BrackeysBot.Commands
             [Summary("The amount of messages to clear")] int count)
         {
             var messages = await Context.Channel.GetMessagesAsync(count + 1).FlattenAsync();
-            await (Context.Channel as ITextChannel).DeleteMessagesAsync(messages);
+            var validMessages = messages.Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
+            await (Context.Channel as ITextChannel).DeleteMessagesAsync(validMessages);
 
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)

@@ -34,7 +34,7 @@ namespace BrackeysBot.Commands
 
         [Command("help")]
         [Summary("Displays more information about a module or command.")]
-        public async Task HelpAsync(string identifier)
+        public async Task HelpAsync([Remainder] string identifier)
         {
             CommandInfo commandInfo = GetTargetCommand(identifier);
             ModuleInfo moduleInfo = GetTargetModule(identifier);
@@ -114,7 +114,7 @@ namespace BrackeysBot.Commands
                 .FirstOrDefault(c => c.Aliases.Any(a => string.Equals(name, a, StringComparison.InvariantCultureIgnoreCase)));
         private ModuleInfo GetTargetModule(string name)
             => Commands.Modules
-                .FirstOrDefault(m => string.Equals(name, m.Name.Sanitize(), StringComparison.InvariantCultureIgnoreCase));
+                .FirstOrDefault(m => !m.IsSubmodule && string.Equals(name, m.Name.Sanitize(), StringComparison.InvariantCultureIgnoreCase));
 
         private static string ExtractPrefixFromContext(ICommandContext context)
             => (context as BrackeysBotContext)?.Configuration.Prefix ?? string.Empty;

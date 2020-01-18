@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -9,10 +8,14 @@ namespace BrackeysBot
     {
         [JsonPropertyName("id")]
         public ulong ID { get; set; }
+
         [JsonPropertyName("temporaryInfractions")]
         public List<TemporaryInfraction> TemporaryInfractions { get; set; } = new List<TemporaryInfraction>();
         [JsonPropertyName("infractions")]
         public List<Infraction> Infractions { get; set; } = new List<Infraction>();
+
+        [JsonPropertyName("eventPoints")]
+        public int Points { get; set; }
         
         public UserData (ulong id)
         {
@@ -20,7 +23,6 @@ namespace BrackeysBot
         }
         private UserData()
         {
-
         }
 
         public bool HasTemporaryInfraction(TemporaryInfractionType type)

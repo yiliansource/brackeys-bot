@@ -107,7 +107,7 @@ namespace BrackeysBot.Services
 
         private Type[] GetModuleTypes()
             => Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => !t.HasAttribute<ObsoleteAttribute>() && typeof(BrackeysBotModule).IsAssignableFrom(t) && !t.IsAbstract)
+                .Where(t => !t.HasAttribute<ObsoleteAttribute>() && typeof(BrackeysBotModule).IsAssignableFrom(t) && !t.IsAbstract && !t.IsNested)
                 .ToArray();
         private Type GetModuleTypeByName(string name)
             => _moduleTypes.FirstOrDefault(m => string.Equals(m.Name.Sanitize(), name, StringComparison.InvariantCultureIgnoreCase));
