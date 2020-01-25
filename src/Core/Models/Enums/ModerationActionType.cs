@@ -21,6 +21,8 @@ namespace BrackeysBot
         [Description("Unmuted user")]
         Unmute,
         [Description("Kicked user")]
-        Kick
+        Kick,
+        [Description("Filtered word")]
+        Filtered
     }
 }
