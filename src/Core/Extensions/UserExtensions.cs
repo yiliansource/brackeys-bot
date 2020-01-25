@@ -30,15 +30,23 @@ namespace BrackeysBot
             {
                 BotConfiguration config = botContext.Configuration;
 
+                return GetPermissionLevel(user, config);
+            }
+
+            return PermissionLevel.Default;
+        }
+
+        public static PermissionLevel GetPermissionLevel(this IGuildUser user, BotConfiguration config) 
+        {
                 if (user.GuildPermissions.Has(GuildPermission.Administrator))
                     return PermissionLevel.Administrator;
                 if (user.RoleIds.Contains(config.ModeratorRoleID))
                     return PermissionLevel.Moderator;
                 if (user.RoleIds.Contains(config.GuruRoleID))
                     return PermissionLevel.Guru;
-            }
 
-            return PermissionLevel.Default;
+                return PermissionLevel.Default;
+
         }
     }
 }

@@ -1,11 +1,10 @@
 using System.Threading.Tasks;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
-
 namespace BrackeysBot.Services
 {
     public class FilterService : BrackeysBotService, IInitializeableService
@@ -33,23 +32,33 @@ namespace BrackeysBot.Services
 
         public async Task CheckMessageAsync(SocketMessage s) 
         {
-            if (!(s is SocketUserMessage msg) || msg.Author.IsBot)
+            if (!(s is SocketUserMessage msg) || CanUseFilteredWords(msg))
                 return;
-
-            string[] blockedWords = _dataService.Configuration.BlockedWords;
 
             string content = msg.Content;
             
-            if (blockedWords.Any(str => content.IndexOf(str, StringComparison.InvariantCultureIgnoreCase) >= 0)) {
+            if (ContainsBlockedWord(content)) 
                 await DeleteMsgAndInfractUser(s, content);
+        }
 
-            }
+        private bool ContainsBlockedWord(string msg) 
+        {
+            string[] blockedWords = _dataService.Configuration.BlockedWords;
+            return blockedWords.Any(str => new Regex($".*{str}.*").IsMatch(msg.ToLowerInvariant()));
+        }
+
+        private bool CanUseFilteredWords(SocketUserMessage msg)
+        {
+            return msg.Author.IsBot || (msg.Author as IGuildUser).GetPermissionLevel(_dataService.Configuration) >= PermissionLevel.Moderator;
         }
 
         private async Task DeleteMsgAndInfractUser(SocketMessage s, string message)
         {
             SocketGuildUser target = s.Author as SocketGuildUser;
 
+            // Delete message before creating infractions and notifying moderators because
+            //  if something fails during infraction creation or notifying the moderators we 
+            //  are at least certain the message got deleted.
             await s.DeleteAsync();
 
             _moderationService.AddInfraction(target, 
@@ -65,6 +74,14 @@ namespace BrackeysBot.Services
                     .WithReason($"Deleted **{message}**")
                     .WithTime(DateTimeOffset.Now)
                     .WithModerator(_discord.CurrentUser));
+
+            NotifyUser(s);
+        }
+
+        private async void NotifyUser(SocketMessage s)
+        {
+            IMessage msg = (await s.Channel.SendMessageAsync($"Hey {s.Author.Id.Mention()}! Your message goes against Discord COC, if you believe this is an error contact a Staff member!")) as IMessage;
+            msg.TimedDeletion(5000);
         }
     }
 }

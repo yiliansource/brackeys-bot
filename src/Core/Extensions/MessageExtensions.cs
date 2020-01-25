@@ -37,10 +37,17 @@ namespace BrackeysBot
             }
         }
 
-        private static string cropToLength(string msg, int length) {
+        private static string cropToLength(string msg, int length) 
+        {
             if (msg?.Length > length) 
                 return msg.Substring(0, length - 3) + "...";
             return msg;
+        }
+
+        public static async void TimedDeletion(this IMessage message, int milliseconds) 
+        {
+            await Task.Delay(milliseconds);
+            await message.DeleteAsync();
         }
     }
 }

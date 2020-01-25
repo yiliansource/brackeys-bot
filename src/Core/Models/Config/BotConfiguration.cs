@@ -63,7 +63,7 @@ namespace BrackeysBot
         public int CodeblockThreshold { get; set; }
 
         [YamlMember(Alias = "blockedWords")]
-        [Description("The words which should be automatically be deleted.")]
+        [Description("A list of regex for words which should automatically be deleted.")]
         public string[] BlockedWords { get; set; }
     }
 }
