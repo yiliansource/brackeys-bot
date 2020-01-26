@@ -10,7 +10,6 @@ namespace BrackeysBot
 {
     public static class MessageExtensions
     {
-        private static readonly int _maxFieldLength = EmbedBuilder.MaxDescriptionLength / 2;
 
         public static async Task SendToChannel(this Embed e, IMessageChannel channel)
             => await channel.SendMessageAsync(string.Empty, false, e);
@@ -19,7 +18,7 @@ namespace BrackeysBot
             if (condition) {
                 string toPost = value?.ToString();
 
-                eb.AddField(name, CropToLength(toPost, _maxFieldLength), inline);
+                eb.AddField(name, CropToLength(toPost, EmbedFieldBuilder.MaxFieldValueLength), inline);
             }
             return eb;
         }
