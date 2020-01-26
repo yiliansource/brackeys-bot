@@ -47,5 +47,38 @@ namespace BrackeysBot.Commands
 
             await builder.Build().SendToChannel(Context.Channel);
         }
+
+        [Command("disable"), Alias("lockdown", "lock")]
+        [Summary("Disables everyone from chatting, for emergencies only!")]
+        [RequireAdministrator]
+        [RequireContext(ContextType.Guild)]
+        public async Task DisableAsync() => await SetLockdown(true);
+
+        [Command("enable"), Alias("liftlockdown", "unlock")]
+        [Summary("Enables everyone to chat again.")]
+        [RequireAdministrator]
+        [RequireContext(ContextType.Guild)]
+        public async Task EnableAsync() => await SetLockdown(false);
+
+        private async Task SetLockdown(bool lockdown = false) 
+        {
+            IRole everyone = Context.Guild.EveryoneRole;
+            GuildPermissions newPermissions = everyone.Permissions.Modify(sendMessages: !lockdown);
+
+            await everyone.ModifyAsync(x => x.Permissions = newPermissions);
+
+            string message = $"Lockdown {(lockdown ? "enabled" : "disabled")}!";
+
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
+                    .WithDefaultsFromContext(Context)
+                    .WithReason(message)
+                    .WithActionType(ModerationActionType.SlowMode));
+
+            await new EmbedBuilder()
+                .WithColor(Color.DarkGreen)
+                .WithDescription(message)
+                .Build()
+                .SendToChannel(Context.Channel);
+        }
     }
 }
