@@ -102,6 +102,7 @@ namespace BrackeysBot.Services
                     return Color.Orange;
 
                 case ModerationActionType.ClearMessages:
+                case ModerationActionType.Filtered:
                     return Color.LightOrange;
 
                 default:
