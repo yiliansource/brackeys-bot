@@ -42,9 +42,8 @@ namespace BrackeysBot.Services
 
         private const string API_BASEPOINT = "https://paste.myst.rs/api/";
         private const string PASTEMYST_BASE_URL = "https://paste.myst.rs/";
-        private const string _codeblockIdentifier = "```";
 
-        private static readonly Regex _codeblockRegex = new Regex(@$"^(?:{_codeblockIdentifier})(\w+)?\n(.*)\n(?:{_codeblockIdentifier})$", RegexOptions.Singleline);
+        private static readonly Regex _codeblockRegex = new Regex(@"^(?:\`){1,3}(\w+?(?:\n))?([^\`]*)\n?(?:\`){1,3}$", RegexOptions.Singleline);
 
         public CodeblockService(DiscordSocketClient client, DataService data)
         {

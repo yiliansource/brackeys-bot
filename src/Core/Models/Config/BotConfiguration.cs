@@ -61,5 +61,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "codeblockThreshold")]
         [Description("The minimum length of a message to be seen as a codeblock.")]
         public int CodeblockThreshold { get; set; }
+
+        [YamlMember(Alias = "blockedWords")]
+        [Description("A list of regex for words which should automatically be deleted.")]
+        public string[] BlockedWords { get; set; }
     }
 }
