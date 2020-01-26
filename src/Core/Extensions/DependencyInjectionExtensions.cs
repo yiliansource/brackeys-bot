@@ -10,7 +10,7 @@ using BrackeysBot.Services;
 
 namespace BrackeysBot
 {
-    public static class DependancyInjectionExtensions
+    public static class DependencyInjectionExtensions
     {
         public static IServiceCollection AddBrackeysBotServices(this IServiceCollection col)
         {
