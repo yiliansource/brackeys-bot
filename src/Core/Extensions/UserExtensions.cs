@@ -25,16 +25,9 @@ namespace BrackeysBot
             => user.GetAvatarUrl().WithAlternative(user.GetDefaultAvatarUrl());
 
         public static PermissionLevel GetPermissionLevel(this IGuildUser user, ICommandContext context)
-        {
-            if (context is BrackeysBotContext botContext)
-            {
-                BotConfiguration config = botContext.Configuration;
-
-                return GetPermissionLevel(user, config);
-            }
-
-            return PermissionLevel.Default;
-        }
+            => (context is BrackeysBotContext botContext) 
+                ? GetPermissionLevel(user, botContext)
+                : PermissionLevel.Default;
 
         public static PermissionLevel GetPermissionLevel(this IGuildUser user, BotConfiguration config) 
         {

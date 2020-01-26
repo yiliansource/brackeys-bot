@@ -10,16 +10,16 @@ namespace BrackeysBot
 {
     public static class MessageExtensions
     {
+        private static readonly int _maxFieldLength = EmbedBuilder.MaxDescriptionLength / 2;
+
         public static async Task SendToChannel(this Embed e, IMessageChannel channel)
             => await channel.SendMessageAsync(string.Empty, false, e);
         public static EmbedBuilder AddFieldConditional(this EmbedBuilder eb, bool condition, string name, object value, bool inline = false)
         {
             if (condition) {
-                if (value is string) {
-                    eb.AddField(name, cropToLength(value as string, 1024), inline);
-                } else {
-                    eb.AddField(name, value, inline);
-                }
+                string toPost = value?.ToString();
+
+                eb.AddField(name, CropToLength(toPost, _maxFieldLength), inline);
             }
             return eb;
         }
@@ -28,7 +28,7 @@ namespace BrackeysBot
         {
             try
             {
-                await user.SendMessageAsync(cropToLength(text, 2000), isTTS, embed);
+                await user.SendMessageAsync(CropToLength(text, EmbedBuilder.MaxDescriptionLength), isTTS, embed);
                 return true;
             }
             catch
@@ -37,7 +37,7 @@ namespace BrackeysBot
             }
         }
 
-        private static string cropToLength(string msg, int length) 
+        private static string CropToLength(string msg, int length) 
         {
             if (msg?.Length > length) 
                 return msg.Substring(0, length - 3) + "...";
