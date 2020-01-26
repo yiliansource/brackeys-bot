@@ -16,6 +16,8 @@ namespace BrackeysBot
         TempMute,
         [Description("Cleared messages")]
         ClearMessages,
+        [Description("Set slowmode")]
+        SlowMode,
         [Description("Unbanned user")]
         Unban,
         [Description("Unmuted user")]
