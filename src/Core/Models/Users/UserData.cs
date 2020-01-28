@@ -17,6 +17,7 @@ namespace BrackeysBot
         [JsonPropertyName("eventPoints")]
         public int Points { get; set; }
         
+
         public UserData (ulong id)
         {
             ID = id;

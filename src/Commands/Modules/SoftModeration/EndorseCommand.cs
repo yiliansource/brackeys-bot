@@ -12,31 +12,61 @@ namespace BrackeysBot.Commands
     {
         [Command("endorse"), Alias("star")]
         [Summary("Endorse a user and give them a star.")]
-        [Remarks("endorse <user>")]
-        [RequireModerator]
+        [Remarks("endorse <id>")]
+        [RequireGuru]
+        [HideFromHelp]
         public async Task EndorseUserAsync(
             [Summary("The user ID to endorse.")] ulong id)
-        {
-            Data.UserData.GetOrCreate(id).
-            IMessage message = await Context.Channel.GetMessageAsync(id);
-            string url = await Codeblock.PasteMessage(message);
-
-            await GetDefaultBuilder()
-                .WithAuthor("Pasted!", message.Author.EnsureAvatarUrl())
-                .WithDescription($"The message by {message.Author.Mention} has been pasted!\nClick [here]({url}) to view it!")
-                .WithColor(Color.Green)
-                .Build()
-                .SendToChannel(Context.Channel);
-
-            await message.DeleteAsync();
-        }
+            => await EndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser);
 
         [Command("endorse"), Alias("star")]
         [Summary("Endorse a user and give them a star.")]
-        [Remarks("endorse <id>")]
-        [RequireModerator]
+        [Remarks("endorse <user>")]
+        [RequireGuru]
         public async Task EndorseUserAsync(
-            [Summary("The user to ban.")] SocketGuildUser user) 
-            => await EndorseUserAsync(user.Id);
+            [Summary("The user to endorse.")] SocketGuildUser guildUser) 
+        {
+            UserData user = Data.UserData.GetOrCreate(guildUser.Id);
+            user.Stars++;
+
+            await new EmbedBuilder()
+                .WithAuthor(guildUser)
+                .WithColor(Color.Gold)
+                .WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {user.Stars} stars!")
+                .Build()
+                .SendToChannel(Context.Channel);
+        }
+
+        [Command("deleteendorse"), Alias("deletestar", "delstar", "delendorse")]
+        [Summary("Remove a star from a user.")]
+        [Remarks("deleteendorse <user>")]
+        [RequireModerator]
+        [HideFromHelp]
+        public async Task DeleteEndorseUserAsync(
+            [Summary("The user ID to remove an endorsement.")] ulong id)
+            => await DeleteEndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser);
+
+        [Command("deleteendorse"), Alias("deletestar", "delstar", "delendorse")]
+        [Summary("Remove a star from a user.")]
+        [Remarks("deleteendorse <user>")]
+        [RequireModerator]
+        public async Task DeleteEndorseUserAsync(
+            [Summary("The user to remove an endorsement.")] SocketGuildUser guildUser) 
+        {
+            UserData user = Data.UserData.GetOrCreate(guildUser.Id);
+
+            EmbedBuilder builder = new EmbedBuilder();
+
+            if (user.Stars == 0) {
+                builder.WithColor(Color.Red).WithDescription("Can't remove a star, they have none!");
+            } else {
+                user.Stars--;
+                builder.WithAuthor(guildUser).WithColor(Color.Gold)
+                    .WithDescription($"Took a :star: from {guildUser.Mention}! They now have {user.Stars} stars!");
+            }
+
+            await builder.Build()
+                .SendToChannel(Context.Channel);
+        }
     }
 }
