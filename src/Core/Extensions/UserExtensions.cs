@@ -26,7 +26,7 @@ namespace BrackeysBot
 
         public static PermissionLevel GetPermissionLevel(this IGuildUser user, ICommandContext context)
             => (context is BrackeysBotContext botContext) 
-                ? GetPermissionLevel(user, botContext)
+                ? GetPermissionLevel(user, botContext.Configuration)
                 : PermissionLevel.Default;
 
         public static PermissionLevel GetPermissionLevel(this IGuildUser user, BotConfiguration config) 
