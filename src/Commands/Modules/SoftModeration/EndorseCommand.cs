@@ -96,5 +96,35 @@ namespace BrackeysBot.Commands
                 .Build()
                 .SendToChannel(Context.Channel);
         }
+
+        [Command("setendorse"), Alias("setrstar", "setstars")]
+        [Summary("Set the stars of a user.")]
+        [Remarks("setendorse <user> <amount>")]
+        [RequireModerator]
+        [HideFromHelp]
+        public async Task SetEndorseUserAsync(
+            [Summary("The user ID to set the endorsement.")] ulong id,
+            [Summary("The amount of endorsement to set.")] int amount)
+            => await SetEndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser, amount);
+
+        [Command("setendorse"), Alias("setrstar", "setstars")]
+        [Summary("Set the stars of a user.")]
+        [Remarks("setendorse <user> <amount>")]
+        [RequireModerator]
+        public async Task SetEndorseUserAsync(
+            [Summary("The user to set the endorsement.")] SocketGuildUser guildUser,
+            [Summary("The amount of endorsement to set.")] int amount) 
+        {
+            UserData user = Data.UserData.GetOrCreate(guildUser.Id);
+
+            user.Stars = amount;
+
+            await new EmbedBuilder()
+                .WithAuthor(guildUser)
+                .WithColor(Color.Green)
+                .WithDescription($"Set the endorsements of {guildUser.Mention} to {amount}:star:!")
+                .Build()
+                .SendToChannel(Context.Channel);
+        }
     }
 }
