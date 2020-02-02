@@ -61,11 +61,39 @@ namespace BrackeysBot.Commands
                 builder.WithColor(Color.Red).WithDescription("Can't remove a star, they have none!");
             } else {
                 user.Stars--;
-                builder.WithAuthor(guildUser).WithColor(Color.Gold)
+                builder.WithAuthor(guildUser).WithColor(Color.Green)
                     .WithDescription($"Took a :star: from {guildUser.Mention}! They now have {user.Stars} stars!");
             }
 
             await builder.Build()
+                .SendToChannel(Context.Channel);
+        }
+
+        [Command("clearendorse"), Alias("clearstar", "clearstars")]
+        [Summary("Remove all stars from a user.")]
+        [Remarks("clearendorse <user>")]
+        [RequireModerator]
+        [HideFromHelp]
+        public async Task WipeEndorseUserAsync(
+            [Summary("The user ID to remove all endorsement.")] ulong id)
+            => await WipeEndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser);
+
+        [Command("clearendorse"), Alias("clearstar", "clearstars")]
+        [Summary("Remove all stars from a user.")]
+        [Remarks("clearendorse <user>")]
+        [RequireModerator]
+        public async Task WipeEndorseUserAsync(
+            [Summary("The user to remove all endorsement.")] SocketGuildUser guildUser) 
+        {
+            UserData user = Data.UserData.GetOrCreate(guildUser.Id);
+
+            user.Stars = 0;
+
+            await new EmbedBuilder()
+                .WithAuthor(guildUser)
+                .WithColor(Color.Green)
+                .WithDescription($"Removed all endorsements from {guildUser.Mention}!")
+                .Build()
                 .SendToChannel(Context.Channel);
         }
     }
