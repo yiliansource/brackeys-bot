@@ -22,6 +22,11 @@
         TempBan,
         [Description("Unbanned user")]
         Unban,
+        
+        [Description("Set slowmode")]
+        SlowMode,
+        [Description("Lockdown")]
+        Lockdown,
 
         [Description("Cleared messages")]
         ClearMessages,
