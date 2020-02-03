@@ -36,6 +36,8 @@ namespace BrackeysBot.Services
         {
             _discord.MessageReceived += HandleCommandAsync;
             _commands.CommandExecuted += OnCommandExecutedAsync;
+
+            _commands.AddTypeReader<GuildUserProxy>(new GuildUserProxyTypeReader());
         }
 
         private async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
