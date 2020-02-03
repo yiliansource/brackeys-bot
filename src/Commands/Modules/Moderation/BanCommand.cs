@@ -5,6 +5,8 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
+using BrackeysBot.Core.Models;
+
 using Humanizer;
 
 namespace BrackeysBot.Commands
@@ -32,35 +34,17 @@ namespace BrackeysBot.Commands
         [RequireModerator]
         [RequireBotPermission(GuildPermission.BanMembers)]
         public async Task BanAsync(
-            [Summary("The user to ban.")] SocketGuildUser user,
+            [Summary("The user to ban.")] GuildUserProxy user,
             [Summary("The reason why to ban the user."), Remainder] string reason = DefaultReason)
         {
-            await user.TrySendMessageAsync($"You were banned from **{Context.Guild.Name}** because of {reason}.");
-            await user.BanAsync(_pruneDays, reason);
+            if (user.HasValue)
+                await user.GuildUser.TrySendMessageAsync($"You were banned from **{Context.Guild.Name}** because of {reason}.");
+            await Context.Guild.AddBanAsync(user.ID, _pruneDays, reason);
 
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Ban)
-                .WithTarget(user)
-                .WithReason(reason), Context.Channel);
-        }
-
-        [Command("ban")]
-        [Summary("Bans a member from the server by his ID, with an optional reason.")]
-        [Remarks("ban <userId> [reason]")]
-        [HideFromHelp]
-        [RequireModerator]
-        [RequireBotPermission(GuildPermission.BanMembers)]
-        public async Task BanAsync(
-            [Summary("The user ID to ban.")] ulong userId,
-            [Summary("The reason why to ban the user."), Remainder] string reason = DefaultReason)
-        {
-            await Context.Guild.AddBanAsync(userId, _pruneDays, reason);
-
-            await ModerationLog.CreateEntry(ModerationLogEntry.New
-                .WithDefaultsFromContext(Context)
-                .WithActionType(ModerationActionType.Ban)
-                .WithTarget(userId)
+                .WithTarget(user.ID)
                 .WithReason(reason), Context.Channel);
         }
 
@@ -94,16 +78,16 @@ namespace BrackeysBot.Commands
         [RequireModerator]
         [RequireBotPermission(GuildPermission.BanMembers)]
         public async Task UnbanAsync(
-            [Summary("The user ID to unban.")] ulong userId)
+            [Summary("The user ID to unban.")] GuildUserProxy user)
         {
-            await Context.Guild.RemoveBanAsync(userId);
+            await Context.Guild.RemoveBanAsync(user.ID);
 
-            Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempBan, userId);
+            Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempBan, user.ID);
 
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Unban)
-                .WithTarget(userId), Context.Channel);
+                .WithTarget(user.ID), Context.Channel);
         }
     }
 }

@@ -99,6 +99,8 @@ namespace BrackeysBot.Services
                     return Color.Green;
 
                 case ModerationActionType.Warn:
+                case ModerationActionType.DeletedInfraction:
+                case ModerationActionType.ClearInfractions:
                     return Color.Orange;
 
                 case ModerationActionType.ClearMessages:

@@ -36,7 +36,7 @@ namespace BrackeysBot.Commands
                 .AddFieldConditional(user.JoinedAt.HasValue, "Join Date", user.JoinedAt?.ToShortDateString(), true)
                 .AddField("User Created", user.CreatedAt.ToShortDateString(), true)
                 .AddFieldConditional(data.Stars > 0, "Endorsements", $"{data.Stars} :star:", true)
-                .AddFieldConditional(infractionCount > 0, "Infractions", infractionCount.ToString())
+                .AddFieldConditional(infractionCount > 0, "Infractions", infractionCount.ToString(), true)
                 .AddField("Permission Level", user.GetPermissionLevel(Context).Humanize(), true);
 
             await builder.Build().SendToChannel(Context.Channel);

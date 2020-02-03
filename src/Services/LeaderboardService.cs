@@ -57,6 +57,6 @@ namespace BrackeysBot.Services
         }
 
         private IEnumerable<UserData> FilterValidLeaderboardUsers()
-            => _data.UserData.Users.Where(u => u.Points > 0);
+            => _data.UserData.Users.Where(u => u.Points > 0 && _client.GetUser(u.ID) != null);
     }
 }
