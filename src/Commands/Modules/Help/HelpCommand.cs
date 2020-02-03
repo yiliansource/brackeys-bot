@@ -50,23 +50,14 @@ namespace BrackeysBot.Commands
             {
                 await ReplyAsync($"A command or module with the name **{identifier}** could not be found.");
             }
+
             if (commandInfo != null && moduleInfo == null)
             {
                 await DisplayCommandHelpAsync(commandInfo, Context);
             }
-            if (commandInfo == null && moduleInfo != null)
+            if (moduleInfo != null)
             {
                 await DisplayModuleHelpAsync(moduleInfo, Context);
-            }
-            if (commandInfo != null && moduleInfo != null)
-            {
-                StringBuilder reply = new StringBuilder()
-                    .AppendLine("Both a module and a command were found, here are short summaries of both!")
-                    .AppendLine()
-                    .AppendLine($"**Command**: {commandInfo.Summary.WithAlternative(_noDescription)}")
-                    .AppendLine($"**Module**: {moduleInfo.Summary.WithAlternative(_noDescription)}");
-
-                await ReplyAsync(reply.ToString());
             }
         }
 

@@ -56,6 +56,14 @@ namespace BrackeysBot.Services
                         await customCommand.ExecuteCommand(context);
                     }
                 }
+                else if (result.Error == CommandError.UnmetPrecondition)
+                {
+                    await new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription("Access denied.")
+                        .Build()
+                        .SendToChannel(context.Channel);
+                }
                 else
                 {
                     if (result is ExecuteResult executeResult)

@@ -27,6 +27,9 @@ namespace BrackeysBot.Commands
                     .SendToChannel(Context.Channel);
             }
         }
+
+        [Command("points"), Alias("p")]
+        [HideFromHelp]
         public async Task DisplaySelfPointsAsync()
         {
             await GetDefaultBuilder()
