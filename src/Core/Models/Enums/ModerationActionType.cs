@@ -18,6 +18,8 @@ namespace BrackeysBot
         ClearMessages,
         [Description("Set slowmode")]
         SlowMode,
+        [Description("Lockdown")]
+        Lockdown,
         [Description("Unbanned user")]
         Unban,
         [Description("Unmuted user")]

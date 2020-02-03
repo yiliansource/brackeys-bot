@@ -72,7 +72,7 @@ namespace BrackeysBot.Commands
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                     .WithDefaultsFromContext(Context)
                     .WithReason(message)
-                    .WithActionType(ModerationActionType.SlowMode));
+                    .WithActionType(ModerationActionType.Lockdown));
 
             await new EmbedBuilder()
                 .WithColor(Color.DarkGreen)

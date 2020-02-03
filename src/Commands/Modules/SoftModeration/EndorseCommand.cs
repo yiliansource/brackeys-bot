@@ -12,15 +12,6 @@ namespace BrackeysBot.Commands
     {
         [Command("endorse"), Alias("star")]
         [Summary("Endorse a user and give them a star.")]
-        [Remarks("endorse <id>")]
-        [RequireGuru]
-        [HideFromHelp]
-        public async Task EndorseUserAsync(
-            [Summary("The user ID to endorse.")] ulong id)
-            => await EndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser);
-
-        [Command("endorse"), Alias("star")]
-        [Summary("Endorse a user and give them a star.")]
         [Remarks("endorse <user>")]
         [RequireGuru]
         public async Task EndorseUserAsync(
@@ -36,15 +27,6 @@ namespace BrackeysBot.Commands
                 .Build()
                 .SendToChannel(Context.Channel);
         }
-
-        [Command("deleteendorse"), Alias("deletestar", "delstar", "delendorse")]
-        [Summary("Remove a star from a user.")]
-        [Remarks("deleteendorse <user>")]
-        [RequireModerator]
-        [HideFromHelp]
-        public async Task DeleteEndorseUserAsync(
-            [Summary("The user ID to remove an endorsement.")] ulong id)
-            => await DeleteEndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser);
 
         [Command("deleteendorse"), Alias("deletestar", "delstar", "delendorse")]
         [Summary("Remove a star from a user.")]
@@ -73,15 +55,6 @@ namespace BrackeysBot.Commands
         [Summary("Remove all stars from a user.")]
         [Remarks("clearendorse <user>")]
         [RequireModerator]
-        [HideFromHelp]
-        public async Task WipeEndorseUserAsync(
-            [Summary("The user ID to remove all endorsement.")] ulong id)
-            => await WipeEndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser);
-
-        [Command("clearendorse"), Alias("clearstar", "clearstars")]
-        [Summary("Remove all stars from a user.")]
-        [Remarks("clearendorse <user>")]
-        [RequireModerator]
         public async Task WipeEndorseUserAsync(
             [Summary("The user to remove all endorsement.")] SocketGuildUser guildUser) 
         {
@@ -96,16 +69,6 @@ namespace BrackeysBot.Commands
                 .Build()
                 .SendToChannel(Context.Channel);
         }
-
-        [Command("setendorse"), Alias("setrstar", "setstars")]
-        [Summary("Set the stars of a user.")]
-        [Remarks("setendorse <user> <amount>")]
-        [RequireModerator]
-        [HideFromHelp]
-        public async Task SetEndorseUserAsync(
-            [Summary("The user ID to set the endorsement.")] ulong id,
-            [Summary("The amount of endorsement to set.")] int amount)
-            => await SetEndorseUserAsync(await Context.Guild.GetUserAsync(id) as SocketGuildUser, amount);
 
         [Command("setendorse"), Alias("setrstar", "setstars")]
         [Summary("Set the stars of a user.")]
