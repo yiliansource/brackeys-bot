@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text;
 
@@ -18,7 +19,9 @@ namespace BrackeysBot
 
         public static string Sanitize(this string typeName)
             => typeName
-                .Replace("Module", string.Empty)
-                .Replace("Command", string.Empty);
+                .Replace("Module", string.Empty);
+
+        public static string Prettify(this string name)
+            => Regex.Replace(name, @"(?<!^)(?=[A-Z])", " ");
     }
 }

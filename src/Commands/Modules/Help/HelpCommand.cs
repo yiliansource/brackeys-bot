@@ -13,7 +13,7 @@ using BrackeysBot.Services;
 namespace BrackeysBot.Commands
 {
     [HideFromHelp]
-    public sealed class HelpCommand : BrackeysBotModule
+    public sealed class HelpModule : BrackeysBotModule
     {
         public CommandService Commands { get; set; }
         public ModuleService Modules { get; set; }
@@ -23,13 +23,20 @@ namespace BrackeysBot.Commands
         private const string _noUsage = "No usage provided.";
 
         [Command("help")]
-        [Summary("Displays a list of useable commands and modules.")]
+        [Summary("Displays a list of modules.")]
         public async Task HelpAsync()
         {
-            foreach (ModuleInfo module in Commands.Modules)
-            {
-                await DisplayModuleHelpAsync(module, Context);
-            }
+            IEnumerable<ModuleInfo> availableModules = Commands.Modules
+                .Where(module => !module.HasAttribute<HideFromHelpAttribute>()
+                    && module.Commands.Any(c => c.CheckPreconditionsAsync(Context).GetAwaiter().GetResult().IsSuccess));
+            IEnumerable<EmbedFieldBuilder> fields = availableModules
+                .Select(module => new EmbedFieldBuilder().WithName(module.Name.Sanitize().Envelop("**")).WithValue(module.Summary.WithAlternative("No description provided.")));
+
+            await GetDefaultBuilder()
+                .WithDescription($"Here's a list of modules you can access!\nType `{ExtractPrefixFromContext(Context)}help <module>` to see all the commands of that module!")
+                .WithFields(fields.ToArray())
+                .Build()
+                .SendToChannel(Context.Channel);
         }
 
         [Command("help")]
