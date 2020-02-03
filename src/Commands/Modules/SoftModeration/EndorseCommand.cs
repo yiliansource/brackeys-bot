@@ -26,6 +26,8 @@ namespace BrackeysBot.Commands
                 .WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {user.Stars} stars!")
                 .Build()
                 .SendToChannel(Context.Channel);
+
+            Data.SaveUserData();    
         }
 
         [Command("deleteendorse"), Alias("deletestar", "delstar", "delendorse")]
@@ -49,6 +51,8 @@ namespace BrackeysBot.Commands
 
             await builder.Build()
                 .SendToChannel(Context.Channel);
+
+            Data.SaveUserData();    
         }
 
         [Command("clearendorse"), Alias("clearstar", "clearstars")]
@@ -68,6 +72,8 @@ namespace BrackeysBot.Commands
                 .WithDescription($"Removed all endorsements from {guildUser.Mention}!")
                 .Build()
                 .SendToChannel(Context.Channel);
+            
+            Data.SaveUserData();    
         }
 
         [Command("setendorse"), Alias("setrstar", "setstars")]
@@ -88,6 +94,8 @@ namespace BrackeysBot.Commands
                 .WithDescription($"Set the endorsements of {guildUser.Mention} to {amount}:star:!")
                 .Build()
                 .SendToChannel(Context.Channel);
+            
+            Data.SaveUserData();    
         }
     }
 }
