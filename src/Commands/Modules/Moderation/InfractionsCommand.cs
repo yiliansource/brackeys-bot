@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord;
@@ -44,7 +45,19 @@ namespace BrackeysBot.Commands
             [Summary("The user to clear the infractions from.")] SocketGuildUser user)
         {
             int clearedInfractions = Moderation.ClearInfractions(user);
-            await ReplyAsync($"I cleared {clearedInfractions} infraction(s) from {user.Mention}.");
+
+            await GetDefaultBuilder()
+                .WithDescription($"{clearedInfractions} infraction(s) were cleared from {user.Mention}.")
+                .Build()
+                .SendToChannel(Context.Channel);
+
+            if (clearedInfractions > 0)
+            {
+                await ModerationLog.CreateEntry(ModerationLogEntry.New
+                    .WithDefaultsFromContext(Context)
+                    .WithActionType(ModerationActionType.ClearInfractions)
+                    .WithTarget(user));
+            }
         }
 
         [Command("infraction"), Alias("infr")]
@@ -83,14 +96,20 @@ namespace BrackeysBot.Commands
         public async Task DeleteInfractionAsync(
             [Summary("The ID of the infraction")] int id)
         {
-            if (Moderation.DeleteInfraction(id))
-            {
-                await ReplyAsync($"I deleted the infraction with the ID of **{id}**.");
-            }
-            else
-            {
-                await ReplyAsync($"An infraction with the ID of **{id}** does not exist.");
-            }
+            if (!Moderation.TryGetInfraction(id, out Infraction _, out ulong userId))
+                throw new InvalidOperationException($"An infraction with the ID of **{id}** does not exist.");
+
+            Moderation.DeleteInfraction(id);
+
+            await GetDefaultBuilder()
+                .WithDescription($"The infraction with the ID **{id}** was deleted from {MentionUtils.MentionUser(userId)}.")
+                .Build()
+                .SendToChannel(Context.Channel);
+
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithDefaultsFromContext(Context)
+                .WithActionType(ModerationActionType.DeletedInfraction)
+                .WithTarget(await Context.Guild.GetUserAsync(userId)));
         }
     }
 }

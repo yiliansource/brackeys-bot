@@ -1,27 +1,34 @@
-﻿using System.ComponentModel;
-
-namespace BrackeysBot
+﻿namespace BrackeysBot
 {
     public enum ModerationActionType
     {
         [Description("Warned user")]
         Warn,
+        [Description("Cleared infractions")]
+        ClearInfractions,
+        [Description("Deleted infraction")]
+        DeletedInfraction,
+
         [Description("Muted user")]
         Mute,
+        [Description("Tempmuted user")]
+        TempMute,
+        [Description("Unmuted user")]
+        Unmute,
+
         [Description("Banned user")]
         Ban,
         [Description("Tempbanned user")]
         TempBan,
-        [Description("Tempmuted user")]
-        TempMute,
-        [Description("Cleared messages")]
-        ClearMessages,
         [Description("Unbanned user")]
         Unban,
-        [Description("Unmuted user")]
-        Unmute,
+
+        [Description("Cleared messages")]
+        ClearMessages,
+
         [Description("Kicked user")]
         Kick,
+
         [Description("Filtered word")]
         Filtered
     }
