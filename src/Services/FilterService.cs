@@ -1,6 +1,6 @@
-using System.Threading.Tasks;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
 using Discord;
@@ -28,6 +28,7 @@ namespace BrackeysBot.Services
         public void Initialize()
         {
             _discord.MessageReceived += CheckMessageAsync;
+            _discord.MessageUpdated += CheckEditedMessageAsync;
         }
 
         public async Task CheckMessageAsync(SocketMessage s) 
@@ -39,6 +40,13 @@ namespace BrackeysBot.Services
             
             if (ContainsBlockedWord(content)) 
                 await DeleteMsgAndInfractUser(s, content);
+        }
+        public async Task CheckEditedMessageAsync(Cacheable<IMessage, ulong> cacheable, SocketMessage s, ISocketMessageChannel channel)
+        {
+            if (!s.EditedTimestamp.HasValue)
+                return;
+
+            await CheckMessageAsync(s);
         }
 
         private bool ContainsBlockedWord(string msg) 

@@ -53,6 +53,7 @@ namespace BrackeysBot.Commands
 
         [Command("modules")]
         [Summary("Lists all modules.")]
+        [RequireAdministrator]
         [HideFromHelp]
         public async Task ListModulesAsync()
             => await new EmbedBuilder()
