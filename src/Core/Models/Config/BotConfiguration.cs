@@ -48,6 +48,10 @@ namespace BrackeysBot
         [Description("A list of user role IDs.")]
         public ulong[] UserRoleIDs { get; set; }
 
+        [YamlMember(Alias = "loggableIds")]
+        [Description("A list of IDs that should be logged when pinged.")]
+        public ulong[] LoggableIDs { get; set; }
+
         #endregion
 
         [YamlMember(Alias = "moduleConfigs")]
