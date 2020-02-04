@@ -76,7 +76,7 @@ namespace BrackeysBot.Commands
             Data.SaveUserData();    
         }
 
-        [Command("setendorse"), Alias("setrstar", "setstars")]
+        [Command("setendorse"), Alias("setstar", "setstars")]
         [Summary("Set the stars of a user.")]
         [Remarks("setendorse <user> <amount>")]
         [RequireModerator]
