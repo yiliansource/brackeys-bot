@@ -23,8 +23,12 @@ namespace BrackeysBot.Commands
                     .First().Color;
 
             int infractionCount = 0;
+            int starCount = 0;
             if (Data.UserData.TryGetUser(user.Id, out UserData data))
+            {
                 infractionCount = data.Infractions.Count;
+                starCount = data.Stars;
+            }
 
             EmbedBuilder builder = new EmbedBuilder()
                 .WithTitle($"Information about {user}:")
@@ -35,7 +39,7 @@ namespace BrackeysBot.Commands
                 .AddFieldConditional(!string.IsNullOrEmpty(user.Nickname), "Nickname", user.Nickname, true)
                 .AddFieldConditional(user.JoinedAt.HasValue, "Join Date", user.JoinedAt?.ToShortDateString(), true)
                 .AddField("User Created", user.CreatedAt.ToShortDateString(), true)
-                .AddFieldConditional(data.Stars > 0, "Endorsements", $"{data.Stars} :star:", true)
+                .AddFieldConditional(starCount > 0, "Endorsements", $"{starCount} :star:", true)
                 .AddFieldConditional(infractionCount > 0, "Infractions", infractionCount.ToString(), true)
                 .AddField("Permission Level", user.GetPermissionLevel(Context).Humanize(), true);
 

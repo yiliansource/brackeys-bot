@@ -57,6 +57,6 @@ namespace BrackeysBot.Services
         }
 
         private IEnumerable<ulong> GetLoggableIDs()
-            => _data.Configuration.LoggableIDs;
+            => _data.Configuration.LoggableIDs ?? new ulong[0];
     }
 }

@@ -52,6 +52,10 @@ namespace BrackeysBot.Services
         private bool ContainsBlockedWord(string msg) 
         {
             string[] blockedWords = _dataService.Configuration.BlockedWords;
+
+            if (blockedWords == null)
+                return false;
+
             return blockedWords.Any(str => new Regex($".*{str}.*").IsMatch(msg.ToLowerInvariant()));
         }
 
