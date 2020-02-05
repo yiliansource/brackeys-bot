@@ -65,8 +65,8 @@ namespace BrackeysBot.Services
             {
                 string url = await PasteMessage(msg);
                 await new EmbedBuilder()
-                    .WithAuthor("Pasted!", msg.Author.EnsureAvatarUrl())
-                    .WithDescription($"Massive codeblock by {msg.Author.Mention} was pasted!\nClick [here]({url}) to view it!")
+                    .WithAuthor("Pasted!", msg.Author.EnsureAvatarUrl(), url)
+                    .WithDescription($"Massive codeblock by {msg.Author.Mention} was pasted!\n[Click here to view it!]({url})")
                     .WithColor(Color.Green)
                     .Build()
                     .SendToChannel(msg.Channel);

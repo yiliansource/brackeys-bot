@@ -22,8 +22,8 @@ namespace BrackeysBot.Commands
             string url = await Codeblock.PasteMessage(message);
 
             await GetDefaultBuilder()
-                .WithAuthor("Pasted!", message.Author.EnsureAvatarUrl())
-                .WithDescription($"The message by {message.Author.Mention} has been pasted!\nClick [here]({url}) to view it!")
+                .WithAuthor("Pasted!", message.Author.EnsureAvatarUrl(), url)
+                .WithDescription($"The message by {message.Author.Mention} has been pasted!\n[Click here to view it!]({url})")
                 .WithColor(Color.Green)
                 .Build()
                 .SendToChannel(Context.Channel);
