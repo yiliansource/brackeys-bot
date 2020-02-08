@@ -5,6 +5,8 @@ using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.WebSocket;
+using System.Collections.Generic;
+
 namespace BrackeysBot.Services
 {
     public class FilterService : BrackeysBotService, IInitializeableService
@@ -39,7 +41,7 @@ namespace BrackeysBot.Services
             string content = msg.Content;
             
             if (ContainsBlockedWord(content)) 
-                await DeleteMsgAndInfractUser(s, content);
+                await DeleteMsgAndInfractUser(s as SocketUserMessage, content);
         }
         public async Task CheckEditedMessageAsync(Cacheable<IMessage, ulong> cacheable, SocketMessage s, ISocketMessageChannel channel)
         {
@@ -64,9 +66,13 @@ namespace BrackeysBot.Services
             return msg.Author.IsBot || (msg.Author as IGuildUser).GetPermissionLevel(_dataService.Configuration) >= PermissionLevel.Moderator;
         }
 
-        private async Task DeleteMsgAndInfractUser(SocketMessage s, string message)
+        private async Task DeleteMsgAndInfractUser(SocketUserMessage s, string message)
         {
             SocketGuildUser target = s.Author as SocketGuildUser;
+
+            IReadOnlyCollection<SocketMessage> nearbyMessages = s.Channel.GetCachedMessages(s, Direction.Before, 1);
+            SocketUserMessage linkMessage = nearbyMessages.Any() ? nearbyMessages.Last() as SocketUserMessage : s;
+            string url = linkMessage.GetJumpUrl();
 
             // Delete message before creating infractions and notifying moderators because
             //  if something fails during infraction creation or notifying the moderators we 
@@ -77,13 +83,13 @@ namespace BrackeysBot.Services
                     Infraction.Create(_moderationService.RequestInfractionID())
                     .WithType(InfractionType.Warning)
                     .WithModerator(_discord.CurrentUser)
-                    .WithAdditionalInfo($"**Message:** {message}")
+                    .WithAdditionalInfo($"[Go near message]({url})\n**{message}**")
                     .WithDescription("Used filtered word"));
 
             await _loggingService.CreateEntry(ModerationLogEntry.New
                     .WithActionType(ModerationActionType.Filtered)
                     .WithTarget(target)
-                    .WithReason($"Deleted **{message}**")
+                    .WithReason($"[Go near message]({url})\n**{message}**")
                     .WithTime(DateTimeOffset.Now)
                     .WithModerator(_discord.CurrentUser));
 
