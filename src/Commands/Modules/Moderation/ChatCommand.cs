@@ -80,5 +80,15 @@ namespace BrackeysBot.Commands
                 .Build()
                 .SendToChannel(Context.Channel);
         }
+
+        [Command("say")]
+        [Summary("Send a message in a channel")]
+        [RequireAdministrator]
+        private async Task SayMessage(
+            [Summary("The channel to send it to")] IMessageChannel channel,
+            [Summary("The message to send"), Remainder] string message) 
+        {
+            await channel.SendMessageAsync(message);
+        }
     }
 }
