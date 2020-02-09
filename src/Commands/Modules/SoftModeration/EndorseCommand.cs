@@ -19,36 +19,32 @@ namespace BrackeysBot.Commands
         [Remarks("endorse <user>")]
         [RequireGuru]
         public async Task EndorseUserAsync(
-            [Summary("The user to endorse.")] SocketGuildUser guildUser = null) 
+            [Summary("The user to endorse.")] SocketGuildUser guildUser) 
         {
-            EmbedBuilder builder = new EmbedBuilder()
-                .WithColor(Color.Gold);
+            int newAmount = Endorsements.GetUserStars(guildUser) + 1;
 
-            if (guildUser == null) 
-            {
-                int amount = Endorsements.GetUserStars(Context.Message.Author);
+            Endorsements.SetUserStars(guildUser, newAmount);
 
-                builder.WithDescription($"You have {amount} :star:");
-            } 
-            else 
-            {
-                int newAmount = Endorsements.GetUserStars(guildUser) + 1;
-
-                Endorsements.SetUserStars(guildUser, newAmount);
-
-                builder.WithAuthor(guildUser)
-                    .WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {newAmount} stars!");
-            }
-
-            await builder.Build()
+            await new EmbedBuilder()
+                .WithAuthor(guildUser)
+                .WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {newAmount} stars!")
+                .WithColor(Color.Gold)
+                .Build()
                 .SendToChannel(Context.Channel);
         }
 
         [Command("endorse"), Alias("star", "stars")]
         [Summary("Display your stars")]
         [Remarks("endorse")]
-        public async Task EndorseUserAsync() 
-            => await EndorseUserAsync(null);
+        public async Task EndorseUserAsync() {
+            int amount = Endorsements.GetUserStars(Context.Message.Author);
+
+            await new EmbedBuilder()
+                .WithColor(Color.Gold)
+                .WithDescription($"You have {amount} :star:")
+                .Build()
+                .SendToChannel(Context.Channel);
+        }
         
 
         [Command("deleteendorse"), Alias("deletestar", "delstar", "delendorse")]
