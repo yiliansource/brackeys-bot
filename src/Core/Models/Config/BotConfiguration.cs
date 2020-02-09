@@ -69,5 +69,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "blockedWords")]
         [Description("A list of regex for words which should automatically be deleted.")]
         public string[] BlockedWords { get; set; }
+        
+        [YamlMember(Alias = "clearMessageMaxHistory")]
+        [Description("The maximum messages history count to fetch when clearing messages.")]
+        public int ClearMessageMaxHistory { get; set; }
     }
 }
