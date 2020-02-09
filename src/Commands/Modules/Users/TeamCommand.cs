@@ -24,12 +24,7 @@ namespace BrackeysBot.Commands
 
             EmbedBuilder builder = GetDefaultBuilder();
 
-            if (targetTeam == null) 
-            {
-                builder.WithDescription($"Team **{name}** does not exist.")
-                    .WithColor(Color.Red);
-            }
-            else if (currentTeam != targetTeam)
+            if (currentTeam != targetTeam)
             {
                 if (currentTeam != null)
                     await user.RemoveRoleAsync(currentTeam);
@@ -39,7 +34,7 @@ namespace BrackeysBot.Commands
                 builder.WithDescription($"You sucessfully joined **{targetTeam.Name}**.")
                     .WithColor(Color.Green);
             }
-            else 
+            else
             {
                 builder.WithDescription($"You are already in **{targetTeam.Name}**.")
                     .WithColor(Color.Red);
@@ -67,7 +62,7 @@ namespace BrackeysBot.Commands
             }
             else
             {
-                builder.WithDescription("You currently don't have a team.")
+                builder.WithDescription("You dont currently have a team.")
                     .WithColor(Color.Red);
             }
 
