@@ -112,13 +112,15 @@ namespace BrackeysBot.Commands
 
         [Command("topendorse"), Alias("topstar", "topstars")]
         [Summary("Show the users with most stars.")]
-        [Remarks("topendorse")]
+        [Remarks("topendorse [ignoreGuruStaff = true]")]
         [RequireGuru]
-        public async Task TopEndorseAsync() 
+        public async Task TopEndorseAsync(
+            [Summary("Whether or not to include Guru and Staff [default = false]")] bool ignoreGuruStaff = true) 
         {
             await GetDefaultBuilder()
                 .WithTitle("Endorse Leaderboard")
                 .WithFields(Endorsements.GetEndorseLeaderboard()
+                    .Where(e => !ignoreGuruStaff || (e.User as SocketGuildUser).GetPermissionLevel(Context) == PermissionLevel.Default)
                     .Select((l, i) => new EmbedFieldBuilder()
                         .WithName((i + 1).ToString().Envelop("**"))
                         .WithValue($"{l.User.Mention} · {l.Stars} :star:")
