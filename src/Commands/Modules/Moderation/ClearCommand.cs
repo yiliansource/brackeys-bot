@@ -19,14 +19,8 @@ namespace BrackeysBot.Commands
             [Summary("The amount of messages to clear")] int count)
         {
             int maxHistory = Context.Configuration.ClearMessageMaxHistory;
-            if (count + 1 > maxHistory) 
-            {
-                count = maxHistory;
-            } 
-            else 
-            {
-                count += 1;
-            }
+            
+            count = count + 1 > maxHistory ? maxHistory : count + 1;
 
             var messages = await Context.Channel.GetMessagesAsync(count).FlattenAsync();
             var validMessages = messages.Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
