@@ -44,7 +44,7 @@ namespace BrackeysBot.Commands
             }
 
             var aMessages = await Context.Channel.GetMessagesAsync(history).FlattenAsync();
-            var fMessages = aMessages.Where(m => m.Author.Id == user.Id);
+            var fMessages = aMessages.Where(m => m.Author.Id == user.Id).Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
 
             if (fMessages.Count() > 0) 
             {
