@@ -19,15 +19,17 @@ namespace BrackeysBot.Commands
         public async Task EndorseUserAsync(
             [Summary("The user to endorse.")] SocketGuildUser guildUser = null) 
         {
-
             EmbedBuilder builder = new EmbedBuilder()
                 .WithColor(Color.Gold);
 
-            if (guildUser == null) {
+            if (guildUser == null) 
+            {
                 int amount = endorsements.GetUserStars(Context.Message.Author);
 
                 builder.WithDescription($"You have {amount} :star:");
-            } else {
+            } 
+            else 
+            {
                 int newAmount = endorsements.GetUserStars(guildUser) + 1;
 
                 endorsements.SetUserStars(guildUser, newAmount);
@@ -58,9 +60,12 @@ namespace BrackeysBot.Commands
 
             EmbedBuilder builder = new EmbedBuilder();
 
-            if (currentAmount == 0) {
+            if (currentAmount == 0) 
+            {
                 builder.WithColor(Color.Red).WithDescription("Can't remove a star, they have none!");
-            } else {
+            } 
+            else 
+            {
                 int newAmount = currentAmount - 1;
                 endorsements.SetUserStars(guildUser, newAmount);
 
