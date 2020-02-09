@@ -38,7 +38,8 @@ namespace BrackeysBot
             return new ServiceCollection()
                 .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
                 {
-                    LogLevel = LogSeverity.Verbose
+                    LogLevel = LogSeverity.Verbose,
+                    MessageCacheSize = 100
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
                 {
