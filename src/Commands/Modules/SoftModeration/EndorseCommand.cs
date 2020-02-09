@@ -12,6 +12,8 @@ namespace BrackeysBot.Commands
 {
     public partial class SoftModerationModule : BrackeysBotModule
     {
+        public EndorseService Endorsements { get; set; }
+
         [Command("endorse"), Alias("star", "stars")]
         [Summary("Endorse a user and give them a star.")]
         [Remarks("endorse <user>")]
@@ -24,15 +26,15 @@ namespace BrackeysBot.Commands
 
             if (guildUser == null) 
             {
-                int amount = endorsements.GetUserStars(Context.Message.Author);
+                int amount = Endorsements.GetUserStars(Context.Message.Author);
 
                 builder.WithDescription($"You have {amount} :star:");
             } 
             else 
             {
-                int newAmount = endorsements.GetUserStars(guildUser) + 1;
+                int newAmount = Endorsements.GetUserStars(guildUser) + 1;
 
-                endorsements.SetUserStars(guildUser, newAmount);
+                Endorsements.SetUserStars(guildUser, newAmount);
 
                 builder.WithAuthor(guildUser)
                     .WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {newAmount} stars!");
@@ -56,7 +58,7 @@ namespace BrackeysBot.Commands
         public async Task DeleteEndorseUserAsync(
             [Summary("The user to remove an endorsement.")] SocketGuildUser guildUser) 
         {
-            int currentAmount = endorsements.GetUserStars(guildUser);
+            int currentAmount = Endorsements.GetUserStars(guildUser);
 
             EmbedBuilder builder = new EmbedBuilder();
 
@@ -67,7 +69,7 @@ namespace BrackeysBot.Commands
             else 
             {
                 int newAmount = currentAmount - 1;
-                endorsements.SetUserStars(guildUser, newAmount);
+                Endorsements.SetUserStars(guildUser, newAmount);
 
                 builder.WithAuthor(guildUser).WithColor(Color.Green)
                     .WithDescription($"Took a :star: from {guildUser.Mention}! They now have {newAmount} stars!");
@@ -84,7 +86,7 @@ namespace BrackeysBot.Commands
         public async Task WipeEndorseUserAsync(
             [Summary("The user to remove all endorsement.")] SocketGuildUser guildUser) 
         {
-            endorsements.SetUserStars(guildUser, 0);
+            Endorsements.SetUserStars(guildUser, 0);
 
             await new EmbedBuilder()
                 .WithAuthor(guildUser)
@@ -102,7 +104,7 @@ namespace BrackeysBot.Commands
             [Summary("The user to set the endorsement.")] SocketGuildUser guildUser,
             [Summary("The amount of endorsement to set.")] int amount) 
         {
-            endorsements.SetUserStars(guildUser, amount);
+            Endorsements.SetUserStars(guildUser, amount);
 
             await new EmbedBuilder()
                 .WithAuthor(guildUser)
@@ -120,7 +122,7 @@ namespace BrackeysBot.Commands
         {
             await GetDefaultBuilder()
                 .WithTitle("Endorse Leaderboard")
-                .WithFields(endorsements.GetEndorseLeaderboard()
+                .WithFields(Endorsements.GetEndorseLeaderboard()
                     .Select((l, i) => new EmbedFieldBuilder()
                         .WithName((i + 1).ToString().Envelop("**"))
                         .WithValue($"{l.User.Mention} · {l.Stars} :star:")
