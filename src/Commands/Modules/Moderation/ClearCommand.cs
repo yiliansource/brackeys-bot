@@ -22,9 +22,13 @@ namespace BrackeysBot.Commands
             if (count + 1 > maxHistory) 
             {
                 count = maxHistory;
+            } 
+            else 
+            {
+                count += 1;
             }
 
-            var messages = await Context.Channel.GetMessagesAsync(count + 1).FlattenAsync();
+            var messages = await Context.Channel.GetMessagesAsync(count).FlattenAsync();
             var validMessages = messages.Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
             await (Context.Channel as ITextChannel).DeleteMessagesAsync(validMessages);
 
