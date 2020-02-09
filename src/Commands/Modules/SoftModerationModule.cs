@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using BrackeysBot.Services;
+using Discord;
 using Discord.Commands;
 
 namespace BrackeysBot.Commands
@@ -8,5 +9,8 @@ namespace BrackeysBot.Commands
     [ModuleColor(0xe89797)]
     public partial class SoftModerationModule : BrackeysBotModule
     {
+
+        public EndorseService endorsements { get;set; }
+
     }
 }
