@@ -18,6 +18,12 @@ namespace BrackeysBot.Commands
         public async Task ClearMessagesAsync(
             [Summary("The amount of messages to clear")] int count)
         {
+            int maxHistory = Context.Configuration.ClearMessageMaxHistory;
+            if (count + 1 > maxHistory) 
+            {
+                count = maxHistory;
+            }
+
             var messages = await Context.Channel.GetMessagesAsync(count + 1).FlattenAsync();
             var validMessages = messages.Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
             await (Context.Channel as ITextChannel).DeleteMessagesAsync(validMessages);
@@ -38,13 +44,15 @@ namespace BrackeysBot.Commands
             [Summary("The amount of messages to clear")] int count,
             [Summary("The history length to delete from")] int history = 100) 
         {
-            if (history > 200) 
+            int maxHistory = Context.Configuration.ClearMessageMaxHistory;
+            if (history > maxHistory) 
             {
-                history = 200;
+                history = maxHistory;
             }
 
             var aMessages = await Context.Channel.GetMessagesAsync(history).FlattenAsync();
-            var fMessages = aMessages.Where(m => m.Author.Id == user.Id).Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
+            var fMessages = aMessages.Where(m => m.Author.Id == user.Id)
+                                    .Where(m => (DateTimeOffset.Now - m.CreatedAt).Days < 14);
 
             if (fMessages.Count() > 0) 
             {
