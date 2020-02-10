@@ -52,6 +52,10 @@ namespace BrackeysBot
         [Description("A list of IDs that should be logged when pinged.")]
         public ulong[] LoggableIDs { get; set; }
 
+        [YamlMember(Alias = "allowedCodeblockChannelIds")]
+        [Description("A list of IDs where massive codeblocks are allowed.")]
+        public ulong[] AllowedCodeblockChannelIDs { get; set; }
+
         #endregion
 
         [YamlMember(Alias = "moduleConfigs")]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -59,6 +60,10 @@ namespace BrackeysBot.Services
         private async Task CheckMessage(SocketMessage sm)
         {
             if (!(sm is SocketUserMessage msg) || msg.Author.IsBot)
+                return;
+
+            ulong[] allowedChannels = _data.Configuration.AllowedCodeblockChannelIDs;
+            if (allowedChannels != null && allowedChannels.Contains(msg.Channel.Id))
                 return;
 
             if (msg.Content.Length > _data.Configuration.CodeblockThreshold && HasCodeblockFormat(msg.Content))
