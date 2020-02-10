@@ -12,23 +12,23 @@ namespace BrackeysBot
     {
         public string Name { get; }
         public string Description { get; }
-        public bool Confidential { get; }
+
+        public bool IsArray => _property.PropertyType.IsArray;
 
         private PropertyInfo _property;
         private object _instance;
 
-        public ConfigurationValue(PropertyInfo property, object instance) 
+        public ConfigurationValue(PropertyInfo property, object instance)
         {
-            Name = property.GetCustomAttribute<YamlMemberAttribute>()?.Alias ?? property.Name;
-            Description = property.GetCustomAttribute<DescriptionAttribute>()?.Description;
-            Confidential = property.GetCustomAttribute<ConfidentialAttribute>() != null;
-
             _property = property;
             _instance = instance;
+
+            Name = property.GetCustomAttribute<YamlMemberAttribute>()?.Alias ?? property.Name;
+            Description = property.GetCustomAttribute<DescriptionAttribute>()?.Description;
         }
 
         public object GetValue()
-            => Confidential ? null : _property.GetValue(_instance);
+            => _property.GetValue(_instance);
         public bool SetValue(object value)
         {
             Type source = value.GetType();
@@ -79,19 +79,43 @@ namespace BrackeysBot
             return true;
         }
 
+        public bool HasAttribute<T>() where T : Attribute
+            => _property.GetCustomAttribute<T>() != null;
+
         public override string ToString()
         {
-            if (Confidential)
-                return "[hidden]";
-
             object value = GetValue();
+            string representation = IsArray
+                ? FormatArrayValue(value)
+                : FormatValueByDisplayAttribute(value.ToString());
 
-            if (!_property.PropertyType.IsArray)
-                return value.ToString();
-            else
-                return value == null
-                    ? "null"
-                    : string.Join(", ", ((IEnumerable)value).OfType<object>());
+            return FormatValueByShortenAttribute(representation);
+        }
+
+        private string FormatArrayValue(object value)
+        {
+            if (value == null)
+                return "null";
+
+            string[] entries = ((IEnumerable)value).OfType<object>()
+                .Select(o => FormatValueByDisplayAttribute(o.ToString()))
+                .ToArray();
+
+            return string.Join(", ", entries);
+        }
+        private string FormatValueByDisplayAttribute(string value)
+        {
+            ConfigDisplayAttribute configDisplay = _property.GetCustomAttribute<ConfigDisplayAttribute>();
+            return configDisplay != null
+                ? configDisplay.FormatValue(value)
+                : value;
+        }
+        private string FormatValueByShortenAttribute(string value)
+        {
+            ShortenAttribute shorten = _property.GetCustomAttribute<ShortenAttribute>();
+            if (shorten != null && value.Length > shorten.Length)
+                value = value.Substring(0, shorten.Length) + "[...]";
+            return value;
         }
     }
 }
