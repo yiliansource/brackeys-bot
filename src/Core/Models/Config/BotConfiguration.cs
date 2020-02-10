@@ -89,6 +89,7 @@ namespace BrackeysBot
 
         [YamlMember(Alias = "infoCategoryId")]
         [Description("The ID of the category to display membercount.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
         public ulong InfoCategoryId { get; set; }
 
         [YamlMember(Alias = "infoCategoryDisplay")]
