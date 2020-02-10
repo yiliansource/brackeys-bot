@@ -77,5 +77,13 @@ namespace BrackeysBot
         [YamlMember(Alias = "clearMessageMaxHistory")]
         [Description("The maximum messages history count to fetch when clearing messages.")]
         public int ClearMessageMaxHistory { get; set; }
+
+        [YamlMember(Alias = "infoCategoryId")]
+        [Description("The ID of the category to display membercount.")]
+        public ulong InfoCategoryId { get; set; }
+
+        [YamlMember(Alias = "infoCategoryDisplay")]
+        [Description("The display value of the info category. '%s%' will be replaced with membercount.")]
+        public string InfoCategoryDisplay { get; set; }
     }
 }
