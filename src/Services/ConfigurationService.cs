@@ -33,6 +33,13 @@ namespace BrackeysBot.Services
 
         private IEnumerable<PropertyInfo> GetConfigProperties()
             => typeof(BotConfiguration).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.SetProperty)
-                .Where(p => _exposedPropertyTypes.Contains(p.PropertyType) || (p.PropertyType.IsArray && _exposedPropertyTypes.Contains(p.PropertyType.GetElementType())));
+                .Where(p =>
+                {
+                    bool isValidType = _exposedPropertyTypes.Contains(p.PropertyType)
+                        || p.PropertyType.IsArray && _exposedPropertyTypes.Contains(p.PropertyType.GetElementType());
+                    bool confidential = p.GetCustomAttribute<ConfidentialAttribute>() != null;
+
+                    return isValidType && !confidential;
+                });
     }
 }
