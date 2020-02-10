@@ -26,34 +26,42 @@ namespace BrackeysBot
 
         [YamlMember(Alias = "guruRoleId")]
         [Description("The ID of the role that identifies gurus.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong GuruRoleID { get; set; }
 
         [YamlMember(Alias = "moderatorRoleId")]
         [Description("The ID of the role that identifies moderators.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong ModeratorRoleID { get; set; }
 
         [YamlMember(Alias = "mutedRoleId")]
         [Description("The ID of the role that mutes someone.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong MutedRoleID { get; set; }
 
         [YamlMember(Alias = "modLogChannelId")]
         [Description("The ID of the channel where moderation actions are logged.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
         public ulong ModerationLogChannelID { get; set; }
 
         [YamlMember(Alias = "teamRoleIds")]
         [Description("A list of team role IDs.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong[] TeamRoleIDs { get; set; }
 
         [YamlMember(Alias = "userRoleIds")]
         [Description("A list of user role IDs.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong[] UserRoleIDs { get; set; }
 
         [YamlMember(Alias = "loggableIds")]
         [Description("A list of IDs that should be logged when pinged.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong[] LoggableIDs { get; set; }
 
         [YamlMember(Alias = "allowedCodeblockChannelIds")]
         [Description("A list of IDs where massive codeblocks are allowed.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
         public ulong[] AllowedCodeblockChannelIDs { get; set; }
 
         #endregion
@@ -64,6 +72,7 @@ namespace BrackeysBot
 
         [YamlMember(Alias = "rules")]
         [Description("The rules that members in the servers should follow.")]
+        [Shorten(50)]
         public string[] Rules { get; set; }
 
         [YamlMember(Alias = "codeblockThreshold")]
