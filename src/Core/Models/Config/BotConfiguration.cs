@@ -86,5 +86,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "clearMessageMaxHistory")]
         [Description("The maximum messages history count to fetch when clearing messages.")]
         public int ClearMessageMaxHistory { get; set; }
+
+        [YamlMember(Alias = "gamejamTimestamps")]
+        [Description("The timestamps that outline a gamejam.")]
+        public long[] GamejamTimestamps { get; set; }
     }
 }
