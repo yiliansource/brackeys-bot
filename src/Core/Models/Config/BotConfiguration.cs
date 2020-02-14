@@ -86,5 +86,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "clearMessageMaxHistory")]
         [Description("The maximum messages history count to fetch when clearing messages.")]
         public int ClearMessageMaxHistory { get; set; }
+
+        [YamlMember(Alias = "emoteRestrictions")]
+        [Description("A list of channels and their emote restrictions")]
+        public Dictionary<ulong, List<string>> EmoteRestrictions { get; set; }
     }
 }

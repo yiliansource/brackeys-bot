@@ -15,7 +15,7 @@ namespace BrackeysBot
         private static readonly Regex _pattern =
             new Regex(@"^(?:(\d+)y)?(?:(\d+)mo)?(?:(\d+)w)?(?:(\d+)d)?(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$");
 
-        public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
+        public override Task<TypeReaderResult> Read(ICommandContext context, string input, IServiceProvider services)
         {
             var match = _pattern.Match(input);
             if (match.Success)
