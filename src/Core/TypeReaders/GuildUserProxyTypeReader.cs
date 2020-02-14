@@ -10,7 +10,7 @@ namespace BrackeysBot
 {
     public class GuildUserProxyTypeReader : UserTypeReader<IGuildUser>
     {
-        public override async Task<TypeReaderResult> Read(ICommandContext context, string input, IServiceProvider services)
+        public override async Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
             // Try to get the result from the base user reader.
             // If that fails, try to solely parse the ID.
