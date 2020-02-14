@@ -15,8 +15,8 @@ namespace BrackeysBot.Commands
 {
     public partial class UtilityModule : BrackeysBotModule
     {
-        private const string DateTimeOutputFormat = "dd/MM/yyyy HH:mm:ss";
-        private const string DateTimeInputFormat = "dd/MM/yyyy-HH:mm:ss";
+        private const string DateTimeOutputFormat = @"dd/MM/yyyy HH:mm:ss \U\T\C";
+        private const string DateTimeInputFormat = @"dd/MM/yyyy-HH:mm:ss";
 
         [Command("timeleft"), Alias("gamejamtime")]
         [Summary("Displays when the jam starts or ends.")]
