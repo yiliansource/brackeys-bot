@@ -52,7 +52,7 @@ namespace BrackeysBot.Services
             await channel.SendMessageAsync(string.Empty, false, new EmbedBuilder()
                 .WithTitle("Role Mention")
                 .WithColor(Color.Orange)
-                .WithDescription($"{original.Author.Mention} mentioned {roleDisplay} in his [message]({original.GetJumpUrl()}).")
+                .WithDescription($"{original.Author.Mention} mentioned {roleDisplay} in their [message]({original.GetJumpUrl()}).")
                 .Build());
         }
 
