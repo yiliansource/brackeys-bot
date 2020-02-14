@@ -90,5 +90,9 @@ namespace BrackeysBot
         [YamlMember(Alias = "emoteRestrictions")]
         [Description("A list of channels and their emote restrictions")]
         public Dictionary<ulong, List<string>> EmoteRestrictions { get; set; }
+
+        [YamlMember(Alias = "gamejamTimestamps")]
+        [Description("The timestamps that outline a gamejam.")]
+        public long[] GamejamTimestamps { get; set; }
     }
 }
