@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Linq;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -14,6 +15,9 @@ namespace BrackeysBot.Commands
 {
     public partial class UtilityModule : BrackeysBotModule
     {
+        private const string DateTimeOutputFormat = "dd/MM/yyyy HH:mm:ss";
+        private const string DateTimeInputFormat = "dd/MM/yyyy-HH:mm:ss";
+
         [Command("timeleft"), Alias("gamejamtime")]
         [Summary("Displays when the jam starts or ends.")]
         public async Task ShowGamejamTimeLeftAsync()
@@ -50,32 +54,57 @@ namespace BrackeysBot.Commands
             await reply.Build().SendToChannel(Context.Channel);
         }
 
-        [Command("settimeleft")]
-        [RequireModerator]
-        public async Task SetGamejamTimesAsync(params string[] dates)
+        [Command("gamejaminfo")]
+        [Summary("Displays time information about an upcoming or ongoing jam!")]
+        public async Task ShowGamejamInfoAsync()
         {
-            const string format = "dd/MM/yyyy-HH:mm:ss";
+            await GetDefaultBuilder()
+                .WithTitle("Game Jam Information")
+                .WithDescription(GetJamConfigurationResponse())
+                .Build()
+                .SendToChannel(Context.Channel);
+        }
 
+        [Command("settimeleft"), Alias("setgamejamtime")]
+        [Summary("Sets the time configuration for a jam, with a format of '" + DateTimeInputFormat + "'.")]
+        [Remarks("settimeleft <start-date> <end-date> <voting-end>")]
+        [RequireModerator]
+        public async Task SetGamejamTimesAsync([Summary("The dates to outline the jam times.")] params string[] dates)
+        {
             if (dates.Length != 3)
                 throw new ArgumentException($"Invalid time configuration. (Got {dates.Length}, expected 3)");
 
             Data.Configuration.GamejamTimestamps = dates.Select(t =>
             {
-                if (!DateTimeOffset.TryParseExact(t, format, CultureInfo.InvariantCulture.DateTimeFormat, DateTimeStyles.None, out DateTimeOffset result))
-                    throw new ArgumentException($"The date _{t}_ does not meet the required format of _{format}.");
+                if (!DateTimeOffset.TryParseExact(t, DateTimeInputFormat, CultureInfo.InvariantCulture.DateTimeFormat, DateTimeStyles.AssumeUniversal, out DateTimeOffset result))
+                    throw new ArgumentException($"The date _{t}_ does not meet the required format of _{DateTimeInputFormat}.");
                 return result.ToUnixTimeSeconds();
             }).ToArray();
             Data.SaveConfiguration();
 
             var configDates = Data.Configuration.GamejamTimestamps.Select(l => DateTimeOffset.FromUnixTimeSeconds(l)).ToArray();
             await GetDefaultBuilder()
-                .WithTitle("Gamejam times set!")
-                .WithDescription($"The current configuration is that the jam: \n" +
-                    $"... begins on {configDates[0].ToDateString()}. \n" +
-                    $"... ends on {configDates[1].ToDateString()}. \n" +
-                    $"... has the voting closed at {configDates[2].ToDateString()}.")
+                .WithTitle("Jam times set!")
+                .WithDescription(GetJamConfigurationResponse())
                 .Build()
                 .SendToChannel(Context.Channel);
+        }
+
+        private string GetJamConfigurationResponse()
+        {
+            // Display that no jam is scheduled if there are no timestamps or the last timestamp is behind the current time
+            if (Data.Configuration.GamejamTimestamps?.Length == 0
+                || Data.Configuration.GamejamTimestamps.Last() < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                return "No jam is currently scheduled!";
+
+            // Convert the unix timestamps into DateTimeOffsets, and nicely format them
+            var configDates = Data.Configuration.GamejamTimestamps.Select(l => DateTimeOffset.FromUnixTimeSeconds(l)).ToArray();
+            return new StringBuilder()
+                .AppendLine($"The current configuration is that the jam:")
+                .AppendLine($"... begins on {configDates[0].ToString(DateTimeOutputFormat)}")
+                .AppendLine($"... ends on {configDates[1].ToString(DateTimeOutputFormat)}.")
+                .AppendLine($"... has the voting closed at {configDates[2].ToString(DateTimeOutputFormat)}.")
+                .ToString();
         }
     }
 }
