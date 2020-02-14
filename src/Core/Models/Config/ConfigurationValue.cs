@@ -85,6 +85,9 @@ namespace BrackeysBot
         public override string ToString()
         {
             object value = GetValue();
+            if (value == null)
+                return "null";
+
             string representation = IsArray
                 ? FormatArrayValue(value)
                 : FormatValueByDisplayAttribute(value.ToString());
