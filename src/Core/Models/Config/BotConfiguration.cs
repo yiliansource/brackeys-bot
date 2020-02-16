@@ -87,6 +87,19 @@ namespace BrackeysBot
         [Description("The maximum messages history count to fetch when clearing messages.")]
         public int ClearMessageMaxHistory { get; set; }
 
+        [YamlMember(Alias = "infoCategoryId")]
+        [Description("The ID of the category to display membercount.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
+        public ulong InfoCategoryId { get; set; }
+
+        [YamlMember(Alias = "infoCategoryDisplay")]
+        [Description("The display value of the info category. '%s%' will be replaced with membercount.")]
+        public string InfoCategoryDisplay { get; set; }
+
+        [YamlMember(Alias = "emoteRestrictions")]
+        [Description("A list of channels and their emote restrictions")]
+        public Dictionary<ulong, List<string>> EmoteRestrictions { get; set; }
+
         [YamlMember(Alias = "gamejamTimestamps")]
         [Description("The timestamps that outline a gamejam.")]
         public long[] GamejamTimestamps { get; set; }
