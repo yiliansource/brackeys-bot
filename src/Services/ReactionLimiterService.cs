@@ -34,8 +34,13 @@ namespace BrackeysBot.Services
             {
                 List<string> limitedToEmotes = restricted.GetValueOrDefault(channel.Id);
 
-                if (limitedToEmotes.Count > 0 && !limitedToEmotes.Contains(reaction.Emote.StringVal())) 
-                    await reaction.Message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                if (limitedToEmotes != null && limitedToEmotes.Count > 0 && !limitedToEmotes.Contains(reaction.Emote.StringVal())) 
+                {
+                    ulong messageId = reaction.MessageId;
+                    IUserMessage message = await channel.GetMessageAsync(messageId) as IUserMessage;
+
+                    await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                }
             }
         }
     }
