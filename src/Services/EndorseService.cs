@@ -42,7 +42,7 @@ namespace BrackeysBot.Services
             => FilterValidEndorseUsers()
                 .OrderByDescending(u => u.Stars)
                 .Take(top)
-                .Select(u => new EndorseEntry { User = _client.GetUser(u.ID), Stars = u.Stars })
+                .Select(u => new EndorseEntry { User = _client.GetGuild(_data.Configuration.GuildID).GetUser(u.ID), Stars = u.Stars })
                 .ToArray();
 
         public int GetUserRank(IUser user)
@@ -59,6 +59,6 @@ namespace BrackeysBot.Services
         }
 
         private IEnumerable<UserData> FilterValidEndorseUsers()
-            => _data.UserData.Users.Where(u => u.Stars > 0 && _client.GetUser(u.ID) != null);
+            => _data.UserData.Users.Where(u => u.Stars > 0 && _client.GetGuild(_data.Configuration.GuildID).GetUser(u.ID) != null);
     }
 }
