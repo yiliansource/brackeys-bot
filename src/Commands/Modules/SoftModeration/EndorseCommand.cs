@@ -28,7 +28,7 @@ namespace BrackeysBot.Commands
             bool canOverride = guildUser.GetPermissionLevel(Context) >= PermissionLevel.Moderator;
 
             if (!canOverride && guildUser.Id == Context.User.Id)
-                throw new UnauthorizedAccessException("Stop abusing the perks we give you, asshole...");
+                throw new UnauthorizedAccessException("Don't abuse the system. You can't give yourself endorsements.");
 
             int remaining = Endorsements.EndorseTimeoutRemaining(guildUser);
 
