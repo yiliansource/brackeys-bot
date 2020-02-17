@@ -41,14 +41,10 @@ namespace BrackeysBot.Services
             if (ClientUpAndRunning() && CategoryConfigurationAvailable()) 
             {
                 int memberCount = _discord.GetGuild(_config.GuildID).MemberCount;
-                Console.WriteLine($"MemberCount is {memberCount}");
                 ICategoryChannel channel = _discord.GetChannel(_config.InfoCategoryId) as ICategoryChannel;
-                Console.WriteLine($"Category is {channel.Id}:{channel.Name}:{channel.CreatedAt}");
                 string categoryName = _config.InfoCategoryDisplay.Replace("%s%", $"{memberCount}");
-                Console.WriteLine($"Result name will be {categoryName}");
 
                 await channel.ModifyAsync(x => x.Name = categoryName);
-                Console.WriteLine("Modified Channel");
             } 
             else 
                 await _loggingService.LogMessageAsync(new LogMessage(LogSeverity.Verbose, "ServerInfoService", $"Discord is {_discord}, Guild is {_discord.GetGuild(_config.GuildID)}, InfoCategory is {_config.InfoCategoryDisplay}, InfoCategoryId is {_config.InfoCategoryId}"));
@@ -56,14 +52,12 @@ namespace BrackeysBot.Services
 
         private bool ClientUpAndRunning() 
         {
-            Console.WriteLine($"Discord is {_discord}, Guild is {_discord.GetGuild(_config.GuildID)}");
             // This service is active before the client is initialized, we should check for client and guild to be available
             return _discord != null && _discord.GetGuild(_config.GuildID) != null;
         }
 
         private bool CategoryConfigurationAvailable() 
         {
-            Console.WriteLine($"InfoCategory is {_config.InfoCategoryDisplay}, InfoCategoryId is {_config.InfoCategoryId}");
             // Config will likely be set once the bot is running, this should prevent unexpected behaviour
             return _config.InfoCategoryDisplay != null && _config.InfoCategoryId > 0;
         }
