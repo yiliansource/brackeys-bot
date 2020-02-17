@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using Discord;
 using Discord.WebSocket;
+using System;
 
 namespace BrackeysBot.Services
 {
@@ -14,6 +15,7 @@ namespace BrackeysBot.Services
             public int Stars { get; set; }
         }
 
+        private readonly Dictionary<ulong, int> _lastEndorsements;
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
 
@@ -21,6 +23,7 @@ namespace BrackeysBot.Services
         {
             _data = data;
             _client = client;
+            _lastEndorsements = new Dictionary<ulong, int>();
         }
 
         public int GetUserStars(IUser user)
@@ -30,10 +33,32 @@ namespace BrackeysBot.Services
             else
                 return 0;
         }
+
+        public int EndorseTimeoutRemaining(IUser user) 
+        {
+            int now = Environment.TickCount;
+            int result = 0;
+
+            if (_lastEndorsements.ContainsKey(user.Id)) 
+            {
+                int last = _lastEndorsements.GetValueOrDefault(user.Id);
+                int passed = now - last;
+                result = _data.Configuration.EndorseTimeoutMillis - passed;
+
+                if (result < 0) 
+                    result = 0;
+            }
+
+            return result;
+        }
+
         public void SetUserStars(IUser user, int amount)
         {
             UserData userData = _data.UserData.GetOrCreate(user.Id);
             userData.Stars = amount;
+
+            _lastEndorsements.Remove(user.Id);
+            _lastEndorsements.Add(user.Id, Environment.TickCount);
 
             _data.SaveUserData();
         }

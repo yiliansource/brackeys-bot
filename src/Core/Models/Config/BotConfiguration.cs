@@ -102,6 +102,12 @@ namespace BrackeysBot
 
         [YamlMember(Alias = "gamejamTimestamps")]
         [Description("The timestamps that outline a gamejam.")]
-        public long[] GamejamTimestamps { get; set; }
+        public long[] GamejamTimestamps { get; set; }        
+        
+        [YamlMember(Alias = "endorseTimeoutMillis")]
+        [Description("The minimum time between being able to endorse the same user again, in milliseconds")]
+        public int EndorseTimeoutMillis { get; set; }
+
+
     }
 }
