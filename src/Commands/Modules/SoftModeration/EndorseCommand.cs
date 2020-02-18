@@ -7,6 +7,10 @@ using BrackeysBot.Services;
 using Discord.WebSocket;
 using System.Linq;
 using System.Collections.Generic;
+using System;
+
+using Humanizer;
+using Humanizer.Localisation;
 
 namespace BrackeysBot.Commands
 {
@@ -21,13 +25,21 @@ namespace BrackeysBot.Commands
         public async Task EndorseUserAsync(
             [Summary("The user to endorse.")] SocketGuildUser guildUser) 
         {
-            int newAmount = Endorsements.GetUserStars(guildUser) + 1;
+            bool canOverride = guildUser.GetPermissionLevel(Context) >= PermissionLevel.Moderator;
 
+            if (!canOverride && guildUser.Id == Context.User.Id)
+                throw new UnauthorizedAccessException("Don't abuse the system. You can't give yourself endorsements.");
+
+            int remaining = Endorsements.EndorseTimeoutRemaining(guildUser);
+
+            if (!canOverride && remaining > 0)
+                throw new TimeoutException($"You need to wait {TimeSpan.FromMilliseconds(remaining).Humanize(2, minUnit: TimeUnit.Second)} before you can endorse {guildUser.Id.Mention()} again!");  
+
+            int newAmount = Endorsements.GetUserStars(guildUser) + 1;
             Endorsements.SetUserStars(guildUser, newAmount);
 
             await new EmbedBuilder()
-                .WithAuthor(guildUser)
-                .WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {newAmount} stars!")
+                .WithAuthor(guildUser).WithDescription($"Gave a :star: to {guildUser.Mention}! They now have {newAmount} stars!")
                 .WithColor(Color.Gold)
                 .Build()
                 .SendToChannel(Context.Channel);
