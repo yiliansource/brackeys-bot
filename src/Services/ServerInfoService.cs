@@ -44,7 +44,10 @@ namespace BrackeysBot.Services
                 ICategoryChannel channel = _discord.GetChannel(_config.InfoCategoryId) as ICategoryChannel;
                 string categoryName = _config.InfoCategoryDisplay.Replace("%s%", $"{memberCount}");
 
-                await channel.ModifyAsync(x => x.Name = categoryName);
+                if (!channel.Name.Equals(categoryName))
+                {
+                    await channel.ModifyAsync(x => x.Name = categoryName);
+                }
             } 
             else 
                 await _loggingService.LogMessageAsync(new LogMessage(LogSeverity.Verbose, "ServerInfoService", $"Discord is {_discord}, Guild is {_discord.GetGuild(_config.GuildID)}, InfoCategory is {_config.InfoCategoryDisplay}, InfoCategoryId is {_config.InfoCategoryId}"));
