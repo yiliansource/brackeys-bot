@@ -38,9 +38,9 @@ namespace BrackeysBot.Services
         }
 
         public CustomCommand GetCommandByName(string name)
-            => _commands.FirstOrDefault(c => c.Name.Equals(name, _comparison));
+            => _commands.FirstOrDefault(c => c.Matches(name));
         public bool ContainsCommand(string name)
-            => _commands.Any(c => c.Name.Equals(name, _comparison));
+            => _commands.Any(c => c.Matches(name));
 
         public CustomCommand CreateCommand(string name)
         {
@@ -53,7 +53,7 @@ namespace BrackeysBot.Services
         }
         public void RemoveCommand(string name)
         {
-            _commands.RemoveAll(c => c.Name.Equals(name, _comparison));
+            _commands.RemoveAll(c => c.Matches(name));
         }
 
         public CustomCommandFeature CreateFeature(string name, string arguments)
