@@ -24,7 +24,7 @@ namespace BrackeysBot.Commands
         {
             EmbedBuilder reply = GetDefaultBuilder();
 
-            if (Data.Configuration.GamejamTimestamps?.Length == 0)
+            if (Data.Configuration.GamejamTimestamps == null || Data.Configuration.GamejamTimestamps.Length == 0)
             {
                 reply.WithDescription("No jams are currently scheduled!");
             }
