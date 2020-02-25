@@ -18,7 +18,7 @@ namespace BrackeysBot
         public string Reason { get; set; }
         public TimeSpan? Duration { get; set; }
         public DateTimeOffset Time { get; set; }
-
+        public string AdditionalInfo { get; set; }
         public static ModerationLogEntry New
             => new ModerationLogEntry();
 
@@ -71,6 +71,12 @@ namespace BrackeysBot
         public ModerationLogEntry WithTime(DateTimeOffset time)
         {
             Time = time;
+            return this;
+        }
+
+        public ModerationLogEntry WithAdditionalInfo(string info) 
+        {
+            AdditionalInfo = info;
             return this;
         }
         
