@@ -24,19 +24,25 @@ namespace BrackeysBot.Services
             userData.Infractions.Add(infraction);
 
             _data.SaveUserData();
+
+            SendInfractionMessageToUser(user, infraction);
         }
 
         public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "")
         {
             var userData = _data.UserData.GetOrCreate(user.Id);
             userData.TemporaryInfractions.Add(TemporaryInfraction.Create(type, DateTime.UtcNow.Add(duration)));
-            userData.Infractions.Add(Infraction.Create(RequestInfractionID())
+            Infraction infraction = Infraction.Create(RequestInfractionID())
                 .WithType(type.AsInfractionType())
                 .WithModerator(moderator)
                 .WithDescription(reason)
-                .WithAdditionalInfo($"Duration: {duration.Humanize(7)}"));
+                .WithAdditionalInfo($"Duration: {duration.Humanize(7)}");
+
+            userData.Infractions.Add(infraction);
 
             _data.SaveUserData();
+
+            SendInfractionMessageToUser(user, infraction);
         }
         public void ClearTemporaryInfraction(TemporaryInfractionType type, IUser user)
             => ClearTemporaryInfraction(type, user.Id);
@@ -87,5 +93,39 @@ namespace BrackeysBot.Services
             => _data.UserData.Users.Count > 0
                 ? 1 + _data.UserData.Users.Max(u => u.Infractions?.Count > 0 ? u.Infractions.Max(i => i.ID) : -1)
                 : 1;
+
+    
+        private async void SendInfractionMessageToUser(IUser user, Infraction infraction) 
+        {
+            UserData userData = _data.UserData.GetUser(user.Id);
+            int infractionCount = userData.Infractions.Count;
+            string message = $"Hey there! You were {GetInfractionTypeString(infraction.Type)} for {infraction.Description}!";
+
+            if (infraction.Type != InfractionType.Ban) 
+                message = $"{message} You currently have {infractionCount} infraction(s). Be careful; accumulating infractions may result in restricted access or even (permanent) removal from the server!";
+
+            await user.TrySendMessageAsync(message);
+        }
+
+        private string GetInfractionTypeString(InfractionType type) 
+        {
+            switch (type) 
+            {
+                case InfractionType.Ban:
+                    return "Banned";
+                case InfractionType.Kick:
+                    return "Kicked";
+                case InfractionType.Mute:
+                    return "Muted";
+                case InfractionType.Warning:
+                    return "Warned";
+                case InfractionType.TemporaryBan:
+                    return "Temporarily Banned";
+                case InfractionType.TemporaryMute:
+                    return "Temporarily Muted";
+                default:
+                    return "Given an Infraction";  
+            }
+        }
     }
 }
