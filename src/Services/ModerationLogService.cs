@@ -55,6 +55,7 @@ namespace BrackeysBot.Services
                 .AddFieldConditional(!string.IsNullOrEmpty(logEntry.Reason), "Reason", logEntry.Reason, true)
                 .AddFieldConditional(logEntry.Channel != null, "Channel", logEntry.Channel?.Mention, true)
                 .AddFieldConditional(logEntry.Duration != null, "Duration", (logEntry.Duration ?? TimeSpan.Zero).Humanize(7), true)
+                .AddFieldConditional(logEntry.AdditionalInfo != null, "Additional info", logEntry.AdditionalInfo)
                 .WithFooter($"{logEntry.Time.ToTimeString()} | {logEntry.Time.ToDateString()}")
                 .Build();
         private Embed CreateEmbedResponse(ModerationLogEntry logEntry)
