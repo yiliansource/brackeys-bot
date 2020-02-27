@@ -97,12 +97,13 @@ namespace BrackeysBot.Services
     
         private async void SendInfractionMessageToUser(IUser user, Infraction infraction) 
         {
+            // Tempban and Ban send a DM themselves, we don't have to send a duplicate.
+            if (infraction.Type == InfractionType.TemporaryBan || infraction.Type == InfractionType.Ban)
+                return;
+
             UserData userData = _data.UserData.GetUser(user.Id);
             int infractionCount = userData.Infractions.Count;
-            string message = $"Hey there! You were {GetInfractionTypeString(infraction.Type)} for {infraction.Description}!";
-
-            if (infraction.Type != InfractionType.Ban) 
-                message = $"{message} You currently have {infractionCount} infraction(s). Be careful; accumulating infractions may result in restricted access or even (permanent) removal from the server!";
+            string message = $"Hey there! You were **{GetInfractionTypeString(infraction.Type)}** for **{infraction.Description}**! You currently have **{infractionCount}** infraction(s). Be careful; accumulating infractions may result in restricted access or even (permanent) removal from the server!";
 
             await user.TrySendMessageAsync(message);
         }
@@ -111,16 +112,12 @@ namespace BrackeysBot.Services
         {
             switch (type) 
             {
-                case InfractionType.Ban:
-                    return "Banned";
                 case InfractionType.Kick:
                     return "Kicked";
                 case InfractionType.Mute:
                     return "Muted";
                 case InfractionType.Warning:
                     return "Warned";
-                case InfractionType.TemporaryBan:
-                    return "Temporarily Banned";
                 case InfractionType.TemporaryMute:
                     return "Temporarily Muted";
                 default:
