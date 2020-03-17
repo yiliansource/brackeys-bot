@@ -17,19 +17,22 @@ namespace BrackeysBot.Services
         private readonly CustomCommandService _customCommands;
         private readonly DataService _dataService;
         private readonly IServiceProvider _provider;
+        private readonly LoggingService _log;
 
         public CommandHandlerService(
             DiscordSocketClient discord,
             CommandService commands,
             CustomCommandService customCommands,
             DataService dataService,
-            IServiceProvider provider)
+            IServiceProvider provider,
+            LoggingService log)
         {
             _discord = discord;
             _commands = commands;
             _customCommands = customCommands;
             _dataService = dataService;
             _provider = provider;
+            _log = log;
         }
 
         public void Initialize()
@@ -50,10 +53,24 @@ namespace BrackeysBot.Services
                 }
                 else if (result.Error == CommandError.UnknownCommand)
                 {
-                    string customCommandName = context.Message.Content.Substring(_dataService.Configuration.Prefix.Length);
-                    if (_customCommands.TryGetCommand(customCommandName, out CustomCommand customCommand))
+                    int prefixLength = _dataService.Configuration.Prefix.Length;
+                    
+                    string customCommandStr = context.Message.Content.Substring(prefixLength);
+                    string[] splitCommand = customCommandStr.Split(' ');
+                    string customCommandName = splitCommand[0];
+                    string[] args = splitCommand.Length > 1 ? splitCommand[1..(splitCommand.Length - 1)] : new string[0];
+
+                    if (_customCommands.TryGetCommand(customCommandName, args, out CustomCommand customCommand))
                     {
                         await customCommand.ExecuteCommand(context);
+                    } 
+                    else 
+                    {
+                        await new EmbedBuilder()
+                            .WithColor(Color.Red)
+                            .WithDescription($"Command {customCommandName} does not exist!")
+                            .Build()
+                            .SendToChannel(context.Channel);
                     }
                 }
                 else if (result.Error == CommandError.UnmetPrecondition)
@@ -64,17 +81,23 @@ namespace BrackeysBot.Services
                         .Build()
                         .SendToChannel(context.Channel);
                 }
-                else
+                else if (result is ExecuteResult executeResult)
                 {
-                    if (result is ExecuteResult executeResult)
-                    {
-                        await new EmbedBuilder()
-                            .WithColor(Color.Red)
-                            .WithTitle(executeResult.Exception.GetType().Name.Prettify())
-                            .WithDescription(executeResult.Exception.Message)
-                            .Build()
-                            .SendToChannel(context.Channel);
-                    }
+                    await new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithTitle(executeResult.Exception.GetType().Name.Prettify())
+                        .WithDescription(executeResult.Exception.Message)
+                        .Build()
+                        .SendToChannel(context.Channel);
+                }
+                else 
+                {
+                    await new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription("Unknown error! (I did create a log entry for the developers :))")
+                        .Build()
+                        .SendToChannel(context.Channel);
+                    await _log.LogMessageAsync(new LogMessage(LogSeverity.Warning, GetType().Name.Prettify(), $"Unknown statement reached: Command={(command.IsSpecified ? command.Value : null)};Result={result}"));
                 }
             }
         }

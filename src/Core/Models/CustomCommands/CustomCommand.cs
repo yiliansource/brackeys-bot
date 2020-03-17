@@ -11,6 +11,7 @@ namespace BrackeysBot.Core.Models
     {
         public string Name { get; set; }
         public List<CustomCommandFeature> Features { get; set; }
+        public bool IgnoreArguments { get; set; }
 
         private CustomCommand() { }
         public CustomCommand(string name)
@@ -19,13 +20,14 @@ namespace BrackeysBot.Core.Models
             Features = new List<CustomCommandFeature>();
         }
 
-        public bool Matches(string name)
+        public bool Matches(string name, string[] args)
         {
             if (Features.Find(c => c is AliasFeature) is AliasFeature alias 
-                && alias.Matches(name)) 
+                && alias.Matches(name)
+                && matchesArgs(args)) 
                 return true;
 
-            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && matchesArgs(args);
         }
 
         public virtual async Task ExecuteCommand(ICommandContext context)
@@ -41,6 +43,11 @@ namespace BrackeysBot.Core.Models
             {
                 await context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder().WithDescription("No features have been set yet!").Build());
             }
+        }
+
+        private bool matchesArgs(string[] args) 
+        {
+            return IgnoreArguments; // TODO add arguments and arg checks
         }
     }
 }

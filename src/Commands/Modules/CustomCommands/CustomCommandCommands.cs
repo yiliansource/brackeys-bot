@@ -18,7 +18,7 @@ namespace BrackeysBot.Commands
         public async Task CreateCommandAsync(
             [Summary("The name of the command.")] string name)
         {
-            if (CustomCommands.ContainsCommand(name))
+            if (CustomCommands.ContainsCommand(name, new string[0]))
                 throw new InvalidOperationException($"A command with the name `{name}` already exists!");
 
             CustomCommands.CreateCommand(name);
@@ -37,7 +37,7 @@ namespace BrackeysBot.Commands
         public async Task RemoveCommandAsync(
             [Summary("The name of the command.")] string name)
         {
-            if (!CustomCommands.ContainsCommand(name))
+            if (!CustomCommands.ContainsCommand(name, new string[0]))
                 throw new InvalidOperationException($"A command with the name `{name}` does not exist.");
 
             CustomCommands.RemoveCommand(name);
@@ -56,7 +56,7 @@ namespace BrackeysBot.Commands
         public async Task ShowCommandInfoAsync(
             [Summary("The name of the command.")] string name)
         {
-            if (!CustomCommands.TryGetCommand(name, out CustomCommand command))
+            if (!CustomCommands.TryGetCommand(name, new string[0], out CustomCommand command))
                 throw new InvalidOperationException($"A command with the name `{name}` does not exist.");
 
             await GetDefaultBuilder()

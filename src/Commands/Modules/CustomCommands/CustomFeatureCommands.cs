@@ -20,7 +20,7 @@ namespace BrackeysBot.Commands
             [Summary("The name of the feature.")] string feature,
             [Summary("The arguments to pass to the feature."), Remainder] string arguments)
         {
-            if (!CustomCommands.TryGetCommand(command, out CustomCommand customCommand))
+            if (!CustomCommands.TryGetCommand(command, new string[0], out CustomCommand customCommand))
                 throw new InvalidOperationException($"A command with the name `{command}` does not exist.");
 
             var commandFeature = CustomCommands.CreateFeature(feature, arguments);
@@ -49,7 +49,7 @@ namespace BrackeysBot.Commands
             [Summary("The name of the command.")] string command,
             [Summary("The name of the feature.")] string feature)
         {
-            if (!CustomCommands.TryGetCommand(command, out CustomCommand customCommand))
+            if (!CustomCommands.TryGetCommand(command, new string[0], out CustomCommand customCommand))
                 throw new InvalidOperationException($"A command with the name `{command}` does not exist.");
 
             CustomCommands.RemoveFeatureFromCommand(customCommand, feature);
