@@ -31,6 +31,10 @@ namespace BrackeysBot.Services
         public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "")
         {
             var userData = _data.UserData.GetOrCreate(user.Id);
+
+            // Ensure that same-type infractions do not stack.
+            userData.TemporaryInfractions.RemoveAll(i => i.Type == type);
+
             userData.TemporaryInfractions.Add(TemporaryInfraction.Create(type, DateTime.UtcNow.Add(duration)));
             Infraction infraction = Infraction.Create(RequestInfractionID())
                 .WithType(type.AsInfractionType())
