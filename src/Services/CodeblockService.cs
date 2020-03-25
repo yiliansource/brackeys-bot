@@ -23,6 +23,8 @@ namespace BrackeysBot.Services
             public string Code { get; set; }
             [JsonPropertyName("expiresIn")]
             public string ExpiresIn { get; set; }
+            [JsonPropertyName("language")]
+            public string Language { get; set; }
         }
 
         [Serializable]
@@ -44,7 +46,7 @@ namespace BrackeysBot.Services
         private const string API_BASEPOINT = "https://paste.myst.rs/api/";
         private const string PASTEMYST_BASE_URL = "https://paste.myst.rs/";
 
-        private static readonly Regex _codeblockRegex = new Regex(@"^(?:\`){1,3}(\w+?(?:\n))?([^\`]*)\n?(?:\`){1,3}$", RegexOptions.Singleline);
+        private static readonly Regex _codeblockRegex = new Regex(@"^(?:\`){1,3}(\w+?)?\n([^\`]*)\n?(?:\`){1,3}$", RegexOptions.Singleline);
 
         public CodeblockService(DiscordSocketClient client, DataService data)
         {
@@ -83,15 +85,18 @@ namespace BrackeysBot.Services
         public async Task<string> PasteMessage(IMessage msg)
         {
             string code = msg.Content;
+            string format = string.Empty;
+
             if (HasCodeblockFormat(code))
             {
-                code = ExtractCodeblockContent(code);
+                code = ExtractCodeblockContent(code, out format);
             }
 
             PasteMystCreateInfo createInfo = new PasteMystCreateInfo
             {
                 Code = HttpUtility.UrlPathEncode(code),
-                ExpiresIn = "never"
+                ExpiresIn = "never",
+                Language = format
             };
 
             HttpClient httpClient = new HttpClient();
