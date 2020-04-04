@@ -39,6 +39,11 @@ namespace BrackeysBot
         [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong MutedRoleID { get; set; }
 
+        [YamlMember(Alias = "developerRoleId")]
+        [Description("The ID of the bot developer role.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
+        public ulong DeveloperRoleID { get; set; }
+
         [YamlMember(Alias = "modLogChannelId")]
         [Description("The ID of the channel where moderation actions are logged.")]
         [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
