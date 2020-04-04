@@ -48,7 +48,7 @@ namespace BrackeysBot.Core.Models
 
         private bool MatchesArgs(string[] args) 
         {
-            return true; // TODO add arguments and arg checks. Because arguments don't do anything yet we can just return true for now.
+            return IgnoreArguments || true; // TODO add arguments and arg checks. Because arguments don't do anything yet we can just return true for now.
         }
     }
 }
