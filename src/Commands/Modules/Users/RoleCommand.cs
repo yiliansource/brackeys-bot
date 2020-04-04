@@ -14,7 +14,7 @@ namespace BrackeysBot.Commands
         [Remarks("giverole <role>")]
         [RequireContext(ContextType.Guild)]
         public async Task GiveRoleAsync(
-            [Summary("The desired role.")] IRole role)
+            [Summary("The desired role."), Remainder] IRole role)
         {
             IGuildUser user = Context.User as IGuildUser;
 
@@ -49,7 +49,7 @@ namespace BrackeysBot.Commands
         [Remarks("removerole <role>")]
         [RequireContext(ContextType.Guild)]
         public async Task RemoveRoleAsync(
-            [Summary("The role to remove.")] IRole role)
+            [Summary("The role to remove."), Remainder] IRole role)
         {
             IGuildUser user = Context.User as IGuildUser;
 
