@@ -56,7 +56,7 @@ namespace BrackeysBot.Commands
         public async Task ShowCommandInfoAsync(
             [Summary("The name of the command.")] string name)
         {
-            if (!CustomCommands.TryGetCommand(name, new string[0], out CustomCommand command))
+            if (!CustomCommands.TryGetCommand(name, out CustomCommand command))
                 throw new InvalidOperationException($"A command with the name `{name}` does not exist.");
 
             await GetDefaultBuilder()

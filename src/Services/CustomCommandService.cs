@@ -31,6 +31,10 @@ namespace BrackeysBot.Services
         public IReadOnlyCollection<CustomCommand> GetCommands()
             => _commands.AsReadOnly();
 
+        public bool TryGetCommand(string name, out CustomCommand command) {
+            return TryGetCommand(name, new string[0], out command);
+        }
+
         public bool TryGetCommand(string name, string[] args, out CustomCommand command)
         {
             command = GetCommandByName(name, args);
