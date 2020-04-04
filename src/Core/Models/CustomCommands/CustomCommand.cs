@@ -22,12 +22,13 @@ namespace BrackeysBot.Core.Models
 
         public bool Matches(string name, string[] args)
         {
+            bool argsMatch = MatchesArgs(args);
             if (Features.Find(c => c is AliasFeature) is AliasFeature alias 
                 && alias.Matches(name)
-                && matchesArgs(args)) 
+                && argsMatch) 
                 return true;
 
-            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && matchesArgs(args);
+            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && argsMatch;
         }
 
         public virtual async Task ExecuteCommand(ICommandContext context)
@@ -45,9 +46,9 @@ namespace BrackeysBot.Core.Models
             }
         }
 
-        private bool matchesArgs(string[] args) 
+        private bool MatchesArgs(string[] args) 
         {
-            return IgnoreArguments; // TODO add arguments and arg checks
+            return true; // TODO add arguments and arg checks. Because arguments don't do anything yet we can just return true for now.
         }
     }
 }
