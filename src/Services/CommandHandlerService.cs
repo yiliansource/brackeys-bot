@@ -92,12 +92,12 @@ namespace BrackeysBot.Services
                 }
                 else 
                 {
+                    await _log.LogMessageAsync(new LogMessage(LogSeverity.Warning, GetType().Name.Prettify(), $"Unknown statement reached: Command={(command.IsSpecified ? command.Value : null)};Result={result}"));
                     await new EmbedBuilder()
                         .WithColor(Color.Red)
-                        .WithDescription("Unknown error! (I did create a log entry for the developers :))")
+                        .WithDescription("Unknown error! ( I created a log entry for the developers! :smile: )")
                         .Build()
                         .SendToChannel(context.Channel);
-                    await _log.LogMessageAsync(new LogMessage(LogSeverity.Warning, GetType().Name.Prettify(), $"Unknown statement reached: Command={(command.IsSpecified ? command.Value : null)};Result={result}"));
                 }
             }
         }
