@@ -31,20 +31,27 @@ namespace BrackeysBot.Services
         public IReadOnlyCollection<CustomCommand> GetCommands()
             => _commands.AsReadOnly();
 
-        public bool TryGetCommand(string name, out CustomCommand command)
+        public bool TryGetCommand(string name, out CustomCommand command) {
+            return TryGetCommand(name, new string[0], out command);
+        }
+
+        public bool TryGetCommand(string name, string[] args, out CustomCommand command)
         {
-            command = GetCommandByName(name);
+            command = GetCommandByName(name, args);
+
             return command != null;
         }
 
-        public CustomCommand GetCommandByName(string name)
-            => _commands.FirstOrDefault(c => c.Matches(name));
-        public bool ContainsCommand(string name)
-            => _commands.Any(c => c.Matches(name));
+        public CustomCommand GetCommandByName(string name, string[] args)
+            => _commands.FirstOrDefault(c => c.Matches(name, args));
+        public bool ContainsCommand(string name, string[] args)
+            => _commands.Any(c => c.Matches(name, args));
 
         public CustomCommand CreateCommand(string name)
         {
             var command = new CustomCommand(name);
+            // TODO by default ignore all arguments, this way we remain backwards compatible until we have a proper checking mechanism
+            command.IgnoreArguments = true;
             _commands.Add(command);
 
             SaveCustomCommands();
@@ -53,7 +60,7 @@ namespace BrackeysBot.Services
         }
         public void RemoveCommand(string name)
         {
-            _commands.RemoveAll(c => c.Matches(name));
+            _commands.RemoveAll(c => c.Matches(name, new string[0]));
         }
 
         public CustomCommandFeature CreateFeature(string name, string arguments)

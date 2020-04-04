@@ -11,6 +11,7 @@ namespace BrackeysBot.Core.Models
     {
         public string Name { get; set; }
         public List<CustomCommandFeature> Features { get; set; }
+        public bool IgnoreArguments { get; set; }
 
         private CustomCommand() { }
         public CustomCommand(string name)
@@ -19,13 +20,15 @@ namespace BrackeysBot.Core.Models
             Features = new List<CustomCommandFeature>();
         }
 
-        public bool Matches(string name)
+        public bool Matches(string name, string[] args)
         {
+            bool argsMatch = MatchesArgs(args);
             if (Features.Find(c => c is AliasFeature) is AliasFeature alias 
-                && alias.Matches(name)) 
+                && alias.Matches(name)
+                && argsMatch) 
                 return true;
 
-            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase);
+            return Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && argsMatch;
         }
 
         public virtual async Task ExecuteCommand(ICommandContext context)
@@ -41,6 +44,11 @@ namespace BrackeysBot.Core.Models
             {
                 await context.Channel.SendMessageAsync(string.Empty, false, new EmbedBuilder().WithDescription("No features have been set yet!").Build());
             }
+        }
+
+        private bool MatchesArgs(string[] args) 
+        {
+            return IgnoreArguments || true; // TODO add arguments and arg checks. Because arguments don't do anything yet we can just return true for now.
         }
     }
 }
