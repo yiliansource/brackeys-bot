@@ -23,13 +23,10 @@ namespace BrackeysBot
 
         public async Task RunAsync()
         {
-            var services = CreateServices();
-
-            var provider = services.BuildServiceProvider();
+            IServiceProvider provider = CreateServices().BuildServiceProvider();
             provider.InitializeServices();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
-
             await Task.Delay(-1);
         }
 
@@ -39,7 +36,8 @@ namespace BrackeysBot
                 .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Verbose,
-                    MessageCacheSize = 100
+                    MessageCacheSize = 100,
+                    AlwaysDownloadUsers = true
                 }))
                 .AddSingleton(new CommandService(new CommandServiceConfig
                 {
