@@ -76,7 +76,7 @@ namespace BrackeysBot.Services
                         // If the user is no longer in the server, just remove the entry, but don't attempt to remove his role.
                         IGuildUser guildUser = guild.GetUser(user.ID);
                         guildUser?.RemoveRoleAsync(mutedRole);
-                        
+
                         user.Muted = false;
                         _data.SaveUserData();
 
@@ -110,16 +110,17 @@ namespace BrackeysBot.Services
             if (_data.UserData.HasUser(user.Id))
             {
                 UserData data = _data.UserData.GetUser(user.Id);
-                if (data.Muted) 
-                {
-                    await MuteUser(user, false);
-                }
-                else if (HasTemporaryMute(data))
+                
+                if (HasTemporaryMute(data))
                 {
                     TemporaryInfraction infraction = data.TemporaryInfractions.First(t => t.Type == TemporaryInfractionType.TempMute);
 
                     if (infraction.Expire > DateTime.UtcNow)
                         await MuteUser(user, true);
+                }
+                else if (data.Muted) 
+                {
+                    await MuteUser(user, false);
                 }
             }
         }
