@@ -33,6 +33,8 @@ namespace BrackeysBot.Commands
         {
             await user.MuteAsync(Context);
 
+            SetUserMuted(user.Id, true);
+
             Moderation.AddInfraction(user, Infraction.Create(Moderation.RequestInfractionID())
                 .WithType(InfractionType.Mute)
                 .WithModerator(Context.User)
@@ -59,6 +61,8 @@ namespace BrackeysBot.Commands
         {
             await user.MuteAsync(Context);
 
+            SetUserMuted(user.Id, true);
+
             Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user, Context.User, duration, reason);
             
             await ModerationLog.CreateEntry(ModerationLogEntry.New
@@ -79,12 +83,19 @@ namespace BrackeysBot.Commands
         {
             await user.UnmuteAsync(Context);
 
+            SetUserMuted(user.Id, false);
+
             Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempMute, user);
             
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Unmute)
                 .WithTarget(user), Context.Channel);
+        }
+
+        private void SetUserMuted(ulong id, bool muted) {
+            Data.UserData.GetOrCreate(id).Muted = muted;
+            Data.SaveUserData();
         }
     }
 }

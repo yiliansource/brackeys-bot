@@ -36,7 +36,7 @@ namespace BrackeysBot.Services
             _checkTimer.Elapsed += (s, e) => CheckTemporaryInfractions();
             _checkTimer.Start();
 
-            _client.UserJoined += CheckUserTemporarilyMuted;
+            _client.UserJoined += CheckUserMuted;
         }
 
         private void CheckTemporaryInfractions()
@@ -77,6 +77,9 @@ namespace BrackeysBot.Services
                         IGuildUser guildUser = guild.GetUser(user.ID);
                         guildUser?.RemoveRoleAsync(mutedRole);
 
+                        user.Muted = false;
+                        _data.SaveUserData();
+
                         ModerationLogEntry entry = ModerationLogEntry.New
                             .WithActionType(ModerationActionType.Unmute)
                             .WithReason("Temporary mute timed out.")
@@ -102,23 +105,43 @@ namespace BrackeysBot.Services
                 _data.SaveUserData();
             }
         }
-        private async Task CheckUserTemporarilyMuted(SocketGuildUser user)
+        private async Task CheckUserMuted(SocketGuildUser user)
         {
             if (_data.UserData.HasUser(user.Id))
             {
                 UserData data = _data.UserData.GetUser(user.Id);
-                if (data.TemporaryInfractions != null && data.TemporaryInfractions.Any(t => t.Type == TemporaryInfractionType.TempMute))
+                
+                if (HasTemporaryMute(data))
                 {
                     TemporaryInfraction infraction = data.TemporaryInfractions.First(t => t.Type == TemporaryInfractionType.TempMute);
-                    if (infraction.Expire > DateTime.UtcNow)
-                    {
-                        IRole mutedRole = _client.GetGuild(_data.Configuration.GuildID).GetRole(_data.Configuration.MutedRoleID);
-                        await user.AddRoleAsync(mutedRole);
 
-                        await _log.LogMessageAsync(new LogMessage(LogSeverity.Info, "TemporaryInfractions", 
-                            $"Muted {user.ToString()} ({user.Id}) since their temporary mute has not expired yet."));
-                    }
+                    if (infraction.Expire > DateTime.UtcNow)
+                        await MuteUser(user, true);
                 }
+                else if (data.Muted) 
+                {
+                    await MuteUser(user, false);
+                }
+            }
+        }
+
+        private bool HasTemporaryMute(UserData data) 
+        => data.TemporaryInfractions != null && data.TemporaryInfractions.Any(t => t.Type == TemporaryInfractionType.TempMute);
+
+        private async Task MuteUser(SocketGuildUser user, bool temporary) 
+        {
+            IRole mutedRole = _client.GetGuild(_data.Configuration.GuildID).GetRole(_data.Configuration.MutedRoleID);
+            await user.AddRoleAsync(mutedRole);
+
+            if (temporary)
+            {
+                await _log.LogMessageAsync(new LogMessage(LogSeverity.Info, "TemporaryInfractions", 
+                    $"Muted {user.ToString()} ({user.Id}) since their temporary mute has not expired yet."));
+            }
+            else 
+            {
+                await _log.LogMessageAsync(new LogMessage(LogSeverity.Info, "Infractions", 
+                    $"Muted {user.ToString()} ({user.Id})"));
             }
         }
     }
