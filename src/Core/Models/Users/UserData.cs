@@ -20,6 +20,9 @@ namespace BrackeysBot
         [JsonPropertyName("stars")]
         public int Stars { get; set; }
 
+        [JsonPropertyName("muted")]
+        public bool Muted { get; set; }
+        
         public UserData (ulong id)
         {
             ID = id;
