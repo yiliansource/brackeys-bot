@@ -6,6 +6,7 @@ using System.Text;
 using Discord;
 
 using Humanizer;
+using BrackeysBot.Core.Models;
 
 namespace BrackeysBot.Services
 {
@@ -30,7 +31,12 @@ namespace BrackeysBot.Services
 
         public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "")
         {
-            var userData = _data.UserData.GetOrCreate(user.Id);
+            Infraction infraction = AddTemporaryInfraction(type, user.Id, moderator, duration, reason);
+            SendInfractionMessageToUser(user, infraction);
+        }
+        public Infraction AddTemporaryInfraction(TemporaryInfractionType type, ulong userId, IUser moderator, TimeSpan duration, string reason = "")
+        {
+            var userData = _data.UserData.GetOrCreate(userId);
 
             // Ensure that same-type infractions do not stack.
             userData.TemporaryInfractions.RemoveAll(i => i.Type == type);
@@ -46,7 +52,7 @@ namespace BrackeysBot.Services
 
             _data.SaveUserData();
 
-            SendInfractionMessageToUser(user, infraction);
+            return infraction;
         }
         public void ClearTemporaryInfraction(TemporaryInfractionType type, IUser user)
             => ClearTemporaryInfraction(type, user.Id);
