@@ -81,6 +81,14 @@ namespace BrackeysBot.Services
                         .Build()
                         .SendToChannel(context.Channel);
                 }
+                else if (result.Error == CommandError.ObjectNotFound)
+                {
+                    await new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription(result.ErrorReason)
+                        .Build()
+                        .SendToChannel(context.Channel);
+                }
                 else if (result is ExecuteResult executeResult)
                 {
                     await new EmbedBuilder()

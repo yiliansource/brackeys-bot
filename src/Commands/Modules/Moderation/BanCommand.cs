@@ -18,7 +18,7 @@ namespace BrackeysBot.Commands
         [Command("ban")]
         [Summary("Bans a member from the server, with an optional reason and duration.")]
         [Remarks("ban <user> [duration] [reason]")]
-        [Priority(1)]
+        [Priority(2)]
         [RequireModerator]
         [RequireBotPermission(GuildPermission.BanMembers)]
         public async Task BanAsync(
@@ -26,6 +26,28 @@ namespace BrackeysBot.Commands
             [Summary("The duration for the ban."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
             [Summary("The reason why to ban the user."), Remainder] string reason = DefaultReason)
             => await TempbanAsync(user, duration, reason);
+
+        [Command("ban")]
+        [Priority(1)]
+        [RequireModerator]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        public async Task BanAsync(
+            [Summary("The user to ban")] GuildUserProxy user,
+            [Summary("The duration for the ban."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
+            [Summary("The reason why to ban the user."), Remainder] string reason = DefaultReason)
+        {
+            // Since the user cannot be found (we are using the GuildUserProxy) we don't need to attempt to message him
+            await Context.Guild.AddBanAsync(user.ID, _pruneDays, reason);
+
+            Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempBan, user.ID, Context.User, duration, reason);
+
+            await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithDefaultsFromContext(Context)
+                .WithActionType(ModerationActionType.TempBan)
+                .WithTarget(user.ID)
+                .WithDuration(duration)
+                .WithReason(reason), Context.Channel);
+        }
 
         [Command("ban")]
         [Summary("Bans a member from the server, with an optional reason.")]

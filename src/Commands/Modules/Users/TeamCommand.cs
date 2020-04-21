@@ -24,23 +24,33 @@ namespace BrackeysBot.Commands
 
             EmbedBuilder builder = GetDefaultBuilder();
 
-            if (currentTeam != targetTeam)
+            if (targetTeam == null)
             {
-                if (currentTeam != null)
-                    await user.RemoveRoleAsync(currentTeam);
-
-                await user.AddRoleAsync(targetTeam);
-
-                builder.WithDescription($"You sucessfully joined **{targetTeam.Name}**.")
-                    .WithColor(Color.Green);
+                await builder.WithColor(Color.Red)
+                    .WithDescription("That team does not exist. Type `[]teams` for a list of teams!")
+                    .Build()
+                    .SendToChannel(Context.Channel);
             }
             else
             {
-                builder.WithDescription($"You are already in **{targetTeam.Name}**.")
-                    .WithColor(Color.Red);
-            }
+                if (currentTeam != targetTeam)
+                {
+                    if (currentTeam != null)
+                        await user.RemoveRoleAsync(currentTeam);
 
-            await builder.Build().SendToChannel(Context.Channel);
+                    await user.AddRoleAsync(targetTeam);
+
+                    builder.WithDescription($"You sucessfully joined **{targetTeam.Name}**.")
+                        .WithColor(Color.Green);
+                }
+                else
+                {
+                    builder.WithDescription($"You are already in **{targetTeam.Name}**.")
+                        .WithColor(Color.Red);
+                }
+
+                await builder.Build().SendToChannel(Context.Channel);
+            }
         }
 
         [Command("leaveteam")]
