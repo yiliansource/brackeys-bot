@@ -8,36 +8,36 @@ namespace BrackeysBot.Commands
 {
     public partial class LeaderboardModule : BrackeysBotModule
     {
-        [Command("points"), Alias("p")]
-        [Summary("Displays the points of a user, or your own points.")]
-        [Remarks("points [user]")]
-        public async Task DisplayUserPointsAsync(
-            [Summary("The optional user to display the points for.")] IGuildUser user = null)
-        {
-            if (user == null)
-            {
-                await DisplaySelfPointsAsync();
-            }
-            else
-            {
-                await GetDefaultBuilder()
-                    .WithDescription($"{user.Mention} has **{Leaderboard.GetUserPoints(user)}** points.")
-                    .WithFooter(Leaderboard.FormatRank(user))
-                    .Build()
-                    .SendToChannel(Context.Channel);
-            }
-        }
+        // [Command("points"), Alias("p")]
+        // [Summary("Displays the points of a user, or your own points.")]
+        // [Remarks("points [user]")]
+        // public async Task DisplayUserPointsAsync(
+        //     [Summary("The optional user to display the points for.")] IGuildUser user = null)
+        // {
+        //     if (user == null)
+        //     {
+        //         await DisplaySelfPointsAsync();
+        //     }
+        //     else
+        //     {
+        //         await GetDefaultBuilder()
+        //             .WithDescription($"{user.Mention} has **{Leaderboard.GetUserPoints(user)}** points.")
+        //             .WithFooter(Leaderboard.FormatRank(user))
+        //             .Build()
+        //             .SendToChannel(Context.Channel);
+        //     }
+        // }
 
-        [Command("points"), Alias("p")]
-        [HideFromHelp]
-        public async Task DisplaySelfPointsAsync()
-        {
-            await GetDefaultBuilder()
-                .WithDescription($"You have **{Leaderboard.GetUserPoints(Context.User)}** points.")
-                .WithFooter(Leaderboard.FormatRank(Context.User))
-                .Build()
-                .SendToChannel(Context.Channel);
-        }
+        // [Command("points"), Alias("p")]
+        // [HideFromHelp]
+        // public async Task DisplaySelfPointsAsync()
+        // {
+        //     await GetDefaultBuilder()
+        //         .WithDescription($"You have **{Leaderboard.GetUserPoints(Context.User)}** points.")
+        //         .WithFooter(Leaderboard.FormatRank(Context.User))
+        //         .Build()
+        //         .SendToChannel(Context.Channel);
+        // }
 
         [Command("setpoints"), Alias("sp")]
         [Summary("Sets the points of a user.")]

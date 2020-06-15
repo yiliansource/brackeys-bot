@@ -35,6 +35,9 @@
         Kick,
 
         [Description("Filtered word")]
-        Filtered
+        Filtered,
+
+        [Description("Unknown")]
+        Unknown
     }
 }

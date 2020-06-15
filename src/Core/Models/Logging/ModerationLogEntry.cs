@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-
+using BrackeysBot.Core.Models;
 using Discord;
 using Discord.Commands;
 
@@ -9,6 +9,7 @@ namespace BrackeysBot
 {
     public struct ModerationLogEntry
     {
+        public int Id { get; set; }
         public ICommandContext Context { get; set; }
         public IUser Moderator { get; set; }
         public IUser Target { get; set; }
@@ -20,7 +21,7 @@ namespace BrackeysBot
         public DateTimeOffset Time { get; set; }
         public string AdditionalInfo { get; set; }
         public static ModerationLogEntry New
-            => new ModerationLogEntry();
+            => new ModerationLogEntry() { Id = -1 };
 
         public bool HasTarget => Target != null || TargetID != 0;
         public string TargetMention => Target != null
@@ -30,6 +31,12 @@ namespace BrackeysBot
         public ModerationLogEntry WithContext(ICommandContext context)
         {
             Context = context;
+            return this;
+        }
+
+        public ModerationLogEntry WithId(int id) 
+        {
+            Id = id;
             return this;
         }
         public ModerationLogEntry WithModerator(IUser moderator)
@@ -47,6 +54,14 @@ namespace BrackeysBot
             ActionType = actionType;
             return this;
         }
+        public ModerationLogEntry WithTarget(GuildUserProxy target)
+        {
+            if (target.HasValue)
+                Target = target.GuildUser;
+            TargetID = target.ID;
+            return this;
+        }
+
         public ModerationLogEntry WithTarget(IUser target)
         {
             Target = target;

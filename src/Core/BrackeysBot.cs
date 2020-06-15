@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 
 using BrackeysBot.Services;
+using BrackeysBot.Managers;
 
 namespace BrackeysBot
 {

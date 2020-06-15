@@ -29,26 +29,38 @@ namespace BrackeysBot.Services
             if (replyChannel != null)
                 await CreateEmbedResponse(logEntry).SendToChannel(replyChannel);
 
-            await _log.LogMessageAsync(new LogMessage(LogSeverity.Info, "ModLog", $"{logEntry.Moderator} performed {logEntry.ActionType}."));
             await PostToLogChannelAsync(logEntry);
         }
 
+        public async Task LogErrorAndPing(string message)
+            => await SendEmbedToModerationLogChannel(new EmbedBuilder()
+                .WithColor(Color.Red)
+                .WithTitle("Looks like we got an error!")
+                .AddField("message", message)
+                .Build(), MentionUtils.MentionRole(_data.Configuration.DeveloperRoleID));
+
         private async Task PostToLogChannelAsync(ModerationLogEntry logEntry)
+            => await SendEmbedToModerationLogChannel(CreateEmbedLogEntry(logEntry));
+
+        private async Task SendEmbedToModerationLogChannel(Embed embed, object optionalMessage = null) 
         {
             ulong moderationLogChannelID = _data.Configuration.ModerationLogChannelID;
+
             if (moderationLogChannelID == 0)
                 throw new Exception("Invalid moderation log channel ID.");
 
-            Embed embed = CreateEmbedLogEntry(logEntry);
-
             IGuild guild = _client.GetGuild(_data.Configuration.GuildID);
             ITextChannel channel = await guild.GetTextChannelAsync(moderationLogChannelID);
+
+            if (optionalMessage != null)
+                await channel.SendMessageAsync(optionalMessage?.ToString());
+                
             await embed.SendToChannel(channel);
         }
 
         private Embed CreateEmbedLogEntry(ModerationLogEntry logEntry)
             => new EmbedBuilder()
-                .WithAuthor(logEntry.ActionType.Humanize(), logEntry.Target?.EnsureAvatarUrl())
+                .WithAuthor(CreateAuthor(logEntry), logEntry.Target?.EnsureAvatarUrl())
                 .WithColor(GetColorForAction(logEntry.ActionType))
                 .AddFieldConditional(logEntry.HasTarget, "User", logEntry.TargetMention, true)
                 .AddField("Moderator", logEntry.Moderator.Mention, true)
@@ -56,8 +68,21 @@ namespace BrackeysBot.Services
                 .AddFieldConditional(logEntry.Channel != null, "Channel", logEntry.Channel?.Mention, true)
                 .AddFieldConditional(logEntry.Duration != null, "Duration", (logEntry.Duration ?? TimeSpan.Zero).Humanize(7), true)
                 .AddFieldConditional(logEntry.AdditionalInfo != null, "Additional info", logEntry.AdditionalInfo)
-                .WithFooter($"{logEntry.Time.ToTimeString()} | {logEntry.Time.ToDateString()}")
+                .WithFooter($"{logEntry.Time.ToLocalTime().ToTimeString()} | {logEntry.Time.ToLocalTime().ToDateString()}")
                 .Build();
+        
+        private string CreateAuthor(ModerationLogEntry logEntry) 
+        {
+            StringBuilder builder = new StringBuilder();
+
+            if (logEntry.Id >= 0) 
+                builder.Append($"[{logEntry.Id}] • ");
+
+            builder.Append(logEntry.ActionType.Humanize());
+
+            return builder.ToString();
+        }
+
         private Embed CreateEmbedResponse(ModerationLogEntry logEntry)
         {
             EmbedBuilder builder = new EmbedBuilder();
@@ -65,10 +90,13 @@ namespace BrackeysBot.Services
             StringBuilder author = new StringBuilder($"[{logEntry.ActionType.Humanize()}]");
             StringBuilder description = new StringBuilder();
 
+            if (logEntry.Id >= 0)
+                author.Append($" • [{logEntry.Id}]");
+
             if (logEntry.HasTarget)
             {
                 if (logEntry.Target != null)
-                    author.Append($" {logEntry.Target.ToString()}");
+                    author.Append($" • {logEntry.Target.ToString()}");
                 else
                     author.Append($" {logEntry.TargetMention}");
             }

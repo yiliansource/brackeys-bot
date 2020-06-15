@@ -7,12 +7,15 @@ using Discord;
 using Discord.Commands;
 
 using BrackeysBot.Services;
+using BrackeysBot.Managers;
 
 namespace BrackeysBot.Commands
 {
     public abstract class BrackeysBotModule : ModuleBase<BrackeysBotContext>
     {
         public DataService Data { get; set; }
+        public InfractionManager Infractions { get; set; }
+        public ChatManager Chat { get; set; }
         public ModerationLogService ModerationLog { get; set; }
 
         protected EmbedBuilder GetDefaultBuilder()

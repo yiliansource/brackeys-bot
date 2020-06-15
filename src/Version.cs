@@ -5,8 +5,8 @@ namespace BrackeysBot
     public static class Version
     {
         public const int MAJOR = 3;
-        public const int MINOR = 0;
-        public const int PATCH = 11;
+        public const int MINOR = 1;
+        public const int PATCH = 0;
         public const int HOTFIX = 0;
 
         public static string ShortVersion = $"{MAJOR}.{MINOR}";

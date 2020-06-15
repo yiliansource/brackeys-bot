@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using BrackeysBot.Core.Models;
 
 using Humanizer;
+using BrackeysBot.Models.Database;
 
 namespace BrackeysBot.Commands
 {
@@ -37,15 +38,16 @@ namespace BrackeysBot.Commands
             [Summary("The user to ban.")] GuildUserProxy user,
             [Summary("The reason why to ban the user."), Remainder] string reason = DefaultReason)
         {
-            if (user.HasValue)
-                await user.GuildUser.TrySendMessageAsync($"You were banned from **{Context.Guild.Name}** because of {reason}.");
-            await Context.Guild.AddBanAsync(user.ID, _pruneDays, reason);
+            await Context.Guild.AddBanAsync(user.ID, 0, reason);
 
-            await ModerationLog.CreateEntry(ModerationLogEntry.New
-                .WithDefaultsFromContext(Context)
-                .WithActionType(ModerationActionType.Ban)
-                .WithTarget(user.ID)
-                .WithReason(reason), Context.Channel);
+            Infraction infr;
+
+            if (user.HasValue) 
+                infr = InfractionsCreator.Ban(user.GuildUser, Context.User, reason);
+            else 
+                infr = InfractionsCreator.Ban(user.ID, Context.User, reason);
+
+            await Infractions.AddInfraction(Context.Channel, infr, true);
         }
 
         [Command("tempban")]
@@ -59,17 +61,9 @@ namespace BrackeysBot.Commands
             [Summary("The duration for the ban."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration, 
             [Summary("The reason why to ban the user."), Remainder] string reason = DefaultReason)
         {
-            await user.TrySendMessageAsync($"You were banned from **{Context.Guild.Name}** for {duration.Humanize(7)} because of **{reason}**.");
-            await user.BanAsync(_pruneDays, reason);
+            await user.BanAsync(0, reason);
 
-            Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempBan, user, Context.User, duration, reason);
-
-            await ModerationLog.CreateEntry(ModerationLogEntry.New
-                .WithDefaultsFromContext(Context)
-                .WithActionType(ModerationActionType.TempBan)
-                .WithTarget(user)
-                .WithDuration(duration)
-                .WithReason(reason), Context.Channel);
+            await Infractions.AddInfraction(Context.Channel, InfractionsCreator.TempBan(user, Context.User, duration, reason), true);
         }
 
         [Command("unban")]
@@ -82,12 +76,16 @@ namespace BrackeysBot.Commands
         {
             await Context.Guild.RemoveBanAsync(user.ID);
 
-            Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempBan, user.ID);
+            EmbedBuilder builder = new EmbedBuilder();
 
-            await ModerationLog.CreateEntry(ModerationLogEntry.New
-                .WithDefaultsFromContext(Context)
-                .WithActionType(ModerationActionType.Unban)
-                .WithTarget(user.ID), Context.Channel);
+            string username = user.HasValue ? user.GuildUser.Mention : $"<@{user.ID}>";
+
+            if (await Infractions.RemoveActiveTemporaryInfractionIfPresent(Context.Channel, user.ID, InfractionType.TemporaryBan, Context.User))
+                builder.WithDescription(String.Format("Unbanned {0}!", username));
+            else 
+                builder.WithDescription(String.Format("User {0} is not (temp)banned!", username));
+            
+            await builder.Build().SendToChannel(Context.Channel);
         }
     }
 }

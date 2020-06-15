@@ -18,6 +18,22 @@ namespace BrackeysBot
 
         #endregion
 
+        [YamlMember(Alias = "dbHost"), Confidential]
+        [Description("IP of Server database is hosted at")]
+        public string DatabaseHost { get; set; }
+        
+        [YamlMember(Alias = "dbSchema"), Confidential]
+        [Description("The name of the Databse Schema")]
+        public string DatabaseSchema { get; set; }
+        
+        [YamlMember(Alias = "dbUser"), Confidential]
+        [Description("The login user for the Database")]
+        public string DatabaseUser { get; set; }
+                
+        [YamlMember(Alias = "dbPassword"), Confidential]
+        [Description("The login password for the Database")]
+        public string DatabasePass { get; set; }
+
         #region IDs
 
         [YamlMember(Alias = "guildId")]

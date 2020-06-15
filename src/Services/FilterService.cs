@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
 using System.Collections.Generic;
+using BrackeysBot.Managers;
+using BrackeysBot.Models.Database;
 
 namespace BrackeysBot.Services
 {
@@ -13,18 +15,18 @@ namespace BrackeysBot.Services
     {
         private readonly DiscordSocketClient _discord;
         private readonly DataService _dataService;
-        private readonly ModerationService _moderationService;
+        private readonly InfractionManager _infractionManager;
         private readonly ModerationLogService _loggingService;
 
         public FilterService(
             DiscordSocketClient discord,
             DataService dataService,
-            ModerationService moderationService,
+            InfractionManager infractionManager,
             ModerationLogService loggingService)
         {
             _discord = discord;
             _dataService = dataService;
-            _moderationService = moderationService;
+            _infractionManager = infractionManager;
             _loggingService = loggingService;
         }
         public void Initialize()
@@ -79,26 +81,21 @@ namespace BrackeysBot.Services
             //  are at least certain the message got deleted.
             await s.DeleteAsync();
 
-            _moderationService.AddInfraction(target, 
-                    Infraction.Create(_moderationService.RequestInfractionID())
-                    .WithType(InfractionType.Warning)
-                    .WithModerator(_discord.CurrentUser)
-                    .WithAdditionalInfo($"[Go near message]({url})\n**{message}**")
-                    .WithDescription("Used filtered word"));
+            await _infractionManager.AddInfraction(null, _infractionManager.CreateInfraction(target, _discord.CurrentUser, InfractionType.Warning, null, "Used filtered word"));
 
-            await _loggingService.CreateEntry(ModerationLogEntry.New
-                    .WithActionType(ModerationActionType.Filtered)
-                    .WithTarget(target)
-                    .WithReason($"[Go near message]({url})\n**{message}**")
-                    .WithTime(DateTimeOffset.Now)
-                    .WithModerator(_discord.CurrentUser));
+            // await _loggingService.CreateEntry(ModerationLogEntry.New
+            //         .WithActionType(ModerationActionType.Filtered)
+            //         .WithTarget(target)
+            //         .WithReason($"[Go near message]({url})\n**{message}**")
+            //         .WithTime(DateTimeOffset.Now)
+            //         .WithModerator(_discord.CurrentUser));
 
             NotifyUser(s);
         }
 
         private async void NotifyUser(SocketMessage s)
         {
-            IMessage msg = (await s.Channel.SendMessageAsync($"Hey {s.Author.Id.Mention()}! Your message goes against Discord COC, if you believe this is an error contact a Staff member!")) as IMessage;
+            IMessage msg = (await s.Channel.SendMessageAsync($"Hey {s.Author.Id.Mention()}! Your message goes against Discord Partner CoC, if you believe this is an error contact a Staff member!")) as IMessage;
             msg.TimedDeletion(5000);
         }
     }

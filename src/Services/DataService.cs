@@ -11,10 +11,8 @@ namespace BrackeysBot.Services
     public class DataService : BrackeysBotService
     {
         public BotConfiguration Configuration => _configuration;
-        public UserDataCollection UserData => _userData;
 
         private BotConfiguration _configuration;
-        private UserDataCollection _userData;
 
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
         {
@@ -28,7 +26,6 @@ namespace BrackeysBot.Services
         public DataService()
         {
             LoadConfiguration();
-            LoadUserData();
         }
 
         public void SaveConfiguration()
@@ -48,24 +45,6 @@ namespace BrackeysBot.Services
 
             var deserializer = new DeserializerBuilder().Build();
             _configuration = deserializer.Deserialize<BotConfiguration>(File.ReadAllText(_configPath));
-        }
-
-        public void SaveUserData()
-        {
-            string json = JsonSerializer.Serialize(_userData, _jsonOptions);
-            File.WriteAllText(_databasePath, json);
-        }
-        public void LoadUserData()
-        {
-            if (!File.Exists(_databasePath))
-            {
-                _userData = new UserDataCollection();
-                SaveUserData();
-                return;
-            }
-
-            string json = File.ReadAllText(_databasePath);
-            _userData = JsonSerializer.Deserialize<UserDataCollection>(json, _jsonOptions);
         }
     }
 }
