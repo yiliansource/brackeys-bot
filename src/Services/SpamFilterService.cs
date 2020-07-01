@@ -5,29 +5,29 @@ using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.WebSocket;
-using System.Collections.Generic;
+using BrackeysBot.Commands;
 
 namespace BrackeysBot.Services
 {
     public class SpamFilterService : BrackeysBotService, IInitializeableService
     {
-        private const int maxConsecutiveSpamWords = 3;
-        private const int maxSumSpamWords = 6;
-
         private readonly DiscordSocketClient _discord;
         private readonly DataService _dataService;
         private readonly ModerationService _moderationService;
+        private readonly IServiceProvider _provider;
         private readonly ModerationLogService _loggingService;
 
         public SpamFilterService(
             DiscordSocketClient discord,
             DataService dataService,
-            ModerationService moderationService,
+            ModerationService moderationService, 
+            IServiceProvider provider, 
             ModerationLogService loggingService)
         {
             _discord = discord;
             _dataService = dataService;
             _moderationService = moderationService;
+            _provider = provider;
             _loggingService = loggingService;
         }
         public void Initialize()
@@ -42,12 +42,11 @@ namespace BrackeysBot.Services
                 return;
 
             string content = msg.Content;
-            const int muteDurationSeconds = 30;
+            SpamFilterConfiguration spamConfiguration = _dataService.Configuration.SpamSettings ?? new SpamFilterConfiguration();
 
-            if (TriggersSpamWordThreshold(content))
+            if (TriggersSpamWordThreshold(content, spamConfiguration))
             {
-                await MuteUserTemporary(s as SocketUserMessage, muteDurationSeconds);
-                NotifyUser(s);
+                await TempMuteUser(s as SocketUserMessage, content, spamConfiguration.MuteDuration);
             }   
         }
 
@@ -59,19 +58,20 @@ namespace BrackeysBot.Services
             await CheckMessageAsync(s);
         }
 
-        private bool TriggersSpamWordThreshold(string msg)
+        private bool TriggersSpamWordThreshold(string msg, SpamFilterConfiguration spamConfiguration)
         {
             string[] spamWords = _dataService.Configuration.SpamWords;
 
             if (spamWords == null)
                 return false;
 
-            return spamWords.Any(str => ContainsMultipleInARow(msg, str, maxConsecutiveSpamWords) || ContainsMultiple(msg, str, maxSumSpamWords));
+            return spamWords.Any(str => ContainsMultipleInARow(msg, str, spamConfiguration.ConsecutiveWordThreshold) || ContainsMultiple(msg, str, spamConfiguration.FullMessageWordThreshold));
         }
 
         private bool ContainsMultipleInARow(string msg, string searchTxt, int minAmount)
         {
-            string regexSearchTxt = $".*({Regex.Escape(searchTxt)}){{{minAmount}}}.*";
+            // Allow for whitespace characters after each occurence
+            string regexSearchTxt = $".*({Regex.Escape(searchTxt)}\\s*){{{minAmount}}}.*";
             return Regex.IsMatch(msg, regexSearchTxt, RegexOptions.IgnoreCase);
         }
 
@@ -86,26 +86,39 @@ namespace BrackeysBot.Services
             return msg.Author.IsBot || (msg.Author as IGuildUser).GetPermissionLevel(_dataService.Configuration) >= PermissionLevel.Guru;
         }
 
-        private async Task MuteUserTemporary(SocketMessage s, int durationSeconds)
+        private async Task TempMuteUser(SocketUserMessage s, string message, int durationSeconds)
         {
-            SocketGuildUser target = s.Author as SocketGuildUser;
-            // If target is already muted due to other services, skip this mute
-            if (!target.IsMuted)
-            {
-                await target.ModifyAsync(x => x.Mute = true);
-                TimedUnmute(target, durationSeconds * 1000);
-            }
+            SocketGuildUser user = s.Author as SocketGuildUser;
+            BrackeysBotContext context = new BrackeysBotContext(s, _provider);
+
+            await user.MuteAsync(context);
+            SetUserMuted(user.Id, true);
+
+            TimeSpan muteDuration = new TimeSpan(0, 0, durationSeconds);
+            string reason = "User message triggered the spam filter";
+            _moderationService.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user, _discord.CurrentUser, muteDuration, reason);
+
+            string url = s.GetJumpUrl();
+
+            await _loggingService.CreateEntry(ModerationLogEntry.New
+                    .WithActionType(ModerationActionType.TempMute)
+                    .WithTarget(user)
+                    .WithReason($"Overused spam word: [Go to  message]({url})\n**{message}**")
+                    .WithTime(DateTimeOffset.Now)
+                    .WithModerator(_discord.CurrentUser));
+
+            NotifyUser(s);
         }
 
-        private async void TimedUnmute(SocketGuildUser user, int milliseconds)
+        private void SetUserMuted(ulong id, bool muted)
         {
-            await Task.Delay(milliseconds);
-            await user.ModifyAsync(x => x.Mute = false);
+            _dataService.UserData.GetOrCreate(id).Muted = muted;
+            _dataService.SaveUserData();
         }
 
         private async void NotifyUser(SocketMessage s)
         {
-            IMessage msg = (await s.Channel.SendMessageAsync($"Hey {s.Author.Id.Mention()}! Your message contains too many of the same words flagged as spam, if you believe this is an error contact a Staff member!")) as IMessage;
+            IMessage msg = (await s.Channel.SendMessageAsync($"Hey {s.Author.Id.Mention()}! Your message contains too many occurences of a word flagged as spam, if you believe this is an error contact a Staff member!")) as IMessage;
             msg.TimedDeletion(5000);
         }
     }
