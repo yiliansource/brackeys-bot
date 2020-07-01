@@ -11,6 +11,12 @@ namespace BrackeysBot.Services
 {
     public class SpamFilterService : BrackeysBotService, IInitializeableService
     {
+        // Pattern of custom emotes is <:emote_name:emote_id> with the emote_id always having 18 digits (Twitter's snowflake for disord IDs)
+        // Animated emotes start with an <a: instead
+        // For emote names, discord seems to trim out all special characters for the real name, leaving just letters, numbers and underscore
+        // default emotes from discord are unicode characters, so it only works on custom emotes for now
+        private readonly Regex emoteRegex = new Regex(@"<a?:[A-Za-z0-9_]+:\d{18}>", RegexOptions.IgnoreCase);
+
         private readonly DiscordSocketClient _discord;
         private readonly DataService _dataService;
         private readonly ModerationService _moderationService;
@@ -35,18 +41,17 @@ namespace BrackeysBot.Services
             _discord.MessageReceived += CheckMessageAsync;
             _discord.MessageUpdated += CheckEditedMessageAsync;
         }
-
+        
         public async Task CheckMessageAsync(SocketMessage s)
         {
             if (!(s is SocketUserMessage msg) || CanUseSpamWords(msg))
                 return;
 
-            string content = msg.Content;
             SpamFilterConfiguration spamConfiguration = _dataService.Configuration.SpamSettings ?? new SpamFilterConfiguration();
 
-            if (TriggersSpamWordThreshold(content, spamConfiguration))
+            if (TriggersSpamThreshold(msg, spamConfiguration))
             {
-                await TempMuteUser(s as SocketUserMessage, content, spamConfiguration.MuteDuration);
+                await TempMuteUser(s as SocketUserMessage, msg.Content, spamConfiguration.MuteDuration);
             }   
         }
 
@@ -58,14 +63,23 @@ namespace BrackeysBot.Services
             await CheckMessageAsync(s);
         }
 
-        private bool TriggersSpamWordThreshold(string msg, SpamFilterConfiguration spamConfiguration)
+        private bool TriggersSpamThreshold(SocketMessage msg, SpamFilterConfiguration spamConfiguration)
         {
             string[] spamWords = _dataService.Configuration.SpamWords;
+            string msgContent = msg.Content;
 
-            if (spamWords == null)
-                return false;
+            if (spamConfiguration.IncludeEmotes && emoteRegex.Matches(msgContent).Count >= spamConfiguration.EmotesThreshold)
+                return true;
 
-            return spamWords.Any(str => ContainsMultipleInARow(msg, str, spamConfiguration.ConsecutiveWordThreshold) || ContainsMultiple(msg, str, spamConfiguration.FullMessageWordThreshold));
+            if (spamConfiguration.IncludeMentions)
+            {
+                int mentionsCount = msg.MentionedUsers.Count + msg.MentionedChannels.Count + msg.MentionedRoles.Count;
+                if (mentionsCount >= spamConfiguration.MentionsThreshold)
+                    return true;
+            }
+            if (spamWords != null && spamWords.Any(str => ContainsMultipleInARow(msgContent, str, spamConfiguration.ConsecutiveWordThreshold) || ContainsMultiple(msgContent, str, spamConfiguration.FullMessageWordThreshold)))
+                return true;
+            return false;
         }
 
         private bool ContainsMultipleInARow(string msg, string searchTxt, int minAmount)
@@ -100,6 +114,7 @@ namespace BrackeysBot.Services
 
             string url = s.GetJumpUrl();
 
+            // ToDo: causes exception when no log entry channel is defined
             await _loggingService.CreateEntry(ModerationLogEntry.New
                     .WithActionType(ModerationActionType.TempMute)
                     .WithTarget(user)
