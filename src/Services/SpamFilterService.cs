@@ -102,8 +102,7 @@ namespace BrackeysBot.Services
                 // match, but we still need to divide it by the matchedSum against all emotes, so we have to use float to store the fraction
                 count += (float)Regex.Matches(msg, emoteInfo.ValueRegexEscaped).Count / emoteInfo.RegexMatchCount;
             }
-            // Round result to int:
-            return (int)(count + 0.5f);
+            return (int) (count + 0.01f);
         }
 
         private bool ContainsMultipleInARow(string msg, string searchTxt, int minAmount)
