@@ -6,11 +6,14 @@ using System.Text.RegularExpressions;
 using Discord;
 using Discord.WebSocket;
 using BrackeysBot.Commands;
+using System.Collections.Generic;
 
 namespace BrackeysBot.Services
 {
     public class SpamFilterService : BrackeysBotService, IInitializeableService
     {
+        private static readonly string[] discordDefaultEmoteValues = DiscordDefaultEmoteData.EmoteMap.Select(x => x.Value).ToArray();
+
         // Pattern of custom emotes is <:emote_name:emote_id> with the emote_id always having 18 digits (Twitter's snowflake for disord IDs)
         // Animated emotes start with an <a: instead
         // For emote names, discord seems to trim out all special characters for the real name, leaving just letters, numbers and underscore
@@ -36,6 +39,7 @@ namespace BrackeysBot.Services
             _provider = provider;
             _loggingService = loggingService;
         }
+
         public void Initialize()
         {
             _discord.MessageReceived += CheckMessageAsync;
@@ -68,8 +72,13 @@ namespace BrackeysBot.Services
             string[] spamWords = _dataService.Configuration.SpamWords;
             string msgContent = msg.Content;
 
-            if (spamConfiguration.IncludeEmotes && emoteRegex.Matches(msgContent).Count >= spamConfiguration.EmotesThreshold)
-                return true;
+            if (spamConfiguration.IncludeEmotes) {
+                int emoteCount = emoteRegex.Matches(msgContent).Count;
+                if (spamConfiguration.CheckForDefaultEmotes)
+                    emoteCount += GetTotalDefaultEmoteCount(msgContent);
+                if (emoteCount >= spamConfiguration.EmotesThreshold)
+                    return true;
+            }
 
             if (spamConfiguration.IncludeMentions)
             {
@@ -80,6 +89,32 @@ namespace BrackeysBot.Services
             if (spamWords != null && spamWords.Any(str => ContainsMultipleInARow(msgContent, str, spamConfiguration.ConsecutiveWordThreshold) || ContainsMultiple(msgContent, str, spamConfiguration.FullMessageWordThreshold)))
                 return true;
             return false;
+        }
+
+        private int GetTotalDefaultEmoteCount(string msg)
+        {
+            int count = 0;
+            foreach (string emoteCode in discordDefaultEmoteValues)
+            {
+                count += GetOccurencesInText(msg, emoteCode);
+            }
+            return count;
+        }
+
+        private int GetOccurencesInText(string msg, string searchTxt)
+        {
+            int searchTxtLen = searchTxt.Length;
+
+            int GetOccurencesInTextRec(int searchIndexStart, int occurencesFound)
+            {
+                int matchedIndex = msg.IndexOf(searchTxt, searchIndexStart);
+                if (matchedIndex >= 0)
+                    return GetOccurencesInTextRec(matchedIndex + searchTxtLen, occurencesFound + 1);
+                else
+                    return occurencesFound;
+            }
+
+            return GetOccurencesInTextRec(0, 0);
         }
 
         private bool ContainsMultipleInARow(string msg, string searchTxt, int minAmount)
@@ -109,12 +144,11 @@ namespace BrackeysBot.Services
             SetUserMuted(user.Id, true);
 
             TimeSpan muteDuration = new TimeSpan(0, 0, durationSeconds);
-            string reason = "User message triggered the spam filter";
-            _moderationService.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user, _discord.CurrentUser, muteDuration, reason);
+            string reason = "triggering the spam filter with a recent message";
+            _moderationService.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user, _discord.CurrentUser, muteDuration, reason, skipPersistentInfractionRecord: true);
 
             string url = s.GetJumpUrl();
 
-            // ToDo: causes exception when no log entry channel is defined
             await _loggingService.CreateEntry(ModerationLogEntry.New
                     .WithActionType(ModerationActionType.TempMute)
                     .WithTarget(user)
@@ -137,4 +171,6 @@ namespace BrackeysBot.Services
             msg.TimedDeletion(5000);
         }
     }
+
+    
 }

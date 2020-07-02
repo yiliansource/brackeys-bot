@@ -27,8 +27,12 @@ namespace BrackeysBot
         public int MentionsThreshold { get; set; } = 8;
 
         [YamlMember(Alias = "includeEmotes")]
-        [Description("Whether or not use of too many emotes of the same type is registered as spam.")]
+        [Description("Whether or not use of too many emotes of the same type is registered as spam. By default, only custom emotes will be checked")]
         public bool IncludeEmotes { get; set; }
+
+        [YamlMember(Alias = "checkForDefaultEmotes")]
+        [Description("If includeEmotes is active, will also consider Discord's default emotes in the check. Warning: enabling this option will be computationally expensive")]
+        public bool CheckForDefaultEmotes { get; set; }
 
         [YamlMember(Alias = "emotesThreshold")]
         [Description("How many emotes are required that a message is flagged as spam.")]
