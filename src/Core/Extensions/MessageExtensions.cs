@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 
 using Discord;
 using Discord.WebSocket;

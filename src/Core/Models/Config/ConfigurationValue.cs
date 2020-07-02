@@ -23,7 +23,7 @@ namespace BrackeysBot
             _property = property;
             _instance = instance;
 
-            Name = property.GetCustomAttribute<YamlMemberAttribute>()?.Alias ?? property.Name;
+            Name = property.GetCustomAttribute<ConfigCommandDisplayNameAttribute>()?.DisplayName ?? (property.GetCustomAttribute<YamlMemberAttribute>()?.Alias ?? property.Name);
             Description = property.GetCustomAttribute<DescriptionAttribute>()?.Description;
         }
 

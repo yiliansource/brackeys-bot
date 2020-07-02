@@ -88,6 +88,7 @@ namespace BrackeysBot
         [Description("A list of regex for words which should automatically be deleted.")]
         public string[] BlockedWords { get; set; }
 
+        [ConfigSubObject]
         [YamlMember(Alias = "spamSettings")]
         [Description("Settings for the the spam word filter.")]
         public SpamFilterConfiguration SpamSettings { get; set; }

@@ -17,22 +17,14 @@ namespace BrackeysBot
         public static void WriteEmoteValueSet(string filePath)
         {
             string[] emoteValuesRegexEscaped = DiscordDefaultEmoteData.EmoteMap.Select(x => Regex.Escape(x.Value)).ToArray();
-
-            int GetMatchCountAgainstAllEntries(string msg)
-            {
-                int count = 0;
-                foreach (string entry in emoteValuesRegexEscaped)
-                {
-                    count += Regex.Matches(msg, entry).Count;
-                }
-                return count;
-            }
             // Double curly brackets to escape { as a special character
             string lineTemplate = "    {{ \"{0}\", new " + nameof(EmoteValueSet) + "(\"{1}\", {2}) }},";
             List<string> lines = new List<string>();
             foreach (var keyVal in DiscordDefaultEmoteData.EmoteMap)
             {
-                lines.Add(string.Format(lineTemplate, keyVal.Key, keyVal.Value, GetMatchCountAgainstAllEntries(keyVal.Value)));
+                string emoteTextRepresentation = keyVal.Value;
+                int sumOfMatchedRegexEntries = emoteValuesRegexEscaped.Aggregate(0, (count, emoteTextRegexEscaped) => count + Regex.Matches(emoteTextRepresentation, emoteTextRegexEscaped).Count);
+                lines.Add(string.Format(lineTemplate, keyVal.Key, emoteTextRepresentation, sumOfMatchedRegexEntries));
             }
 
             StringBuilder sb = new StringBuilder();
