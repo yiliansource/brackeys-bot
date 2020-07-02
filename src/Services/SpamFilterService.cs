@@ -13,6 +13,7 @@ namespace BrackeysBot.Services
     public class SpamFilterService : BrackeysBotService, IInitializeableService
     {
         private static readonly string[] discordDefaultEmoteValues = DiscordDefaultEmoteData.EmoteMap.Select(x => x.Value).ToArray();
+        private static readonly string[] discordDefaultEmoteValuesRegexExaped = discordDefaultEmoteValues.Select(x => $"{Regex.Escape(x)}").ToArray();
 
         // Pattern of custom emotes is <:emote_name:emote_id> with the emote_id always having 18 digits (Twitter's snowflake for disord IDs)
         // Animated emotes start with an <a: instead
@@ -91,30 +92,16 @@ namespace BrackeysBot.Services
             return false;
         }
 
+        // TODO: A single common emote can still result in multiple positives, assumingly because they might be a subset of other emotes
+        // This results in messages sometimes getting flagged as spam even if they are below the allowed emote number threshold
         private int GetTotalDefaultEmoteCount(string msg)
         {
             int count = 0;
-            foreach (string emoteCode in discordDefaultEmoteValues)
+            foreach (string emoteCode in discordDefaultEmoteValuesRegexExaped)
             {
-                count += GetOccurencesInText(msg, emoteCode);
+                count += Regex.Matches(msg, emoteCode).Count;
             }
             return count;
-        }
-
-        private int GetOccurencesInText(string msg, string searchTxt)
-        {
-            int searchTxtLen = searchTxt.Length;
-
-            int GetOccurencesInTextRec(int searchIndexStart, int occurencesFound)
-            {
-                int matchedIndex = msg.IndexOf(searchTxt, searchIndexStart);
-                if (matchedIndex >= 0)
-                    return GetOccurencesInTextRec(matchedIndex + searchTxtLen, occurencesFound + 1);
-                else
-                    return occurencesFound;
-            }
-
-            return GetOccurencesInTextRec(0, 0);
         }
 
         private bool ContainsMultipleInARow(string msg, string searchTxt, int minAmount)
