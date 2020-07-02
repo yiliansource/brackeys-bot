@@ -12,8 +12,8 @@ namespace BrackeysBot.Services
 {
     public class SpamFilterService : BrackeysBotService, IInitializeableService
     {
-        private static readonly string[] discordDefaultEmoteValues = DiscordDefaultEmoteData.EmoteMap.Select(x => x.Value).ToArray();
-        private static readonly string[] discordDefaultEmoteValuesRegexExaped = discordDefaultEmoteValues.Select(x => $"{Regex.Escape(x)}").ToArray();
+        private static readonly EmoteValueSet[] defaultEmoteMatches;
+        private static readonly string[] defaultEmoteValuesRegexEscaped;
 
         // Pattern of custom emotes is <:emote_name:emote_id> with the emote_id always having 18 digits (Twitter's snowflake for disord IDs)
         // Animated emotes start with an <a: instead
@@ -39,6 +39,26 @@ namespace BrackeysBot.Services
             _moderationService = moderationService;
             _provider = provider;
             _loggingService = loggingService;
+        }
+
+        static SpamFilterService()
+        {
+            // Set up the default emote data as needed: 
+            // for the escaped regex string, it is necessary to use the non-unicode presentation of the emote value 
+            // For example: "\ud83d\ude06" instead of "😆"
+            // otherwise the logic to counteract the multiple matches won't work + some default emotes would not be detected as such
+            // (if the unicode representation is used as regex search pattern)
+
+            int emoteCount = DiscordDefaultEmoteData.EmoteMap.Count;
+            defaultEmoteMatches = new EmoteValueSet[emoteCount];
+            defaultEmoteValuesRegexEscaped = new string[emoteCount];
+            int i = 0;
+            foreach(var emoteNameVal in DiscordDefaultEmoteData.EmoteMap)
+            {
+                defaultEmoteValuesRegexEscaped[i] = $"{Regex.Escape(emoteNameVal.Value)}";
+                defaultEmoteMatches[i] = DiscordDefaultEmoteData.EmoteMatchMap[emoteNameVal.Key];
+                i++;
+            }
         }
 
         public void Initialize()
@@ -92,16 +112,20 @@ namespace BrackeysBot.Services
             return false;
         }
 
-        // TODO: A single common emote can still result in multiple positives, assumingly because they might be a subset of other emotes
-        // This results in messages sometimes getting flagged as spam even if they are below the allowed emote number threshold
+        // A single common emote could previously result in multiple positives, assumingly because they might be a subset of other emotes
+        // To fix this, the number of false matches that a single emote yields is taken into account and used it as divisor to get the "real" match count
         private int GetTotalDefaultEmoteCount(string msg)
         {
-            int count = 0;
-            foreach (string emoteCode in discordDefaultEmoteValuesRegexExaped)
+            float count = 0f;
+            for (int i = 0; i < defaultEmoteMatches.Length; i++)
             {
-                count += Regex.Matches(msg, emoteCode).Count;
+                EmoteValueSet emoteInfo = defaultEmoteMatches[i];
+                // each match against emoteInfo.ValueRegexEscaped for a single emote only counts as one 
+                // match, but we still need to divide it by the matchedSum against all emotes, so we have to use float to store the fraction
+                count += (float) Regex.Matches(msg, emoteInfo.ValueRegexEscaped).Count / emoteInfo.RegexMatchCount;
             }
-            return count;
+            // Round result to int:
+            return (int)(count + 0.5f);
         }
 
         private bool ContainsMultipleInARow(string msg, string searchTxt, int minAmount)
@@ -158,6 +182,4 @@ namespace BrackeysBot.Services
             msg.TimedDeletion(5000);
         }
     }
-
-    
 }
