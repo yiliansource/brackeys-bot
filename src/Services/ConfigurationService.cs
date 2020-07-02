@@ -53,7 +53,8 @@ namespace BrackeysBot.Services
                     object subConfig = p.GetValue(_config);
                     if (subConfig == null)
                         return new ConfigurationValue[0];
-                    return GetConfigProperties(subConfig.GetType()).Select(pSubConfig => new ConfigurationValue(pSubConfig, subConfig));
+                    string subPropertyNamePrefix = $"{ConfigurationValue.GetName(p)}.";
+                    return GetConfigProperties(subConfig.GetType()).Select(pSubConfig => new ConfigurationValue(pSubConfig, subConfig, subPropertyNamePrefix));
                 });
 
         public void Save()

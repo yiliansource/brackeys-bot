@@ -27,6 +27,20 @@ namespace BrackeysBot
             Description = property.GetCustomAttribute<DescriptionAttribute>()?.Description;
         }
 
+        public ConfigurationValue(PropertyInfo property, object instance, string namePrefix)
+        {
+            _property = property;
+            _instance = instance;
+
+            Name = $"{namePrefix}{GetName(property)}";
+            Description = property.GetCustomAttribute<DescriptionAttribute>()?.Description;
+        }
+
+        public static string GetName(PropertyInfo property)
+        {
+            return property.GetCustomAttribute<ConfigCommandDisplayNameAttribute>()?.DisplayName ?? (property.GetCustomAttribute<YamlMemberAttribute>()?.Alias ?? property.Name);
+        }
+
         public object GetValue()
             => _property.GetValue(_instance);
         public bool SetValue(object value)
