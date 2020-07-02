@@ -12,8 +12,7 @@ namespace BrackeysBot.Services
 {
     public class SpamFilterService : BrackeysBotService, IInitializeableService
     {
-        private static readonly EmoteValueSet[] defaultEmoteMatches;
-        private static readonly string[] defaultEmoteValuesRegexEscaped;
+        private static readonly EmoteValueSet[] defaultEmoteMatches = DiscordDefaultEmoteData.EmoteMatchMap.Select(x => x.Value).ToArray();
 
         // Pattern of custom emotes is <:emote_name:emote_id> with the emote_id always having 18 digits (Twitter's snowflake for disord IDs)
         // Animated emotes start with an <a: instead
@@ -39,26 +38,6 @@ namespace BrackeysBot.Services
             _moderationService = moderationService;
             _provider = provider;
             _loggingService = loggingService;
-        }
-
-        static SpamFilterService()
-        {
-            // Set up the default emote data as needed: 
-            // for the escaped regex string, it is necessary to use the non-unicode presentation of the emote value 
-            // For example: "\ud83d\ude06" instead of "😆"
-            // otherwise the logic to counteract the multiple matches won't work + some default emotes would not be detected as such
-            // (if the unicode representation is used as regex search pattern)
-
-            int emoteCount = DiscordDefaultEmoteData.EmoteMap.Count;
-            defaultEmoteMatches = new EmoteValueSet[emoteCount];
-            defaultEmoteValuesRegexEscaped = new string[emoteCount];
-            int i = 0;
-            foreach(var emoteNameVal in DiscordDefaultEmoteData.EmoteMap)
-            {
-                defaultEmoteValuesRegexEscaped[i] = $"{Regex.Escape(emoteNameVal.Value)}";
-                defaultEmoteMatches[i] = DiscordDefaultEmoteData.EmoteMatchMap[emoteNameVal.Key];
-                i++;
-            }
         }
 
         public void Initialize()
@@ -117,12 +96,11 @@ namespace BrackeysBot.Services
         private int GetTotalDefaultEmoteCount(string msg)
         {
             float count = 0f;
-            for (int i = 0; i < defaultEmoteMatches.Length; i++)
+            foreach (EmoteValueSet emoteInfo in defaultEmoteMatches)
             {
-                EmoteValueSet emoteInfo = defaultEmoteMatches[i];
                 // each match against emoteInfo.ValueRegexEscaped for a single emote only counts as one 
                 // match, but we still need to divide it by the matchedSum against all emotes, so we have to use float to store the fraction
-                count += (float) Regex.Matches(msg, emoteInfo.ValueRegexEscaped).Count / emoteInfo.RegexMatchCount;
+                count += (float)Regex.Matches(msg, emoteInfo.ValueRegexEscaped).Count / emoteInfo.RegexMatchCount;
             }
             // Round result to int:
             return (int)(count + 0.5f);
