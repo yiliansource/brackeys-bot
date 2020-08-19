@@ -53,6 +53,7 @@ namespace BrackeysBot.Commands
                 throw new InvalidOperationException($"A command with the name `{command}` does not exist.");
 
             CustomCommands.RemoveFeatureFromCommand(customCommand, feature);
+            CustomCommands.SaveCustomCommands();
 
             await GetDefaultBuilder()
                 .WithDescription($"The feature `{feature}` has been removed from `{command}`.")

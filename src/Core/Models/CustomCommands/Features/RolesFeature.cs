@@ -13,6 +13,7 @@ namespace BrackeysBot.Core.Models
     [Summary("Adds or removes a role from a user.")]
     public class RolesFeature : CustomCommandFeature
     {
+        public bool Reply { get; set; }
         public string[] Operations { get; set; }
 
         public override void FillArguments(string arguments)
@@ -21,7 +22,13 @@ namespace BrackeysBot.Core.Models
                 .Select(operation => operation.Trim())
                 .ToArray();
 
-            if (Operations.Any(o => !o.StartsWith("+") && !o.StartsWith("-")))
+            if (Operations.Length > 0 && bool.TryParse(Operations[0].ToLower(), out bool reply))
+            {
+                Reply = reply;
+                Operations = Operations.Skip(1).ToArray();
+            }
+
+            if (Operations.Any(o => !o.StartsWith("+") && !o.StartsWith("-") && !o.StartsWith("~")))
                 throw new ArgumentException("Invalid role operations.");
         }
         public override async Task Execute(ICommandContext context)
@@ -31,56 +38,71 @@ namespace BrackeysBot.Core.Models
 
             IGuildUser user = context.User as IGuildUser;
 
-            List<string> successAdd = new List<string>();
-            foreach (IRole role in GetRolesToAdd().Select(r => GetRole(r, context)))
+            var addChanges = new List<IRole>();
+            foreach (IRole role in ConvertToRoles(GetRolesToAdd(), context))
             {
-                if (role == null)
-                    continue;
-
                 if (!user.RoleIds.Contains(role.Id))
                 {
+                    addChanges.Add(role);
                     await user.AddRoleAsync(role);
-                    successAdd.Add(role.Name);
                 }
             }
 
-            List<string> successRemove = new List<string>();
-            foreach (IRole role in GetRolesToRemove().Select(r => GetRole(r, context)))
+            var removeChanges = new List<IRole>();
+            foreach (IRole role in ConvertToRoles(GetRolesToRemove(), context))
             {
-                if (role == null)
-                    continue;
-
                 if (user.RoleIds.Contains(role.Id))
                 {
+                    removeChanges.Add(role);
                     await user.RemoveRoleAsync(role);
-                    successRemove.Add(role.Name);
                 }
             }
 
-            StringBuilder reply = new StringBuilder();
-            if (successAdd.Count > 0)
+            foreach (IRole role in ConvertToRoles(GetRolesToToggle(), context))
             {
-                reply.Append("You now have the roles: ")
-                    .AppendJoin(", ", successAdd)
-                    .AppendLine();
-            }
-            if (successRemove.Count > 0)
-            {
-                reply.Append("You no longer have the roles: ")
-                    .AppendJoin(", ", successRemove);
+                if (user.RoleIds.Contains(role.Id))
+                {
+                    removeChanges.Add(role);
+                    await user.RemoveRoleAsync(role);
+                }
+                else
+                {
+                    addChanges.Add(role);
+                    await user.AddRoleAsync(role);
+                }
             }
 
-            await new EmbedBuilder()
-                .WithColor(reply.Length > 0 ? Color.Green : Color.Red)
-                .WithDescription(reply.ToString().WithAlternative("No roles have been added or removed!"))
-                .Build()
-                .SendToChannel(context.Channel);
+            if (Reply)
+            {
+                StringBuilder replyMessageContent = new StringBuilder();
+                if (addChanges.Count > 0)
+                {
+                    replyMessageContent.Append("You now have the role(s): ")
+                        .AppendJoin(", ", addChanges.Select(r => r.Mention));
+                }
+                if (removeChanges.Count > 0)
+                {
+                    replyMessageContent.Append("You no longer have the role(s): ")
+                        .AppendJoin(", ", removeChanges.Select(r => r.Mention));
+                }
+
+                await new EmbedBuilder()
+                    .WithColor(replyMessageContent.Length > 0 ? Color.Green : Color.Red)
+                    .WithDescription(replyMessageContent.ToString().WithAlternative("No roles have been added or removed."))
+                    .Build()
+                    .SendToChannel(context.Channel);
+            }
         }
 
         private IEnumerable<string> GetRolesToAdd()
-            => Operations.Where(o => o.StartsWith("+")).Select(o => o.Substring(1));
+            => Operations.Where(o => o.StartsWith("+")).Select(o => o[1..]);
         private IEnumerable<string> GetRolesToRemove()
-            => Operations.Where(o => o.StartsWith("-")).Select(o => o.Substring(1));
+            => Operations.Where(o => o.StartsWith("-")).Select(o => o[1..]);
+        private IEnumerable<string> GetRolesToToggle()
+            => Operations.Where(o => o.StartsWith("~")).Select(o => o[1..]);
+
+        private IEnumerable<IRole> ConvertToRoles(IEnumerable<string> names, ICommandContext context)
+            => names.Select(r => GetRole(r, context)).Where(r => r != null);
 
         private IRole GetRole(string name, ICommandContext context)
             => context.Guild.Roles.FirstOrDefault(r => r.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
@@ -101,7 +123,21 @@ namespace BrackeysBot.Core.Models
             if (remove.Count() > 0)
             {
                 builder.Append("Removes roles: ")
-                    .AppendJoin(", ", remove);
+                    .AppendJoin(", ", remove)
+                    .AppendLine();
+            }
+
+            var toggle = GetRolesToToggle();
+            if (toggle.Count() > 0)
+            {
+                builder.Append("Toggles roles: ")
+                    .AppendJoin(", ", toggle)
+                    .AppendLine();
+            }
+
+            if (Reply)
+            {
+                builder.AppendLine("Also replies with the changes applied.");
             }
 
             return builder.ToString();

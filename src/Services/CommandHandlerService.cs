@@ -92,6 +92,14 @@ namespace BrackeysBot.Services
                         .Build()
                         .SendToChannel(context.Channel);
                 }
+                else if (result.Error == CommandError.ParseFailed)
+                {
+                    await new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription("Invalid command arguments.")
+                        .Build()
+                        .SendToChannel(context.Channel);
+                }
                 else if (result is ExecuteResult executeResult)
                 {
                     await new EmbedBuilder()
