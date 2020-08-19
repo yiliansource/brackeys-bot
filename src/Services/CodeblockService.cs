@@ -66,7 +66,12 @@ namespace BrackeysBot.Services
             if (allowedChannels != null && allowedChannels.Contains(msg.Channel.Id))
                 return;
 
-            if (msg.Content.Length > _data.Configuration.CodeblockThreshold && HasCodeblockFormat(msg.Content))
+            int msgWrappedLineCount = msg.Content
+                .Split(new[] {'\n', '\r'})
+                .Select(l => (int)Math.Ceiling(l.Length / 47f)) // This could be turned into parameter, currently it's amount of characters that fit on mobile with 100% scale
+                .Sum();
+
+            if (msgWrappedLineCount > _data.Configuration.CodeblockThreshold && HasCodeblockFormat(msg.Content))
             {
                 string url = await PasteMessage(msg);
                 await new EmbedBuilder()
