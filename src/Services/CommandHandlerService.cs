@@ -19,6 +19,9 @@ namespace BrackeysBot.Services
         private readonly IServiceProvider _provider;
         private readonly LoggingService _log;
 
+        // Characters which need escaping
+        private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
+
         public CommandHandlerService(
             DiscordSocketClient discord,
             CommandService commands,
@@ -68,7 +71,7 @@ namespace BrackeysBot.Services
                     {
                         await new EmbedBuilder()
                             .WithColor(Color.Red)
-                            .WithDescription($"Command {customCommandName} does not exist!")
+                            .WithDescription($"Command {SanitizeMarkdown(customCommandName)} does not exist!")
                             .Build()
                             .SendToChannel(context.Channel);
                     }
@@ -86,6 +89,14 @@ namespace BrackeysBot.Services
                     await new EmbedBuilder()
                         .WithColor(Color.Red)
                         .WithDescription(result.ErrorReason)
+                        .Build()
+                        .SendToChannel(context.Channel);
+                }
+                else if (result.Error == CommandError.ParseFailed)
+                {
+                    await new EmbedBuilder()
+                        .WithColor(Color.Red)
+                        .WithDescription("Invalid command arguments.")
                         .Build()
                         .SendToChannel(context.Channel);
                 }
@@ -123,15 +134,28 @@ namespace BrackeysBot.Services
         private async Task HandleCommandAsync(SocketMessage s)
         {
             if (!(s is SocketUserMessage msg)) return;
+            if (!(s.Channel is IGuildChannel))
+            {
+                if (!s.Author.IsBot)
+                {
+                    await s.Channel.SendMessageAsync("I'm not available in DMs. Please use the Brackeys Discord Server to communicate with me!");
+                }
+            }
 
             int argPos = 0;
-            if (!(msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos) ||
-                msg.HasMentionPrefix(_discord.CurrentUser, ref argPos)) ||
+            if (!msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos) ||
                 msg.Author.IsBot)
                 return;
 
             var context = new BrackeysBotContext(msg, _provider);
             await _commands.ExecuteAsync(context, argPos, _provider);
+        }
+
+        private static string SanitizeMarkdown(string text)
+        {
+            foreach (string unsafeChar in SensitiveCharacters)
+                text = text.Replace(unsafeChar, $"\\{unsafeChar}");
+            return text;
         }
     }
 }

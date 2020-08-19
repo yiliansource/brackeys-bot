@@ -35,8 +35,9 @@ namespace BrackeysBot.Services
 
         public async Task CheckMessageAsync(SocketMessage s) 
         {
-            if (!(s is SocketUserMessage msg) || CanUseFilteredWords(msg))
-                return;
+            if (!(s is SocketUserMessage msg)) return;
+            if (!(s.Channel is IGuildChannel)) return;
+            if (CanUseFilteredWords(msg)) return;
 
             string content = msg.Content;
             

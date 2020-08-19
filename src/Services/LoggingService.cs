@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord;
@@ -42,7 +43,10 @@ namespace BrackeysBot.Services
                 File.Create(LogFile).Dispose();
 
             // Write the log text to a file
-            string logText = $"{DateTime.UtcNow.ToString("hh:mm:ss")} [{msg.Severity}] {msg.Source}: {msg.Exception?.ToString() ?? msg.Message}";
+            string date = DateTime.UtcNow.ToString("hh:mm:ss tt");
+            string severity = "[" + msg.Severity + "]";
+
+            string logText = $"{date} {severity, 9} {msg.Source}: {msg.Exception?.ToString() ?? msg.Message}";
             lock (_lockLogFile)
             {
                 File.AppendAllText(LogFile, logText + "\n");
