@@ -134,10 +134,16 @@ namespace BrackeysBot.Services
         private async Task HandleCommandAsync(SocketMessage s)
         {
             if (!(s is SocketUserMessage msg)) return;
+            if (!(s.Channel is IGuildChannel))
+            {
+                if (!s.Author.IsBot)
+                {
+                    await s.Channel.SendMessageAsync("I'm not available in DMs. Please use the Brackeys Discord Server to communicate with me!");
+                }
+            }
 
             int argPos = 0;
-            if (!(msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos) ||
-                msg.HasMentionPrefix(_discord.CurrentUser, ref argPos)) ||
+            if (!msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos) ||
                 msg.Author.IsBot)
                 return;
 
