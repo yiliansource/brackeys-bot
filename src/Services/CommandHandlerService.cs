@@ -19,6 +19,9 @@ namespace BrackeysBot.Services
         private readonly IServiceProvider _provider;
         private readonly LoggingService _log;
 
+        // Characters which need escaping
+        private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
+
         public CommandHandlerService(
             DiscordSocketClient discord,
             CommandService commands,
@@ -68,7 +71,7 @@ namespace BrackeysBot.Services
                     {
                         await new EmbedBuilder()
                             .WithColor(Color.Red)
-                            .WithDescription($"Command {customCommandName} does not exist!")
+                            .WithDescription($"Command {SanitizeMarkdown(customCommandName)} does not exist!")
                             .Build()
                             .SendToChannel(context.Channel);
                     }
@@ -132,6 +135,13 @@ namespace BrackeysBot.Services
 
             var context = new BrackeysBotContext(msg, _provider);
             await _commands.ExecuteAsync(context, argPos, _provider);
+        }
+
+        private static string SanitizeMarkdown(string text)
+        {
+            foreach (string unsafeChar in SensitiveCharacters)
+                text = text.Replace(unsafeChar, $"\\{unsafeChar}");
+            return text;
         }
     }
 }
