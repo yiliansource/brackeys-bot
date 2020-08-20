@@ -27,12 +27,16 @@ namespace BrackeysBot.Services
             return value != null;
         }
         public IEnumerable<ConfigurationValue> GetConfigurationValues()
+         => GetMainConfigurationValues().Concat(GetSubConfigurationValues());
+
+        private IEnumerable<ConfigurationValue> GetMainConfigurationValues()
             => GetConfigProperties().Select(p => new ConfigurationValue(p, _config));
-        public void Save()
-            => _data.SaveConfiguration();
 
         private IEnumerable<PropertyInfo> GetConfigProperties()
-            => typeof(BotConfiguration).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.SetProperty)
+            => GetConfigProperties(typeof(BotConfiguration));
+
+        private IEnumerable<PropertyInfo> GetConfigProperties(Type type)
+        => type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.SetProperty)
                 .Where(p =>
                 {
                     bool isValidType = _exposedPropertyTypes.Contains(p.PropertyType)
@@ -41,5 +45,23 @@ namespace BrackeysBot.Services
 
                     return isValidType && !confidential;
                 });
+
+        private IEnumerable<ConfigurationValue> GetSubConfigurationValues() 
+            => typeof(BotConfiguration).GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty | BindingFlags.SetProperty)
+                .Where(p => p.GetCustomAttribute<ConfigSubObjectAttribute>() != null)
+                .SelectMany(p => {
+                    object subConfig = p.GetValue(_config);
+                    if (subConfig == null)
+                        return new ConfigurationValue[0];
+                    string subPropertyNamePrefix = $"{ConfigurationValue.GetName(p)}.";
+                    return GetConfigProperties(subConfig.GetType()).Select(pSubConfig => new ConfigurationValue(pSubConfig, subConfig, subPropertyNamePrefix));
+                });
+
+        public void Save()
+            => _data.SaveConfiguration();
+
+        
+
+        
     }
 }

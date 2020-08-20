@@ -29,12 +29,12 @@ namespace BrackeysBot.Services
             SendInfractionMessageToUser(user, infraction);
         }
 
-        public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "")
+        public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "", bool skipPersistentInfractionRecord = false)
         {
-            Infraction infraction = AddTemporaryInfraction(type, user.Id, moderator, duration, reason);
+            Infraction infraction = AddTemporaryInfraction(type, user.Id, moderator, duration, reason, skipPersistentInfractionRecord);
             SendInfractionMessageToUser(user, infraction);
         }
-        public Infraction AddTemporaryInfraction(TemporaryInfractionType type, ulong userId, IUser moderator, TimeSpan duration, string reason = "")
+        public Infraction AddTemporaryInfraction(TemporaryInfractionType type, ulong userId, IUser moderator, TimeSpan duration, string reason = "", bool skipPersistentInfractionRecord = false)
         {
             var userData = _data.UserData.GetOrCreate(userId);
 
@@ -48,7 +48,8 @@ namespace BrackeysBot.Services
                 .WithDescription(reason)
                 .WithAdditionalInfo($"Duration: {duration.Humanize(7)}");
 
-            userData.Infractions.Add(infraction);
+            if (!skipPersistentInfractionRecord)
+                userData.Infractions.Add(infraction);
 
             _data.SaveUserData();
 
