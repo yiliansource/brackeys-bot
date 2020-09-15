@@ -34,6 +34,11 @@ namespace BrackeysBot
         [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
         public ulong ModeratorRoleID { get; set; }
 
+        [YamlMember(Alias = "helperRoleId")]
+        [Description("The ID of the role that identifies helpers.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
+        public ulong HelperRoleID { get; set; }
+
         [YamlMember(Alias = "mutedRoleId")]
         [Description("The ID of the role that mutes someone.")]
         [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
@@ -113,6 +118,20 @@ namespace BrackeysBot
         [Description("The minimum time between being able to endorse the same user again, in milliseconds")]
         public int EndorseTimeoutMillis { get; set; }
 
+        [YamlMember(Alias = "helperMuteMaxDuration")]
+        [Description("The maximum amount of time a helper may mute a person")]
+        public int HelperMuteMaxDuration { get; set; }
 
+        [YamlMember(Alias = "muteUserIfUsingFilteredWord")]
+        [Description("Whether or not to mute people using the filtered word")]
+        public bool MuteUserIfUsingFilteredWord { get; set; }
+
+        [YamlMember(Alias = "filteredWordMuteDuration")]
+        [Description("The Duration to mute a person for when using a filtered word")]
+        public int FilteredWordMuteDuration { get; set; }
+
+        [YamlMember(Alias = "amaChannel")]
+        [Description("The channel to extract ama questions from")]
+        public ulong AmaChannel { get; set; }
     }
 }

@@ -35,7 +35,7 @@ namespace BrackeysBot.Commands
         [Command("clear")]
         [Summary("Attempt to delete the specified amount of messages by user from the channel.")]
         [Remarks("clear <user> <count> [history = 100]")]
-        [RequireModerator]
+        [RequireHelper]
         [RequireContext(ContextType.Guild)]
         public async Task ClearMessagesAsync(
             [Summary("The user to clear messages of")] SocketGuildUser user,

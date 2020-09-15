@@ -11,7 +11,7 @@ namespace BrackeysBot.Commands
         [Command("warn")]
         [Summary("Warns a user with a specified reason.")]
         [Remarks("warn <user> <reason>")]
-        [RequireModerator]
+        [RequireHelper]
         public async Task WarnUserAsync(
             [Summary("The user to warn.")] SocketGuildUser user,
             [Summary("The reason to warn the user."), Remainder] string reason)
