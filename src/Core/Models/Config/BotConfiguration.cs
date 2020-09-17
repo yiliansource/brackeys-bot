@@ -74,6 +74,11 @@ namespace BrackeysBot
         [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
         public ulong[] AllowedCodeblockChannelIDs { get; set; }
 
+        [YamlMember(Alias = "amaChannelId")]
+        [Description("The channel to extract ama questions from")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
+        public ulong AmaChannelID { get; set; }
+
         #endregion
 
         [YamlMember(Alias = "moduleConfigs")]
@@ -129,9 +134,5 @@ namespace BrackeysBot
         [YamlMember(Alias = "filteredWordMuteDuration")]
         [Description("The Duration to mute a person for when using a filtered word")]
         public int FilteredWordMuteDuration { get; set; }
-
-        [YamlMember(Alias = "amaChannel")]
-        [Description("The channel to extract ama questions from")]
-        public ulong AmaChannel { get; set; }
     }
 }
