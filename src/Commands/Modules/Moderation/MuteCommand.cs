@@ -13,7 +13,7 @@ namespace BrackeysBot.Commands
         [Summary("Mutes a member, with an optional reason and duration.")]
         [Remarks("mute <user> [duration] [reason]")]
         [Priority(1)]
-        [RequireModerator]
+        [RequireHelper]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task MuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
@@ -52,13 +52,21 @@ namespace BrackeysBot.Commands
         [Remarks("tempmute <user> <duration> [reason]")]
         [Priority(1)]
         [HideFromHelp]
-        [RequireModerator]
+        [RequireHelper]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task TempmuteAsync(
             [Summary("The user to mute.")] SocketGuildUser user,
             [Summary("The duration for the mute."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
             [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
         {
+            bool unlimitedTime = (Context.User as IGuildUser).GetPermissionLevel(Data.Configuration) >= PermissionLevel.Moderator;
+            double givenDuration = duration.TotalMilliseconds;
+            int maxHelperMuteDuration = Data.Configuration.HelperMuteMaxDuration;
+
+            if (!unlimitedTime && givenDuration > maxHelperMuteDuration) {
+                duration = TimeSpan.FromMilliseconds(maxHelperMuteDuration);
+            }
+
             await user.MuteAsync(Context);
 
             SetUserMuted(user.Id, true);
@@ -76,7 +84,7 @@ namespace BrackeysBot.Commands
         [Command("unmute")]
         [Summary("Unmutes a user.")]
         [Remarks("unmute <user>")]
-        [RequireModerator]
+        [RequireHelper]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task UnmuteAsync(
             [Summary("The user to unmute.")] SocketGuildUser user)

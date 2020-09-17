@@ -4,6 +4,7 @@
     {
         Default,
         Guru,
+        Helper,
         Moderator,
         Administrator
     }

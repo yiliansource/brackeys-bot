@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Text;
 
 using Discord;
 
 using Humanizer;
-using BrackeysBot.Core.Models;
 
 namespace BrackeysBot.Services
 {
@@ -29,12 +26,12 @@ namespace BrackeysBot.Services
             SendInfractionMessageToUser(user, infraction);
         }
 
-        public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "")
+        public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "", string additionalInfo = "")
         {
-            Infraction infraction = AddTemporaryInfraction(type, user.Id, moderator, duration, reason);
-            SendInfractionMessageToUser(user, infraction);
+            Infraction infraction = AddTemporaryInfraction(type, user.Id, moderator, duration, reason, additionalInfo);
+            SendTemporaryInfractionMessageToUser(user, infraction, duration);
         }
-        public Infraction AddTemporaryInfraction(TemporaryInfractionType type, ulong userId, IUser moderator, TimeSpan duration, string reason = "")
+        public Infraction AddTemporaryInfraction(TemporaryInfractionType type, ulong userId, IUser moderator, TimeSpan duration, string reason = "", string additionalInfo = "")
         {
             var userData = _data.UserData.GetOrCreate(userId);
 
@@ -46,7 +43,7 @@ namespace BrackeysBot.Services
                 .WithType(type.AsInfractionType())
                 .WithModerator(moderator)
                 .WithDescription(reason)
-                .WithAdditionalInfo($"Duration: {duration.Humanize(7)}");
+                .WithAdditionalInfo(additionalInfo + "\n" + $"Duration: {duration.Humanize(7)}");
 
             userData.Infractions.Add(infraction);
 
@@ -117,22 +114,29 @@ namespace BrackeysBot.Services
 
             await user.TrySendMessageAsync(message);
         }
+        private async void SendTemporaryInfractionMessageToUser(IUser user, Infraction infraction, TimeSpan duration)
+        {
+            // Only send temporary infraction messages
+            if (infraction.Type != InfractionType.TemporaryBan && infraction.Type != InfractionType.TemporaryMute)
+                return;
+
+            UserData userData = _data.UserData.GetUser(user.Id);
+            int infractionCount = userData.Infractions.Count;
+            string message = $"Hey there! You were **{GetInfractionTypeString(infraction.Type)}** for **{duration.Humanize(7)}** for **{infraction.Description}**! You currently have **{infractionCount}** infraction(s). Be careful; accumulating infractions may result in restricted access or even (permanent) removal from the server!";
+
+            await user.TrySendMessageAsync(message);
+        }
 
         private string GetInfractionTypeString(InfractionType type) 
         {
-            switch (type) 
+            return type switch
             {
-                case InfractionType.Kick:
-                    return "Kicked";
-                case InfractionType.Mute:
-                    return "Muted";
-                case InfractionType.Warning:
-                    return "Warned";
-                case InfractionType.TemporaryMute:
-                    return "Temporarily Muted";
-                default:
-                    return "Given an Infraction";  
-            }
+                InfractionType.Kick => "kicked",
+                InfractionType.Mute => "muted",
+                InfractionType.Warning => "warned",
+                InfractionType.TemporaryMute => "temporarily muted",
+                _ => "given an infraction",
+            };
         }
     }
 }

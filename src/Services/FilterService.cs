@@ -80,12 +80,25 @@ namespace BrackeysBot.Services
             //  are at least certain the message got deleted.
             await s.DeleteAsync();
 
-            _moderationService.AddInfraction(target, 
-                    Infraction.Create(_moderationService.RequestInfractionID())
-                    .WithType(InfractionType.Warning)
-                    .WithModerator(_discord.CurrentUser)
-                    .WithAdditionalInfo($"[Go near message]({url})\n**{message}**")
-                    .WithDescription("Used filtered word"));
+            if (_dataService.Configuration.MuteUserIfUsingFilteredWord) {
+                IRole mutedRole = _discord.GetGuild(_dataService.Configuration.GuildID).GetRole(_dataService.Configuration.MutedRoleID);
+                await target.AddRoleAsync(mutedRole);
+
+                _dataService.UserData.GetOrCreate(target.Id).Muted = true;
+                _dataService.SaveUserData();
+
+                TimeSpan muteDuration = TimeSpan.FromMilliseconds(_dataService.Configuration.FilteredWordMuteDuration);
+                _moderationService.AddTemporaryInfraction(TemporaryInfractionType.TempMute, 
+                        target, _discord.CurrentUser, muteDuration, 
+                        "Used filtered word", $"[Go near message]({url})\n**{message}**");
+            } else {
+                _moderationService.AddInfraction(target, 
+                        Infraction.Create(_moderationService.RequestInfractionID())
+                        .WithType(InfractionType.Warning)
+                        .WithModerator(_discord.CurrentUser)
+                        .WithAdditionalInfo($"[Go near message]({url})\n**{message}**")
+                        .WithDescription("Used filtered word"));
+            }
 
             await _loggingService.CreateEntry(ModerationLogEntry.New
                     .WithActionType(ModerationActionType.Filtered)

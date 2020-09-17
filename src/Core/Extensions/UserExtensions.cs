@@ -35,6 +35,8 @@ namespace BrackeysBot
                 return PermissionLevel.Administrator;
             if (user.RoleIds.Contains(config.ModeratorRoleID))
                 return PermissionLevel.Moderator;
+            if (user.RoleIds.Contains(config.HelperRoleID))
+                return PermissionLevel.Helper;
             if (user.RoleIds.Contains(config.GuruRoleID))
                 return PermissionLevel.Guru;
 
