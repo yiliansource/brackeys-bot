@@ -12,12 +12,12 @@ namespace BrackeysBot.Commands
     {
 
         [Command("ama")]
-        [Summary("Provides today's logfile.")]
+        [Summary("Bumps the specified question as an AMA question. Note the question must be in the AMA channel.")]
         [RequireAdministrator]
         [HideFromHelp]
         public async Task Ama(ulong msgId)
         {
-            ulong channelId = Data.Configuration.AmaChannel;
+            ulong channelId = Data.Configuration.AmaChannelID;
 
             ITextChannel amaChannel = await Context.Guild.GetTextChannelAsync(channelId);
             IMessage amaMsg = await amaChannel.GetMessageAsync(msgId);
