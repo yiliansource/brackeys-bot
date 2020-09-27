@@ -8,6 +8,8 @@
         ClearInfractions,
         [Description("Deleted infraction")]
         DeletedInfraction,
+        [Description("Updated infraction")]
+        UpdatedInfraction,
 
         [Description("Muted user")]
         Mute,

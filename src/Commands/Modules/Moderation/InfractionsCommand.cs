@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using BrackeysBot.Core.Models;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 using Humanizer;
 
@@ -17,21 +16,29 @@ namespace BrackeysBot.Commands
         [Remarks("infractions <user>")]
         [RequireModerator]
         public async Task GetInfractionsAsync(
-            [Summary("The user to get the infractions for.")] SocketGuildUser user)
+            [Summary("The user to get the infractions for.")] GuildUserProxy user)
         {
-            UserData data = Data.UserData.GetUser(user.Id);
+            ulong userId = user.HasValue ? user.GuildUser.Id : user.ID;
+            UserData data = Data.UserData.GetUser(userId);
 
             EmbedBuilder builder = new EmbedBuilder()
                 .WithColor(Color.DarkerGrey);
 
             if (data != null && data.Infractions?.Count > 0)
             {
-                builder.WithAuthor($"{user} has {data.Infractions.Count} infraction(s)", user.EnsureAvatarUrl());
+                if (user.HasValue)
+                    builder.WithAuthor($"{user.ID.Mention()} has {data.Infractions.Count} infraction(s)", user.GuildUser.EnsureAvatarUrl());
+                else 
+                    builder.WithAuthor($"{user.ID} has {data.Infractions.Count} infraction(s)");
+                    
                 builder.WithDescription(string.Join('\n', data.Infractions.OrderByDescending(i => i.Time).Select(i => i.ToString())));
             }
             else
             {
-                builder.WithAuthor($"{user} has no infractions");
+                if (user.HasValue)
+                    builder.WithAuthor($"{user.ID.Mention()} has no infractions", user.GuildUser.EnsureAvatarUrl());
+                else 
+                    builder.WithAuthor($"{user.ID} has no infractions");
             }
 
             await builder.Build().SendToChannel(Context.Channel);
@@ -42,13 +49,20 @@ namespace BrackeysBot.Commands
         [Remarks("clearinfractions <user>")]
         [RequireModerator]
         public async Task ClearInfractionsAsync(
-            [Summary("The user to clear the infractions from.")] SocketGuildUser user)
+            [Summary("The user to clear the infractions from.")] GuildUserProxy user)
         {
-            int clearedInfractions = Moderation.ClearInfractions(user);
+            ulong userId = user.HasValue ? user.GuildUser.Id : user.ID;
 
-            await GetDefaultBuilder()
-                .WithDescription($"{clearedInfractions} infraction(s) were cleared from {user.Mention}.")
-                .Build()
+            int clearedInfractions = Moderation.ClearInfractions(userId);
+
+            EmbedBuilder builder = GetDefaultBuilder();
+
+            if (user.HasValue) 
+                builder.WithDescription($"{clearedInfractions} infraction(s) were cleared from {userId.Mention()}.");
+            else 
+                builder.WithDescription($"{clearedInfractions} infraction(s) were cleared from {userId}.");
+                
+            await builder.Build()
                 .SendToChannel(Context.Channel);
 
             if (clearedInfractions > 0)
@@ -56,7 +70,7 @@ namespace BrackeysBot.Commands
                 await ModerationLog.CreateEntry(ModerationLogEntry.New
                     .WithDefaultsFromContext(Context)
                     .WithActionType(ModerationActionType.ClearInfractions)
-                    .WithTarget(user));
+                    .WithTarget(userId));
             }
         }
 
@@ -97,7 +111,7 @@ namespace BrackeysBot.Commands
             [Summary("The ID of the infraction")] int id)
         {
             if (!Moderation.TryGetInfraction(id, out Infraction _, out ulong userId))
-                throw new InvalidOperationException($"An infraction with the ID of **{id}** does not exist.");
+                throw new ArgumentException($"An infraction with the ID of **{id}** does not exist.");
 
             Moderation.DeleteInfraction(id);
 
@@ -109,7 +123,32 @@ namespace BrackeysBot.Commands
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.DeletedInfraction)
-                .WithTarget(await Context.Guild.GetUserAsync(userId)));
+                .WithTarget(userId));
+        }
+
+        [Command("editinfraction"), Alias("editinfr")]
+        [Summary("Edit an infraction by its ID.")]
+        [Remarks("editinfraction <id> <new message>")]
+        [RequireModerator]
+        public async Task EditInfractionAsync(
+            [Summary("The ID of the infraction")] int id,
+            [Summary("The new infraction message"), Remainder] string newMessage)
+        {
+            if (Moderation.TryUpdateInfraction(id, newMessage, out ulong userId, out string oldMessage)) 
+            {
+                await GetDefaultBuilder()
+                    .WithColor(Color.Green)
+                    .WithDescription($"The infraction with the ID **{id}** was updated from {MentionUtils.MentionUser(userId)}.")
+                    .Build()
+                    .SendToChannel(Context.Channel);
+
+                await ModerationLog.CreateEntry(ModerationLogEntry.New
+                    .WithDefaultsFromContext(Context)
+                    .WithActionType(ModerationActionType.UpdatedInfraction)
+                    .WithAdditionalInfo($"**Old Reason:** {oldMessage}\n**New Reason:** {newMessage}")
+                    .WithTarget(userId));
+            } else 
+                throw new ArgumentException($"An infraction with the ID of **{id}** does not exist.");
         }
     }
 }

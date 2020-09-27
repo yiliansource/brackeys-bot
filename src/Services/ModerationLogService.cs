@@ -62,9 +62,14 @@ namespace BrackeysBot.Services
         {
             EmbedBuilder builder = new EmbedBuilder();
 
-            StringBuilder author = new StringBuilder($"[{logEntry.ActionType.Humanize()}]");
             StringBuilder description = new StringBuilder();
+            StringBuilder author;
 
+            if (logEntry.InfractionId > -1) 
+                author = new StringBuilder($"[{logEntry.InfractionId}] [{logEntry.ActionType.Humanize()}]");
+             else 
+                author = new StringBuilder($"[{logEntry.ActionType.Humanize()}]");
+            
             if (logEntry.HasTarget)
             {
                 if (logEntry.Target != null)
@@ -102,6 +107,7 @@ namespace BrackeysBot.Services
                 case ModerationActionType.Warn:
                 case ModerationActionType.DeletedInfraction:
                 case ModerationActionType.ClearInfractions:
+                case ModerationActionType.UpdatedInfraction:
                     return Color.Orange;
 
                 case ModerationActionType.ClearMessages:

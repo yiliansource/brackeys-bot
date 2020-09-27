@@ -80,7 +80,10 @@ namespace BrackeysBot.Services
             //  are at least certain the message got deleted.
             await s.DeleteAsync();
 
-            if (_dataService.Configuration.MuteUserIfUsingFilteredWord) {
+            Infraction infraction;
+
+            if (_dataService.Configuration.MuteUserIfUsingFilteredWord) 
+            {
                 IRole mutedRole = _discord.GetGuild(_dataService.Configuration.GuildID).GetRole(_dataService.Configuration.MutedRoleID);
                 await target.AddRoleAsync(mutedRole);
 
@@ -88,19 +91,23 @@ namespace BrackeysBot.Services
                 _dataService.SaveUserData();
 
                 TimeSpan muteDuration = TimeSpan.FromMilliseconds(_dataService.Configuration.FilteredWordMuteDuration);
-                _moderationService.AddTemporaryInfraction(TemporaryInfractionType.TempMute, 
+                infraction = _moderationService.AddTemporaryInfraction(TemporaryInfractionType.TempMute, 
                         target, _discord.CurrentUser, muteDuration, 
                         "Used filtered word", $"[Go near message]({url})\n**{message}**");
-            } else {
-                _moderationService.AddInfraction(target, 
-                        Infraction.Create(_moderationService.RequestInfractionID())
+            }
+            else 
+            {
+                infraction = Infraction.Create(_moderationService.RequestInfractionID())
                         .WithType(InfractionType.Warning)
                         .WithModerator(_discord.CurrentUser)
                         .WithAdditionalInfo($"[Go near message]({url})\n**{message}**")
-                        .WithDescription("Used filtered word"));
+                        .WithDescription("Used filtered word");
+
+                _moderationService.AddInfraction(target, infraction);
             }
 
             await _loggingService.CreateEntry(ModerationLogEntry.New
+                    .WithInfractionId(infraction.ID)
                     .WithActionType(ModerationActionType.Filtered)
                     .WithTarget(target)
                     .WithReason($"[Go near message]({url})\n**{message}**")
