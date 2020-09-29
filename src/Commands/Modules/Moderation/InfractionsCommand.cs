@@ -27,7 +27,7 @@ namespace BrackeysBot.Commands
             if (data != null && data.Infractions?.Count > 0)
             {
                 if (user.HasValue)
-                    builder.WithAuthor($"{user.ID.Mention()} has {data.Infractions.Count} infraction(s)", user.GuildUser.EnsureAvatarUrl());
+                    builder.WithAuthor($"{user.GuildUser} has {data.Infractions.Count} infraction(s)", user.GuildUser.EnsureAvatarUrl());
                 else 
                     builder.WithAuthor($"{user.ID} has {data.Infractions.Count} infraction(s)");
                     
@@ -55,12 +55,13 @@ namespace BrackeysBot.Commands
 
             int clearedInfractions = Moderation.ClearInfractions(userId);
 
-            EmbedBuilder builder = GetDefaultBuilder();
+            EmbedBuilder builder = GetDefaultBuilder()
+                .WithColor(Color.Green);
 
             if (user.HasValue) 
-                builder.WithDescription($"{clearedInfractions} infraction(s) were cleared from {userId.Mention()}.");
+                builder.WithDescription($"**{clearedInfractions}** infraction(s) were cleared from {user.GuildUser}.");
             else 
-                builder.WithDescription($"{clearedInfractions} infraction(s) were cleared from {userId}.");
+                builder.WithDescription($"**{clearedInfractions}** infraction(s) were cleared from {userId}.");
                 
             await builder.Build()
                 .SendToChannel(Context.Channel);
@@ -116,6 +117,7 @@ namespace BrackeysBot.Commands
             Moderation.DeleteInfraction(id);
 
             await GetDefaultBuilder()
+                .WithColor(Color.Green)
                 .WithDescription($"The infraction with the ID **{id}** was deleted from {MentionUtils.MentionUser(userId)}.")
                 .Build()
                 .SendToChannel(Context.Channel);
