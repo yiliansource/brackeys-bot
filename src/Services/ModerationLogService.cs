@@ -50,6 +50,7 @@ namespace BrackeysBot.Services
             => new EmbedBuilder()
                 .WithAuthor(logEntry.ActionType.Humanize(), logEntry.Target?.EnsureAvatarUrl())
                 .WithColor(GetColorForAction(logEntry.ActionType))
+                .AddFieldConditional(logEntry.InfractionId > -1, "ID", logEntry.InfractionId)
                 .AddFieldConditional(logEntry.HasTarget, "User", logEntry.TargetMention, true)
                 .AddField("Moderator", logEntry.Moderator.Mention, true)
                 .AddFieldConditional(!string.IsNullOrEmpty(logEntry.Reason), "Reason", logEntry.Reason, true)
