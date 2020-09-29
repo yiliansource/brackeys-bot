@@ -39,9 +39,10 @@ namespace BrackeysBot.Commands
             // Since the user cannot be found (we are using the GuildUserProxy) we don't need to attempt to message him
             await Context.Guild.AddBanAsync(user.ID, _pruneDays, reason);
 
-            Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempBan, user.ID, Context.User, duration, reason);
+            Infraction infraction = Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempBan, user.ID, Context.User, duration, reason);
 
             await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithInfractionId(infraction.ID)
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.TempBan)
                 .WithTarget(user.ID)
@@ -63,7 +64,18 @@ namespace BrackeysBot.Commands
                 await user.GuildUser.TrySendMessageAsync($"You were banned from **{Context.Guild.Name}** because of {reason}.");
             await Context.Guild.AddBanAsync(user.ID, _pruneDays, reason);
 
+            Infraction infraction = Infraction.Create(Moderation.RequestInfractionID())
+                .WithType(InfractionType.Ban)
+                .WithModerator(Context.User)
+                .WithDescription(reason);
+
+            // Normally it would be preferred to use the AddInfraction(IUser, Infraction) method but that one implicitly
+            //  sends a DM to the target which will not be in the server anymore at this point AND this method already
+            //  attempts to send a DM to the target.
+            Moderation.AddInfraction(user.ID, infraction);
+
             await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithInfractionId(infraction.ID)
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Ban)
                 .WithTarget(user.ID)
@@ -84,9 +96,10 @@ namespace BrackeysBot.Commands
             await user.TrySendMessageAsync($"You were banned from **{Context.Guild.Name}** for {duration.Humanize(7)} because of **{reason}**.");
             await user.BanAsync(_pruneDays, reason);
 
-            Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempBan, user, Context.User, duration, reason);
+            Infraction infraction = Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempBan, user, Context.User, duration, reason);
 
             await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithInfractionId(infraction.ID)
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.TempBan)
                 .WithTarget(user)

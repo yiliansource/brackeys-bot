@@ -18,18 +18,24 @@ namespace BrackeysBot.Services
 
         public void AddInfraction(IUser user, Infraction infraction)
         {
-            var userData = _data.UserData.GetOrCreate(user.Id);
-            userData.Infractions.Add(infraction);
-
-            _data.SaveUserData();
+            AddInfraction(user.Id, infraction);
 
             SendInfractionMessageToUser(user, infraction);
         }
 
-        public void AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "", string additionalInfo = "")
+        public void AddInfraction(ulong userId, Infraction infraction) {
+            var userData = _data.UserData.GetOrCreate(userId);
+            userData.Infractions.Add(infraction);
+
+            _data.SaveUserData();
+        }
+
+        public Infraction AddTemporaryInfraction(TemporaryInfractionType type, IUser user, IUser moderator, TimeSpan duration, string reason = "", string additionalInfo = "")
         {
             Infraction infraction = AddTemporaryInfraction(type, user.Id, moderator, duration, reason, additionalInfo);
             SendTemporaryInfractionMessageToUser(user, infraction, duration);
+            
+            return infraction;
         }
         public Infraction AddTemporaryInfraction(TemporaryInfractionType type, ulong userId, IUser moderator, TimeSpan duration, string reason = "", string additionalInfo = "")
         {
@@ -62,10 +68,13 @@ namespace BrackeysBot.Services
         }
 
         public int ClearInfractions(IUser user)
+            => ClearInfractions(user.Id);
+
+        public int ClearInfractions(ulong userId) 
         {
-            if (_data.UserData.HasUser(user.Id))
+            if (_data.UserData.HasUser(userId))
             {
-                UserData userData = _data.UserData.GetUser(user.Id);
+                UserData userData = _data.UserData.GetUser(userId);
                 int infractionCount = userData.Infractions.Count;
                 userData.Infractions.Clear();
 
@@ -75,6 +84,7 @@ namespace BrackeysBot.Services
             }
             return 0;
         }
+
         public bool DeleteInfraction(int id)
         {
             if (TryGetInfraction(id, out Infraction _, out ulong userId))
@@ -94,6 +104,22 @@ namespace BrackeysBot.Services
             userId = data?.ID ?? 0;
 
             return data != null;
+        }
+
+        public bool TryUpdateInfraction(int id, string message, out ulong userId, out string oldMessage)
+        {
+            if (TryGetInfraction(id, out Infraction infraction, out userId))
+            {
+                oldMessage = infraction.Description;
+                infraction.WithDescription(message);
+
+                DeleteInfraction(id);
+                AddInfraction(userId, infraction);
+                return true;
+            }
+
+            oldMessage = null;
+            return false;
         }
 
         public int RequestInfractionID()

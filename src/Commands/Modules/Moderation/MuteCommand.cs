@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-
+using BrackeysBot.Core.Models;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -16,7 +16,7 @@ namespace BrackeysBot.Commands
         [RequireHelper]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task MuteAsync(
-            [Summary("The user to mute.")] SocketGuildUser user,
+            [Summary("The user to mute.")] GuildUserProxy user,
             [Summary("The duration for the mute."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
             [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
             => await TempmuteAsync(user, duration, reason);
@@ -28,19 +28,25 @@ namespace BrackeysBot.Commands
         [RequireModerator]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task MuteAsync(
-            [Summary("The user to mute.")] SocketGuildUser user,
+            [Summary("The user to mute.")] GuildUserProxy user,
             [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
         {
-            await user.MuteAsync(Context);
+            if (!user.HasValue)
+                throw new ArgumentException($"User with ID {user.ID} is not in the server!");
 
-            SetUserMuted(user.Id, true);
+            await user.GuildUser.MuteAsync(Context);
 
-            Moderation.AddInfraction(user, Infraction.Create(Moderation.RequestInfractionID())
+            SetUserMuted(user.ID, true);
+
+            Infraction infraction = Infraction.Create(Moderation.RequestInfractionID())
                 .WithType(InfractionType.Mute)
                 .WithModerator(Context.User)
-                .WithDescription(reason));
+                .WithDescription(reason);
+
+            Moderation.AddInfraction(user.GuildUser, infraction);
             
             await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithInfractionId(infraction.ID)
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.Mute)
                 .WithTarget(user)
@@ -55,10 +61,13 @@ namespace BrackeysBot.Commands
         [RequireHelper]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task TempmuteAsync(
-            [Summary("The user to mute.")] SocketGuildUser user,
+            [Summary("The user to mute.")] GuildUserProxy user,
             [Summary("The duration for the mute."), OverrideTypeReader(typeof(AbbreviatedTimeSpanTypeReader))] TimeSpan duration,
             [Summary("The reason why to mute the user."), Remainder] string reason = DefaultReason)
         {
+            if (!user.HasValue)
+                throw new ArgumentException($"User with ID {user.ID} is not in the server!");
+
             bool unlimitedTime = (Context.User as IGuildUser).GetPermissionLevel(Data.Configuration) >= PermissionLevel.Moderator;
             double givenDuration = duration.TotalMilliseconds;
             int maxHelperMuteDuration = Data.Configuration.HelperMuteMaxDuration;
@@ -67,13 +76,14 @@ namespace BrackeysBot.Commands
                 duration = TimeSpan.FromMilliseconds(maxHelperMuteDuration);
             }
 
-            await user.MuteAsync(Context);
+            await user.GuildUser.MuteAsync(Context);
 
-            SetUserMuted(user.Id, true);
+            SetUserMuted(user.ID, true);
 
-            Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user, Context.User, duration, reason);
+            Infraction infraction = Moderation.AddTemporaryInfraction(TemporaryInfractionType.TempMute, user.GuildUser, Context.User, duration, reason);
             
             await ModerationLog.CreateEntry(ModerationLogEntry.New
+                .WithInfractionId(infraction.ID)
                 .WithDefaultsFromContext(Context)
                 .WithActionType(ModerationActionType.TempMute)
                 .WithTarget(user)
@@ -87,13 +97,16 @@ namespace BrackeysBot.Commands
         [RequireHelper]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         public async Task UnmuteAsync(
-            [Summary("The user to unmute.")] SocketGuildUser user)
+            [Summary("The user to unmute.")] GuildUserProxy user)
         {
-            await user.UnmuteAsync(Context);
+            if (!user.HasValue)
+                throw new ArgumentException($"User with ID {user.ID} is not in the server!");
 
-            SetUserMuted(user.Id, false);
+            await user.GuildUser.UnmuteAsync(Context);
 
-            Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempMute, user);
+            SetUserMuted(user.ID, false);
+
+            Moderation.ClearTemporaryInfraction(TemporaryInfractionType.TempMute, user.GuildUser);
             
             await ModerationLog.CreateEntry(ModerationLogEntry.New
                 .WithDefaultsFromContext(Context)
