@@ -25,6 +25,7 @@ namespace BrackeysBot.Services
 
         public void Initialize() 
         {
+            /*
             _config = _dataService.Configuration;
             _timer = new Timer(TimeSpan.FromSeconds(30).TotalMilliseconds)
             {
@@ -34,6 +35,7 @@ namespace BrackeysBot.Services
 
             _timer.Elapsed += async (s, e) => await UpdateCategoryCount();
             _timer.Start();
+            */
         }
 
         private async Task UpdateCategoryCount() 
