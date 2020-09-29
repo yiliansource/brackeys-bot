@@ -14,7 +14,7 @@ namespace BrackeysBot.Commands
         [Command("infractions"), Alias("infraction", "infr")]
         [Summary("Displays all the infractions of a user.")]
         [Remarks("infractions <user>")]
-        [RequireModerator]
+        [RequireHelper]
         public async Task GetInfractionsAsync(
             [Summary("The user to get the infractions for.")] GuildUserProxy user)
         {
@@ -77,7 +77,7 @@ namespace BrackeysBot.Commands
         [Command("infraction"), Alias("infr")]
         [Summary("Displays more information about an infraction")]
         [Remarks("infraction <id>")]
-        [RequireModerator]
+        [RequireHelper]
         public async Task ShowInfractionAsync(
             [Summary("The ID of the infraction.")] int id)
         {
@@ -129,7 +129,7 @@ namespace BrackeysBot.Commands
         [Command("editinfraction"), Alias("editinfr")]
         [Summary("Edit an infraction by its ID.")]
         [Remarks("editinfraction <id> <new message>")]
-        [RequireModerator]
+        [RequireHelper]
         public async Task EditInfractionAsync(
             [Summary("The ID of the infraction")] int id,
             [Summary("The new infraction message"), Remainder] string newMessage)
@@ -143,6 +143,7 @@ namespace BrackeysBot.Commands
                     .SendToChannel(Context.Channel);
 
                 await ModerationLog.CreateEntry(ModerationLogEntry.New
+                    .WithInfractionId(id)
                     .WithDefaultsFromContext(Context)
                     .WithActionType(ModerationActionType.UpdatedInfraction)
                     .WithAdditionalInfo($"**Old Reason:** {oldMessage}\n**New Reason:** {newMessage}")

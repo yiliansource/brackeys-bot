@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using BrackeysBot.Core.Models;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 namespace BrackeysBot.Commands
 {
