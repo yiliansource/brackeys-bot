@@ -23,7 +23,7 @@ namespace BrackeysBot.Commands
                 return;
             }
             
-            if (!TryRender(input, out var originalImage, out var errorMessage))
+            if (!TryRender(input, out Image originalImage, out string errorMessage))
             {
                 await new EmbedBuilder()
                      .WithDescription(Format.Code(errorMessage))
@@ -33,8 +33,8 @@ namespace BrackeysBot.Commands
                 return;
             }
             
-            using var image = AddPadding(originalImage);
-            await using var stream = GetImageStream(image);
+            using Image image = AddPadding(originalImage);
+            await using Stream stream = GetImageStream(image);
 
             await Context.Channel.SendFileAsync(stream, "equation.png");
             image.Dispose();
@@ -42,7 +42,7 @@ namespace BrackeysBot.Commands
 
         private static Stream GetImageStream(Image image)
         {
-            var stream = new MemoryStream();
+            MemoryStream stream = new MemoryStream();
             image.Save(stream, ImageFormat.Png);
             stream.Position = 0;
             return stream;
@@ -50,10 +50,10 @@ namespace BrackeysBot.Commands
 
         private static bool TryRender(string input, out Image image, out string errorMessage)
         {
-            var painter = new MathPainter { LaTeX = input, FontSize = 25, DisplayErrorInline = false };
+            MathPainter painter = new MathPainter { LaTeX = input, FontSize = 25, DisplayErrorInline = false };
             try
             {
-                var stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
+                Stream stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
                 image = Image.FromStream(stream);
                 errorMessage = null;
                 return true;
@@ -68,8 +68,8 @@ namespace BrackeysBot.Commands
 
         private static Image AddPadding(Image original, int padding = 10)
         {
-            var bitmap = new Bitmap(original.Width + padding * 2, original.Height + padding * 2);
-            using var graphics = Graphics.FromImage(bitmap);
+            Bitmap bitmap = new Bitmap(original.Width + padding * 2, original.Height + padding * 2);
+            using Graphics graphics = Graphics.FromImage(bitmap);
             graphics.Clear(System.Drawing.Color.White);
             graphics.DrawImage(original, new Point(padding, padding));
             graphics.Flush();
