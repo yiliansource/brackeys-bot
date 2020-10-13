@@ -14,8 +14,8 @@ namespace BrackeysBot.Commands
     {
         [Command("math"), Alias("maths", "eq", "equation", "tex", "latex")]
         [Summary("Renders LaTeX input to an image, and attaches the result.")]
-        public async Task MathCommandAsync([Summary("The LaTeX input."), Remainder]
-                                           string input)
+        [Remarks("math <input>")]
+        public async Task MathCommandAsync([Summary("The LaTeX input."), Remainder] string input)
         {
             using var originalImage = Render(input);
             using var image = AddPadding(originalImage, 20);
