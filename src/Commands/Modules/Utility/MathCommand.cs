@@ -1,10 +1,13 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
+﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using CSharpMath.SkiaSharp;
+using Discord;
 using Discord.Commands;
 using SkiaSharp;
+using Image = System.Drawing.Image;
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
 
 namespace BrackeysBot.Commands
 {
@@ -15,11 +18,21 @@ namespace BrackeysBot.Commands
         [Remarks("math <input>")]
         public async Task MathCommandAsync([Summary("The LaTeX input."), Remainder] string input)
         {
-            using var originalImage = Render(input);
+            if (!TryRender(input, out var originalImage, out var errorMessage))
+            {
+                await new EmbedBuilder()
+                     .WithDescription(Format.Code(errorMessage))
+                     .WithColor(Discord.Color.Red)
+                     .Build()
+                     .SendToChannel(Context.Channel);
+                return;
+            }
+            
             using var image = AddPadding(originalImage);
             await using var stream = GetImageStream(image);
 
             await Context.Channel.SendFileAsync(stream, "equation.png");
+            image.Dispose();
         }
 
         private static Stream GetImageStream(Image image)
@@ -30,11 +43,22 @@ namespace BrackeysBot.Commands
             return stream;
         }
 
-        private static Image Render(string input)
+        private static bool TryRender(string input, out Image image, out string errorMessage)
         {
-            var painter = new MathPainter { LaTeX = input, FontSize = 25 };
-            var stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
-            return Image.FromStream(stream);
+            var painter = new MathPainter { LaTeX = input, FontSize = 25, DisplayErrorInline = false };
+            try
+            {
+                var stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
+                image = Image.FromStream(stream);
+                errorMessage = null;
+                return true;
+            }
+            catch (NullReferenceException)
+            {
+                image = null;
+                errorMessage = painter.ErrorMessage;
+                return false;
+            }
         }
 
         private static Image AddPadding(Image original, int padding = 10)
