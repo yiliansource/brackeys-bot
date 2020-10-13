@@ -1,12 +1,10 @@
 ﻿using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 using CSharpMath.SkiaSharp;
 using Discord.Commands;
 using SkiaSharp;
-
 
 namespace BrackeysBot.Commands
 {
@@ -18,25 +16,10 @@ namespace BrackeysBot.Commands
         public async Task MathCommandAsync([Summary("The LaTeX input."), Remainder] string input)
         {
             using var originalImage = Render(input);
-            using var image = AddPadding(originalImage, 20);
-            using var resized = Resize(image, image.Size / 2);
-            await using var stream = GetImageStream(resized);
+            using var image = AddPadding(originalImage);
+            await using var stream = GetImageStream(image);
 
             await Context.Channel.SendFileAsync(stream, "equation.png");
-        }
-
-        private static Image Resize(Image image, Size newSize)
-        {
-            var bitmap = new Bitmap(newSize.Width, newSize.Height);
-            using var graphics = Graphics.FromImage(bitmap);
-            
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            
-            graphics.DrawImage(image, new Rectangle(Point.Empty, newSize));
-            graphics.Flush();
-            return bitmap;
         }
 
         private static Stream GetImageStream(Image image)
@@ -49,7 +32,7 @@ namespace BrackeysBot.Commands
 
         private static Image Render(string input)
         {
-            var painter = new MathPainter { LaTeX = input };
+            var painter = new MathPainter { LaTeX = input, FontSize = 25 };
             var stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
             return Image.FromStream(stream);
         }
