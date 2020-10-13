@@ -1,14 +1,15 @@
-﻿namespace BrackeysBot.Commands
-{
-    using System.Drawing;
-    using System.Drawing.Drawing2D;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Threading.Tasks;
-    using CSharpMath.SkiaSharp;
-    using Discord.Commands;
-    using SkiaSharp;
+﻿using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Threading.Tasks;
+using CSharpMath.SkiaSharp;
+using Discord.Commands;
+using SkiaSharp;
 
+
+namespace BrackeysBot.Commands
+{
     public partial class UtilityModule : BrackeysBotModule
     {
         [Command("math"), Alias("maths", "eq", "equation", "tex", "latex")]
