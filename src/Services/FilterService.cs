@@ -52,7 +52,7 @@ namespace BrackeysBot.Services
             await CheckMessageAsync(s);
         }
 
-        private bool ContainsBlockedWord(string msg) 
+        public bool ContainsBlockedWord(string msg) 
         {
             string[] blockedWords = _dataService.Configuration.BlockedWords;
 

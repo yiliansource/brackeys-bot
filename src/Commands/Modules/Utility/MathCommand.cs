@@ -18,6 +18,11 @@ namespace BrackeysBot.Commands
         [Remarks("math <input>")]
         public async Task MathCommandAsync([Summary("The LaTeX input."), Remainder] string input)
         {
+            if (FilterService.ContainsBlockedWord(input))
+            {
+                return;
+            }
+            
             if (!TryRender(input, out var originalImage, out var errorMessage))
             {
                 await new EmbedBuilder()
