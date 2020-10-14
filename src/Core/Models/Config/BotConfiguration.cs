@@ -122,6 +122,10 @@ namespace BrackeysBot
         [YamlMember(Alias = "endorseTimeoutMillis")]
         [Description("The minimum time between being able to endorse the same user again, in milliseconds")]
         public int EndorseTimeoutMillis { get; set; }
+        
+        [YamlMember(Alias = "latexTimeoutMillis")]
+        [Description("The minimum time between being able to use the latex command again, in milliseconds")]
+        public int LatexTimeoutMillis { get; set; }
 
         [YamlMember(Alias = "helperMuteMaxDuration")]
         [Description("The maximum amount of time a helper may mute a person")]

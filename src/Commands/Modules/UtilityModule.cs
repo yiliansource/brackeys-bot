@@ -11,5 +11,7 @@ namespace BrackeysBot.Commands
     public partial class UtilityModule : BrackeysBotModule
     {
         public FilterService FilterService { get; set; }
+        
+        public MathService MathService { get; set; }
     }
 }

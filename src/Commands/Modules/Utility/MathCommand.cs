@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using CSharpMath.SkiaSharp;
 using Discord;
 using Discord.Commands;
+using Humanizer;
+using Humanizer.Localisation;
 using SkiaSharp;
 using Image = System.Drawing.Image;
 using ImageFormat = System.Drawing.Imaging.ImageFormat;
@@ -22,6 +24,14 @@ namespace BrackeysBot.Commands
             {
                 return;
             }
+            
+            bool canOverride = (Context.User as IGuildUser).GetPermissionLevel(Context) >= PermissionLevel.Moderator;
+            int remaining = MathService.LatexTimeoutRemaining(Context.User);
+            
+            if (!canOverride && remaining > 0)
+                throw new TimeoutException($"You need to wait {TimeSpan.FromMilliseconds(remaining).Humanize(2, minUnit: TimeUnit.Second)} before you can use this command again!");
+            
+            MathService.UpdateLatexTimeout(Context.User);
             
             if (!TryRender(input, out Image originalImage, out string errorMessage))
             {
