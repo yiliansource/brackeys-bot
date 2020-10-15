@@ -25,7 +25,7 @@ namespace BrackeysBot.Commands
                 return;
             }
             
-            bool canOverride = (Context.User as IGuildUser).GetPermissionLevel(Context) >= PermissionLevel.Moderator;
+            bool canOverride = (Context.User as IGuildUser).GetPermissionLevel(Context) >= PermissionLevel.Guru;
             int remaining = MathService.LatexTimeoutRemaining(Context.User);
             
             if (!canOverride && remaining > 0)
