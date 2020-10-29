@@ -1,17 +1,25 @@
-# BrackeysBot `[ ]`
+<h1 align="center" style="position: relative;">
+    <img width="200" style="border-radius: 50%;" src="./logo.png"/><br>
+    BrackeysBot
+</h1>
 
-The official Brackeys Discord bot!  
-Contains tools to moderate the server and to create a better user experience overall!
+<h3 align="center">The official Brackeys Discord bot!</h3>
+<h4 align="center">Contains tools to moderate the server and to create a better user experience overall!</h4>
 
-## Important links
+<p align="center">
+    <img alt="Discord" src="https://img.shields.io/discord/243005537342586880?color=%237289DA&label=discord">
+    <img alt="Travis (.com)" src="https://img.shields.io/travis/com/yiliansource/brackeys-bot">
+    <img alt="GitHub" src="https://img.shields.io/github/license/yiliansource/brackeys-bot">
 
-[![Discord](https://img.shields.io/discord/243005537342586880?color=7289DA&label=Discord%20Server&style=for-the-badge)](https://discord.gg/brackeys)
+</p>
 
-[![Travis CI](https://img.shields.io/travis/com/yiliansource/brackeys-bot?color=7289DA&label=Travis%20CI%20Build&style=for-the-badge)](https://travis-ci.com/YilianSource/brackeys-bot)
-
-- [📝 MIT License](https://github.com/YilianSource/brackeys-bot/blob/master/LICENSE)
-- [🛡️ Code of Conduct](https://github.com/YilianSource/brackeys-bot/blob/master/.github/CODE_OF_CONDUCT.md)
-- [🖋️ Contributing](https://github.com/YilianSource/brackeys-bot/blob/master/.github/CONTRIBUTING.md)
+<p align="center">
+    <a href="#building--running">Building & running</a> •
+    <a href="#versioning">Versioning</a> •
+    <a href="https://github.com/YilianSource/brackeys-bot/blob/master/LICENSE">License</a> •
+    <a href="https://github.com/YilianSource/brackeys-bot/blob/master/.github/CODE_OF_CONDUCT.md">Code of Conduct</a> •
+    <a href="https://github.com/YilianSource/brackeys-bot/blob/master/.github/CONTRIBUTING.md">Contributing</a>
+</p>
 
 ## Building & running
 
