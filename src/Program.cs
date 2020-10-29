@@ -1,8 +1,10 @@
-﻿namespace BrackeysBot
+﻿using System.Threading.Tasks;
+
+namespace BrackeysBot
 {
     public class Program
     {
-        public static void Main(string[] args)
-            => new BrackeysBot().RunAsync().GetAwaiter().GetResult();
+        public static async Task Main(string[] args)
+            => await new BrackeysBot().RunAsync();
     }
 }
