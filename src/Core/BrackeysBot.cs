@@ -13,9 +13,6 @@ namespace BrackeysBot
 {
     public sealed class BrackeysBot
     {
-        public static Task StartAsync()
-            => new BrackeysBot().RunAsync();
-
         public BrackeysBot()
         {
             Console.Title = $"{nameof(BrackeysBot)} v{Version.ShortVersion} (Discord.Net v{Version.DiscordVersion})";

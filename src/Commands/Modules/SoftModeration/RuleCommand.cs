@@ -13,7 +13,8 @@ namespace BrackeysBot.Commands
         [Remarks("rule <id>")]
         [Summary("Displays the rule with the given ID.")]
         public async Task DisplayRuleAsync(
-            [Summary("The ID of the rule to display.")] int id)
+            [Summary("The ID of the rule to display.")] int id,
+            [Summary("An optional remainder, if a user needs to be mentioned."), Remainder] string remainder = null)
         {
             string[] rules = GetRuleArray();
             int index = id - 1;
