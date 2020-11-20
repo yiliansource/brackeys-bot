@@ -21,6 +21,17 @@ namespace BrackeysBot.Commands
             IMessage message = await Context.Channel.GetMessageAsync(id);
             string url = await Codeblock.PasteMessage(message);
 
+            if (url is null)
+            {
+                await GetDefaultBuilder()
+                    .WithDescription($"The message couldn't be pasted [check the logs].")
+                    .WithColor(Color.Red)
+                    .Build()
+                    .SendToChannel(Context.Channel);
+
+                return;
+            }
+
             await GetDefaultBuilder()
                 .WithAuthor("Pasted!", message.Author.EnsureAvatarUrl(), url)
                 .WithDescription($"The message by {message.Author.Mention} has been pasted!\n[Click here to view it!]({url})")

@@ -17,6 +17,7 @@
     <PackageReference Include="CSharpMath.SkiaSharp" Version="0.4.2" />
     <PackageReference Include="Discord.Net" Version="2.1.1" />
     <PackageReference Include="Humanizer.Core" Version="2.7.9" />
+    <PackageReference Include="PasteMystNet" Version="1.1.1" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="YamlDotNet" Version="8.0.0" />
   </ItemGroup>
