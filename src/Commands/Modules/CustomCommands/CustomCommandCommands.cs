@@ -16,7 +16,7 @@ namespace BrackeysBot.Commands
         [Remarks("ccadd <name>")]
         [RequireModerator]
         public async Task CreateCommandAsync(
-            [Summary("The name of the command.")] string name)
+            [Summary("CreateCommand")] string name)
         {
             if (CustomCommands.ContainsCommand(name, new string[0]))
                 throw new InvalidOperationException($"A command with the name `{name}` already exists!");
@@ -35,7 +35,7 @@ namespace BrackeysBot.Commands
         [Remarks("ccdel <name>")]
         [RequireModerator]
         public async Task RemoveCommandAsync(
-            [Summary("The name of the command.")] string name)
+            [Summary("RemoveCommand.")] string name)
         {
             if (!CustomCommands.ContainsCommand(name, new string[0]))
                 throw new InvalidOperationException($"A command with the name `{name}` does not exist.");
@@ -54,7 +54,7 @@ namespace BrackeysBot.Commands
         [Remarks("ccinfo <name>")]
         [RequireModerator]
         public async Task ShowCommandInfoAsync(
-            [Summary("The name of the command.")] string name)
+            [Summary("ShowCommand")] string name)
         {
             if (!CustomCommands.TryGetCommand(name, out CustomCommand command))
                 throw new InvalidOperationException($"A command with the name `{name}` does not exist.");
