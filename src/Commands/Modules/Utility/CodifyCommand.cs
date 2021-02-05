@@ -89,7 +89,7 @@ namespace BrackeysBot.Commands
 			// Removes the space left over by removing empty methods
 			for (var lineIndex = 0; lineIndex < codeLines.Count; lineIndex++)
 			{
-				if (codeLines[lineIndex].Contains("{") && string.IsNullOrWhiteSpace(codeLines[lineIndex + 1]) ||
+				if (codeLines[lineIndex].Contains("{") && codeLines.Count > 2 && string.IsNullOrWhiteSpace(codeLines[lineIndex + 1]) ||
 					lineIndex + 2 < codeLines.Count && codeLines[lineIndex].Contains("}") && codeLines[lineIndex + 2].Contains("}") && string.IsNullOrWhiteSpace(codeLines[lineIndex + 1]))
 				{
 					codeLines.RemoveAt(lineIndex + 1);
