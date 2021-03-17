@@ -48,6 +48,7 @@ namespace BrackeysBot.Commands
 
             await Context.Channel.SendFileAsync(stream, "equation.png");
             image.Dispose();
+            originalImage.Dispose();
         }
 
         private static Stream GetImageStream(Image image)
@@ -61,16 +62,18 @@ namespace BrackeysBot.Commands
         private static bool TryRender(string input, out Image image, out string errorMessage)
         {
             MathPainter painter = new MathPainter { LaTeX = input, FontSize = 25, DisplayErrorInline = false };
+            image = null;
+            
             try
             {
-                Stream stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
+                using Stream stream = painter.DrawAsStream(format: SKEncodedImageFormat.Png);
                 image = Image.FromStream(stream);
                 errorMessage = null;
                 return true;
             }
             catch (NullReferenceException)
             {
-                image = null;
+                image?.Dispose();
                 errorMessage = painter.ErrorMessage;
                 return false;
             }
