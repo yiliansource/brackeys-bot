@@ -20,6 +20,8 @@ namespace BrackeysBot.Commands
 				return;
 			}
 
+			await Context.Message.DeleteAsync();
+
 			var trimmedCode = RemoveEmptyMethods(input);
 			var formattedCode = FormatCode(trimmedCode);
 
