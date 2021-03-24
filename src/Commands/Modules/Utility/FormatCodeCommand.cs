@@ -11,7 +11,7 @@ namespace BrackeysBot.Commands
 	public partial class UtilityModule : BrackeysBotModule
 	{
 		[Command("format"), Alias("code", "codify")]
-		[Summary("Turns input code into a formatted code block and pastes it into chat.")]
+		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
 		[Remarks("format <input>")]
 		public async Task FormatCodeAsync([Summary("The code input"), Remainder] string input)
 		{
