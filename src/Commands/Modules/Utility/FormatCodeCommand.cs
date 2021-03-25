@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord.Commands;
@@ -12,7 +13,7 @@ namespace BrackeysBot.Commands
 	{
 		[Command("format"), Alias("code", "codify")]
 		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
-		[Remarks("format <input>")]
+		[Remarks("format <optional language> <input>")]
 		public async Task FormatCodeAsync([Summary("The code input"), Remainder] string input)
 		{
 			if (FilterService.ContainsBlockedWord(input))
@@ -22,10 +23,39 @@ namespace BrackeysBot.Commands
 
 			await Context.Message.DeleteAsync();
 
+			// If a language is entered, remove it from input
+			if (TryDetectLanguage(input, out string language))
+			{
+				var inputList = input.ToCharArray().ToList();
+				inputList.RemoveRange(0, language.Length);
+				input = new string(inputList.ToArray());
+			}
+
 			var trimmedCode = RemoveEmptyMethods(input);
 			var formattedCode = FormatCode(trimmedCode);
 
-			await Context.Channel.SendMessageAsync($"```cs\n{formattedCode}\n```");
+			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");
+		}
+
+		// Try detecting a language, default to cs if no language is found
+		private bool TryDetectLanguage(string input, out string language)
+		{
+			var languages = new string[] {"actionscript", "angelscript", "arcade", "arduino", "aspectj", "autohotkey", "autoit", "cal",
+										  "capnproto", "ceylon", "clean", "coffeescript", "cpp", "crystal", "cs", "css", "d", "dart",
+										  "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", "java", 
+										  "js", "json", "kotlin", "leaf", "less", "lisp", "livescript", "lsl", "lua", "mathematica", 
+										  "matlab", "mel", "perl", "n1ql", "nginx", "nix", "objectivec", "openscad", "php", "powershell",
+										  "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala",
+										  "scss", "sql", "stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir"};
+
+			var firstWord = input.Split(" ")[0].ToLower();
+			if (languages.Contains(firstWord))
+			{
+				language = firstWord;
+				return true;
+			}
+			language = "cs";
+			return false;
 		}
 
 		// Removes empty void methods like the default Update() and Start() that some people can't be bothered to delete themselves
