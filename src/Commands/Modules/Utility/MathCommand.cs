@@ -31,8 +31,6 @@ namespace BrackeysBot.Commands
             if (!canOverride && remaining > 0)
                 throw new TimeoutException($"You need to wait {TimeSpan.FromMilliseconds(remaining).Humanize(2, minUnit: TimeUnit.Second)} before you can use this command again!");
             
-            MathService.UpdateLatexTimeout(Context.User);
-            
             if (!TryRender(input, out Image originalImage, out string errorMessage))
             {
                 await new EmbedBuilder()
@@ -42,6 +40,8 @@ namespace BrackeysBot.Commands
                      .SendToChannel(Context.Channel);
                 return;
             }
+            
+            MathService.UpdateLatexTimeout(Context.User);
             
             using Image image = AddPadding(originalImage);
             await using Stream stream = GetImageStream(image);
