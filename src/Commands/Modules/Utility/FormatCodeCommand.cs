@@ -11,6 +11,12 @@ namespace BrackeysBot.Commands
 {
 	public partial class UtilityModule : BrackeysBotModule
 	{
+		readonly string[] languages = new string[] {"actionscript", "angelscript", "arcade", "arduino", "aspectj", "autohotkey", "autoit", "cal", "capnproto", "ceylon", 
+			"clean", "coffeescript", "cpp", "crystal", "cs", "css", "d", "dart", "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", 
+			"java", "js", "json", "kotlin", "leaf", "less", "lisp", "livescript", "lsl", "lua", "mathematica", "matlab", "mel", "perl", "n1ql", "nginx", "nix", 
+			"objectivec", "openscad", "php", "powershell", "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala", "scss", "sql", 
+			"stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir"};
+
 		[Command("format"), Alias("code", "codify")]
 		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
 		[Remarks("format <optional language> <input>")]
@@ -40,14 +46,6 @@ namespace BrackeysBot.Commands
 		// Try detecting a language, default to cs if no language is found
 		private bool TryDetectLanguage(string input, out string language)
 		{
-			var languages = new string[] {"actionscript", "angelscript", "arcade", "arduino", "aspectj", "autohotkey", "autoit", "cal",
-										  "capnproto", "ceylon", "clean", "coffeescript", "cpp", "crystal", "cs", "css", "d", "dart",
-										  "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", "java", 
-										  "js", "json", "kotlin", "leaf", "less", "lisp", "livescript", "lsl", "lua", "mathematica", 
-										  "matlab", "mel", "perl", "n1ql", "nginx", "nix", "objectivec", "openscad", "php", "powershell",
-										  "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala",
-										  "scss", "sql", "stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir"};
-
 			var firstWord = input.Split(" ")[0].ToLower();
 			if (languages.Contains(firstWord))
 			{
