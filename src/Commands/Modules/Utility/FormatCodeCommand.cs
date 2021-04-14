@@ -31,7 +31,7 @@ namespace BrackeysBot.Commands
 			var firstWord = input.Split(" ")[0];
 
 			// If an id is entered, try assigning the target message's content to input
-			if (TryDetectMessageId(firstWord, out string content))
+			if (TryDetectMessageFromId(firstWord, out string content))
 			{
 				content = RemoveBacktics(content);
 				input = content;
@@ -68,7 +68,7 @@ namespace BrackeysBot.Commands
 		}
 
 		// Try detecting a message from the given id
-		private bool TryDetectMessageId(string input, out string content)
+		private bool TryDetectMessageFromId(string input, out string content)
 		{
 			if (ulong.TryParse(input, out ulong id))
 			{
