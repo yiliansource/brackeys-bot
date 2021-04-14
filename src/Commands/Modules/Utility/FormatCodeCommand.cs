@@ -52,7 +52,7 @@ namespace BrackeysBot.Commands
 			var trimmedCode = RemoveEmptyMethods(input);
 			var formattedCode = FormatCode(trimmedCode);
 
-			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");			
+			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");
 		}
 
 		// Try detecting a language, default to cs if no language is found
