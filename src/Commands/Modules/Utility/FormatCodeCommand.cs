@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using Discord;
 using Discord.Commands;
 
 using Microsoft.CodeAnalysis;
@@ -26,34 +27,83 @@ namespace BrackeysBot.Commands
 			{
 				return;
 			}
+			
+			var firstWord = input.Split(" ")[0];
 
-			await Context.Message.DeleteAsync();
-
+			// If an id is entered, try assigning the target message's content to input
+			if (TryDetectMessageId(firstWord, out string content))
+			{
+				content = RemoveBacktics(content);
+				input = content;
+			}
+			else
+			{
+				await Context.Message.DeleteAsync();
+			}
+			
 			// If a language is entered, remove it from input
-			if (TryDetectLanguage(input, out string language))
+			if (TryDetectLanguage(firstWord, out string language))
 			{
 				var inputList = input.ToCharArray().ToList();
 				inputList.RemoveRange(0, language.Length);
 				input = new string(inputList.ToArray());
-			}
+			}		
 
 			var trimmedCode = RemoveEmptyMethods(input);
 			var formattedCode = FormatCode(trimmedCode);
 
-			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");
+			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");			
 		}
 
 		// Try detecting a language, default to cs if no language is found
 		private bool TryDetectLanguage(string input, out string language)
 		{
-			var firstWord = input.Split(" ")[0].ToLower();
-			if (languages.Contains(firstWord))
+			if (languages.Contains(input))
 			{
-				language = firstWord;
+				language = input;
 				return true;
 			}
 			language = "cs";
 			return false;
+		}
+
+		// Try detecting a message from the given id
+		private bool TryDetectMessageId(string input, out string content)
+		{
+			if (ulong.TryParse(input, out ulong id))
+			{
+				var targetMessage = Context.Channel.GetMessageAsync(id).Result;
+				if (targetMessage != null)
+				{
+					content = targetMessage.Content;
+					return true;
+				}							
+			}
+			content = string.Empty;
+			return false;
+		}
+
+		// Remove backticks and highlighting if the message copied from id has any
+		private string RemoveBacktics(string input)
+		{	
+			if (input.StartsWith("```"))
+			{
+				input = input.Remove(0, 3);
+				if (TryDetectLanguage(input.Split('\n')[0], out string language))	// Environment.Newline doesn't work for some reason
+				{
+					input = input.Remove(0, language.Length);
+					var charArray = input.ToCharArray();
+					for (int charIndex = 0; charIndex < charArray.Length; charIndex++)
+					{
+						if (charArray[charIndex] == '`')
+						{					
+							charArray[charIndex] = ' ';						
+						}
+					}
+					input = new string(charArray);
+				}			
+			}			
+			return input;
 		}
 
 		// Removes empty void methods like the default Update() and Start() that some people can't be bothered to delete themselves
