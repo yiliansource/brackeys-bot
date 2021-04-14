@@ -13,7 +13,7 @@ namespace BrackeysBot.Commands
 	public partial class UtilityModule : BrackeysBotModule
 	{
 		readonly string[] languages = new string[] {"actionscript", "angelscript", "arcade", "arduino", "aspectj", "autohotkey", "autoit", "cal", "capnproto", "ceylon", 
-			"clean", "coffeescript", "cpp", "crystal", "cs", "css", "d", "dart", "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", 
+			"clean", "coffeescript", "cpp", "crystal", "c", "cs", "css", "d", "dart", "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", 
 			"java", "js", "json", "kotlin", "leaf", "less", "lisp", "livescript", "lsl", "lua", "mathematica", "matlab", "mel", "perl", "n1ql", "nginx", "nix", 
 			"objectivec", "openscad", "php", "powershell", "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala", "scss", "sql", 
 			"stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir"};
