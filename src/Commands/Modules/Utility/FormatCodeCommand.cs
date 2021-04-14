@@ -44,9 +44,7 @@ namespace BrackeysBot.Commands
 			// If a language is entered, remove it from input
 			if (TryDetectLanguage(firstWord, out string language))
 			{
-				var inputList = input.ToCharArray().ToList();
-				inputList.RemoveRange(0, language.Length);
-				input = new string(inputList.ToArray());
+				input = input.Remove(0, language.Length);
 			}
 
 			var trimmedCode = RemoveEmptyMethods(input);
