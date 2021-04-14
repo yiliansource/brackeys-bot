@@ -17,9 +17,9 @@ namespace BrackeysBot.Commands
 			"objectivec", "openscad", "php", "powershell", "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala", "scss", "sql", 
 			"stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir"};
 
-		[Command("format"), Alias("code", "codify")]
+		[Command("formatcode"), Alias("code", "codify", "format")]
 		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
-		[Remarks("format <optional language> <input>")]
+		[Remarks("code <input>")]
 		public async Task FormatCodeAsync([Summary("The code input"), Remainder] string input)
 		{
 			if (FilterService.ContainsBlockedWord(input))
