@@ -47,7 +47,7 @@ namespace BrackeysBot.Commands
 				var inputList = input.ToCharArray().ToList();
 				inputList.RemoveRange(0, language.Length);
 				input = new string(inputList.ToArray());
-			}		
+			}
 
 			var trimmedCode = RemoveEmptyMethods(input);
 			var formattedCode = FormatCode(trimmedCode);
