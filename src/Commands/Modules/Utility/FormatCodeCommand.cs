@@ -89,7 +89,7 @@ namespace BrackeysBot.Commands
 			if (input.StartsWith("```"))
 			{
 				input = input.Remove(0, 3);
-				if (TryDetectLanguage(input.Split('\n')[0], out string language))	// Environment.Newline doesn't work for some reason
+				if (TryDetectLanguage(input.Split('\n')[0], out string language))
 				{
 					input = input.Remove(0, language.Length);
 					var charArray = input.ToCharArray();
