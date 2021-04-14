@@ -33,8 +33,7 @@ namespace BrackeysBot.Commands
 			// If an id is entered, try assigning the target message's content to input
 			if (TryDetectMessageFromId(firstWord, out string content))
 			{
-				content = RemoveBacktics(content);
-				input = content;
+				input = RemoveBacktics(content);
 			}
 			else
 			{
