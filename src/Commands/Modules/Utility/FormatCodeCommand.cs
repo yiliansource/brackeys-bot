@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using Discord;
 using Discord.Commands;
 
 using Microsoft.CodeAnalysis;
@@ -16,7 +17,7 @@ namespace BrackeysBot.Commands
 
 		[Command("formatcode"), Alias("code", "codify", "format")]
 		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
-		[Remarks("code <language (optional)> <input>")]
+		[Remarks("format [language] <id | input>")]
 		public async Task FormatCodeAsync([Summary("The code input"), Remainder] string input)
 		{
 			if (FilterService.ContainsBlockedWord(input))
@@ -34,9 +35,13 @@ namespace BrackeysBot.Commands
 			}
 
 			// If an id is entered, try assigning the target message's content to input
-			if (TryDetectMessageFromId(firstWord, out string content))
+			if (TryDetectMessageFromId(firstWord, out string content, out ulong id))
 			{
 				input = RemoveBacktics(content);
+				if (CanDeleteOriginal(id))
+				{
+					await Context.Channel.DeleteMessageAsync(id);
+				}				
 			}
 			else
 			{
@@ -47,6 +52,15 @@ namespace BrackeysBot.Commands
 			var formattedCode = FormatCode(trimmedCode);
 
 			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");
+		}
+		
+		private bool CanDeleteOriginal(ulong id)
+		{
+			var isGuruOrAbove = (Context.User as IGuildUser).GetPermissionLevel(Context) >= PermissionLevel.Guru;
+
+			var timePassed =  DateTimeOffset.Now - Context.Channel.GetMessageAsync(id).Result.CreatedAt;
+
+			return isGuruOrAbove && timePassed.TotalMilliseconds < 3600000;	// Hardcoded 1 hour, couldn't figure out how to work out the DataService and BotConfiguration.
 		}
 
 		// Try detecting a language, default to cs if no language is found
@@ -62,17 +76,19 @@ namespace BrackeysBot.Commands
 		}
 
 		// Try detecting a message from the given id
-		private bool TryDetectMessageFromId(string input, out string content)
+		private bool TryDetectMessageFromId(string input, out string content, out ulong outputId)
 		{
 			if (ulong.TryParse(input, out ulong id))
 			{
 				var targetMessage = Context.Channel.GetMessageAsync(id).Result;
 				if (targetMessage != null)
 				{
+					outputId = id;
 					content = targetMessage.Content;
 					return true;
 				}							
 			}
+			outputId = 0;
 			content = string.Empty;
 			return false;
 		}
