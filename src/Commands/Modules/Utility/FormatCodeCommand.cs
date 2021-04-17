@@ -11,15 +11,12 @@ namespace BrackeysBot.Commands
 {
 	public partial class UtilityModule : BrackeysBotModule
 	{
-		readonly string[] languages = new string[] {"actionscript", "angelscript", "arcade", "arduino", "aspectj", "autohotkey", "autoit", "cal", "capnproto", "ceylon", 
-			"clean", "coffeescript", "cpp", "crystal", "c", "cs", "css", "d", "dart", "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", 
-			"java", "js", "json", "kotlin", "leaf", "less", "lisp", "livescript", "lsl", "lua", "mathematica", "matlab", "mel", "perl", "n1ql", "nginx", "nix", 
-			"objectivec", "openscad", "php", "powershell", "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala", "scss", "sql", 
-			"stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir"};
+		readonly string[] languages = new string[]
+		{ "actionscript", "angelscript", "arcade", "arduino", "aspectj", "autohotkey", "autoit", "cal", "capnproto", "ceylon", "clean", "coffeescript", "cpp", "crystal", "c", "cs", "csharp", "css", "d", "dart", "diff", "dos", "dts", "glsl", "gml", "go", "gradle", "groovy", "haxe", "hsp", "http", "java", "js", "json", "kotlin", "leaf", "less", "lisp", "livescript", "lsl", "lua", "mathematica", "matlab", "mel", "perl", "n1ql", "nginx", "nix", "objectivec", "openscad", "php", "powershell", "processing", "protobuff", "puppet", "qml", "r", "reasonml", "roboconf", "rsl", "rust", "scala", "scss", "sql", "stan", "swift", "tcl", "thrift", "typescript", "vala", "zephir" };
 
 		[Command("formatcode"), Alias("code", "codify", "format")]
 		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
-		[Remarks("code <input>")]
+		[Remarks("code <language (optional)> <input>")]
 		public async Task FormatCodeAsync([Summary("The code input"), Remainder] string input)
 		{
 			if (FilterService.ContainsBlockedWord(input))
@@ -29,6 +26,13 @@ namespace BrackeysBot.Commands
 			
 			var firstWord = input.Split(" ")[0];
 
+			// If a language is entered, remove it from input
+			if (TryDetectLanguage(firstWord, out string language))
+			{
+				input = input.Remove(0, language.Length + 1);	// Length + 1 for removing the whitespace as well, faster than calling .Trim();
+				firstWord = input.Split(" ")[0];
+			}
+
 			// If an id is entered, try assigning the target message's content to input
 			if (TryDetectMessageFromId(firstWord, out string content))
 			{
@@ -37,12 +41,6 @@ namespace BrackeysBot.Commands
 			else
 			{
 				await Context.Message.DeleteAsync();
-			}
-			
-			// If a language is entered, remove it from input
-			if (TryDetectLanguage(firstWord, out string language))
-			{
-				input = input.Remove(0, language.Length);
 			}
 
 			var trimmedCode = RemoveEmptyMethods(input);
