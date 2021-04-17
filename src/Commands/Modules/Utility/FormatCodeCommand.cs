@@ -17,8 +17,8 @@ namespace BrackeysBot.Commands
 
 		[Command("formatcode"), Alias("code", "codify", "format")]
 		[Summary("Turns inputted code into a formatted code block and pastes it into the channel.")]
-		[Remarks("format [language] <id | input>")]
-		public async Task FormatCodeAsync([Summary("The code input"), Remainder] string input)
+		[Remarks("format [language] <id | code>")]
+		public async Task FormatCodeAsync([Summary("ID of a message, or pasted code."), Remainder] string input)
 		{
 			if (FilterService.ContainsBlockedWord(input))
 			{
