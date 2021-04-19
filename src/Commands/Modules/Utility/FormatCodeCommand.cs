@@ -49,7 +49,7 @@ namespace BrackeysBot.Commands
 			}
 
 			var trimmedCode = RemoveEmptyMethods(input);
-			var formattedCode = FormatCode(trimmedCode);
+			var formattedCode = FormatCodeService.Format(trimmedCode);
 
 			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");
 		}
@@ -60,7 +60,7 @@ namespace BrackeysBot.Commands
 
 			var timePassed =  DateTimeOffset.Now - Context.Channel.GetMessageAsync(id).Result.CreatedAt;
 
-			return isGuruOrAbove && timePassed.TotalMilliseconds < 3600000;	// Hardcoded 1 hour, couldn't figure out how to work out the DataService and BotConfiguration.
+			return isGuruOrAbove && timePassed.TotalMilliseconds < FormatCodeService.GetTimeoutSetting();
 		}
 
 		// Try detecting a language, default to cs if no language is found
@@ -181,14 +181,6 @@ namespace BrackeysBot.Commands
 			}
 
 			return string.Join('\n', codeLines);
-		}
-
-		// Formats the input using microsoft's code parser
-		public static string FormatCode(string input)
-		{
-			var tree = CSharpSyntaxTree.ParseText(input);
-			var node = tree.GetRoot().NormalizeWhitespace();
-			return node.ToFullString();
 		}
 	}
 }
