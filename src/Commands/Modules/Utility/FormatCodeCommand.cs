@@ -36,7 +36,8 @@ namespace BrackeysBot.Commands
 			if (TryDetectMessageFromId(firstWord, out string content, out ulong messageId, out ulong messageAuthorId))
 			{
 				input = RemoveBacktics(content);
-				userMention = $"<@{messageAuthorId}>";
+				var user = await Context.Guild.GetUserAsync(messageAuthorId);
+				userMention = $"{user.Username}";
 				if (CanDeleteOriginal(messageId))
 				{
 					await Context.Channel.DeleteMessageAsync(messageId);
