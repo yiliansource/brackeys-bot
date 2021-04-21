@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 namespace BrackeysBot.Commands
 {
 	public partial class UtilityModule : BrackeysBotModule
