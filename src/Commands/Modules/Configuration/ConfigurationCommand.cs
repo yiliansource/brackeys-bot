@@ -12,10 +12,11 @@ namespace BrackeysBot.Commands
 {
     public partial class ConfigurationModule : BrackeysBotModule
     {
-        public ConfigurationService Config { get; set; }
         private IUserMessage _lastConfigMessage;
         private int _currentPage;
 
+        public ConfigurationService Config { get; set; }
+       
         [Command("config"), Alias("configuration", "c")]
         [Remarks("config [name] [value]")]
         [Summary("Shows the entire configuration, or just a single value, or changes a value.")]
