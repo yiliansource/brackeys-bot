@@ -5,13 +5,13 @@ namespace BrackeysBot.Commands
 {
 	public partial class ConfigurationModule : BrackeysBotModule
 	{
-        private readonly DiscordSocketClient _discord;
-        private IUserMessage _lastConfigMessage;
-        private int _currentPage;
-
-		ConfigurationModule(DiscordSocketClient discord)
-        {
-            _discord = discord;
-        }
-    }
+		private DiscordSocketClient _socketClient;
+		private IUserMessage _lastConfigMessage;
+		private int _currentPage;
+		
+		public ConfigurationModule(DiscordSocketClient socketClient)
+		{
+			_socketClient = socketClient;
+		}
+	}
 }

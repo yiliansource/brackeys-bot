@@ -23,17 +23,17 @@ namespace BrackeysBot.Commands
 			EmbedBuilder builder = ConfigEmbedBuilder();
 
 			_lastConfigMessage = await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
-			var emojis = new Emoji[] { new Emoji("\U00002B05"), new Emoji("\U000027A1") };  // Unicode characters for left and right arrows, respectively
             _currentPage = 0;
-			await _lastConfigMessage.AddReactionsAsync(emojis);
+            _socketClient.ReactionAdded += HandleReactionAddedAsync;
 
-			_discord.ReactionAdded += HandleReactionAddedAsync;
+            var emojis = new Emoji[] { new Emoji("\U00002B05"), new Emoji("\U000027A1") };  // Unicode characters for left and right arrows, respectively
+            await _lastConfigMessage.AddReactionsAsync(emojis);
 		}
 
 		public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel originChannel, SocketReaction reaction)
 		{
             var message = await cachedMessage.GetOrDownloadAsync();
-            if (message == null || 
+            if (message is null || 
                 reaction.UserId == message.Author.Id ||
                 message.Id != _lastConfigMessage?.Id)
 			{
