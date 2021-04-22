@@ -13,6 +13,8 @@ namespace BrackeysBot.Commands
     public partial class ConfigurationModule : BrackeysBotModule
     {
         public ConfigurationService Config { get; set; }
+        private IUserMessage _lastConfigMessage;
+        private int _currentPage;
 
         [Command("config"), Alias("configuration", "c")]
         [Remarks("config [name] [value]")]
@@ -24,8 +26,7 @@ namespace BrackeysBot.Commands
 
 			_lastConfigMessage = await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
             _currentPage = 0;
-            _socketClient.ReactionAdded += HandleReactionAddedAsync;
-
+            (Context.Client as DiscordSocketClient).ReactionAdded += HandleReactionAddedAsync;
             var emojis = new Emoji[] { new Emoji("\U00002B05"), new Emoji("\U000027A1") };  // Unicode characters for left and right arrows, respectively
             await _lastConfigMessage.AddReactionsAsync(emojis);
 		}
