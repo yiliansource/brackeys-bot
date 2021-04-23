@@ -127,9 +127,9 @@ namespace BrackeysBot
         [Description("The minimum time between being able to use the latex command again, in milliseconds")]
         public int LatexTimeoutMillis { get; set; }
 
-        [YamlMember(Alias = "guruDeleteTresholdMillis")]
+        [YamlMember(Alias = "codeFormatterDeleteTresholdMillis")]
         [Description("The maximum time before a message can be deleted when the format code command is used by a guru, in milliseconds")]
-        public int GuruDeleteTresholdMillis { get; set; }
+        public int CodeFormatterDeleteTresholdMillis { get; set; }
 
         [YamlMember(Alias = "helperMuteMaxDuration")]
         [Description("The maximum amount of time a helper may mute a person")]

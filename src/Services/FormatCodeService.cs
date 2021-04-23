@@ -17,7 +17,7 @@ namespace BrackeysBot.Services
 			_data = data;
 		}
 
-		public int GetTimeoutSetting() => _data.Configuration.GuruDeleteTresholdMillis;
+		public int GetTimeoutSetting() => _data.Configuration.CodeFormatterDeleteTresholdMillis;
 
 		// Formats the input using microsoft's code parser
 		public string Format(string input)
