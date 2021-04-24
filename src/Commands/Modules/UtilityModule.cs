@@ -13,5 +13,7 @@ namespace BrackeysBot.Commands
         public FilterService FilterService { get; set; }
         
         public MathService MathService { get; set; }
+
+        public FormatCodeService FormatCodeService { get; set; }
     }
 }

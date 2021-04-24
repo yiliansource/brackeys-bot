@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
 namespace BrackeysBot.Commands
 {
 	public partial class UtilityModule : BrackeysBotModule
@@ -25,6 +22,7 @@ namespace BrackeysBot.Commands
 				return;
 			}
 			
+			var userMention = $"<@{Context.User.Id}>";
 			var firstWord = input.Split(" ")[0];
 
 			// If a language is entered, remove it from input
@@ -35,12 +33,14 @@ namespace BrackeysBot.Commands
 			}
 
 			// If an id is entered, try assigning the target message's content to input
-			if (TryDetectMessageFromId(firstWord, out string content, out ulong id))
+			if (TryDetectMessageFromId(firstWord, out string content, out ulong messageId, out ulong messageAuthorId))
 			{
 				input = RemoveBacktics(content);
-				if (CanDeleteOriginal(id))
+				var user = await Context.Guild.GetUserAsync(messageAuthorId);
+				userMention = $"{user.Username}";
+				if (CanDeleteOriginal(messageId))
 				{
-					await Context.Channel.DeleteMessageAsync(id);
+					await Context.Channel.DeleteMessageAsync(messageId);
 				}				
 			}
 			else
@@ -49,9 +49,9 @@ namespace BrackeysBot.Commands
 			}
 
 			var trimmedCode = RemoveEmptyMethods(input);
-			var formattedCode = FormatCode(trimmedCode);
+			var formattedCode = FormatCodeService.Format(trimmedCode);
 
-			await Context.Channel.SendMessageAsync($"```{language}\n{formattedCode}\n```");
+			await Context.Channel.SendMessageAsync($"Codeblock pasted by {userMention}:\n```{language}\n{formattedCode}\n```");
 		}
 		
 		private bool CanDeleteOriginal(ulong id)
@@ -60,7 +60,7 @@ namespace BrackeysBot.Commands
 
 			var timePassed =  DateTimeOffset.Now - Context.Channel.GetMessageAsync(id).Result.CreatedAt;
 
-			return isGuruOrAbove && timePassed.TotalMilliseconds < 3600000;	// Hardcoded 1 hour, couldn't figure out how to work out the DataService and BotConfiguration.
+			return isGuruOrAbove && timePassed.TotalMilliseconds < FormatCodeService.GetTimeoutSetting();
 		}
 
 		// Try detecting a language, default to cs if no language is found
@@ -76,19 +76,21 @@ namespace BrackeysBot.Commands
 		}
 
 		// Try detecting a message from the given id
-		private bool TryDetectMessageFromId(string input, out string content, out ulong outputId)
+		private bool TryDetectMessageFromId(string input, out string content, out ulong messageId, out ulong messageAuthorId)
 		{
 			if (ulong.TryParse(input, out ulong id))
 			{
 				var targetMessage = Context.Channel.GetMessageAsync(id).Result;
 				if (targetMessage != null)
 				{
-					outputId = id;
+					messageId = id;
+					messageAuthorId = targetMessage.Author.Id;
 					content = targetMessage.Content;
 					return true;
 				}							
 			}
-			outputId = 0;
+			messageId = 0;
+			messageAuthorId = 0;
 			content = string.Empty;
 			return false;
 		}
@@ -181,14 +183,6 @@ namespace BrackeysBot.Commands
 			}
 
 			return string.Join('\n', codeLines);
-		}
-
-		// Formats the input using microsoft's code parser
-		public static string FormatCode(string input)
-		{
-			var tree = CSharpSyntaxTree.ParseText(input);
-			var node = tree.GetRoot().NormalizeWhitespace();
-			return node.ToFullString();
 		}
 	}
 }

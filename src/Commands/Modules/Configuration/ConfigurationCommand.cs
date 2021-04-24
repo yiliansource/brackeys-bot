@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 using BrackeysBot.Services;
 
@@ -10,23 +12,86 @@ namespace BrackeysBot.Commands
 {
     public partial class ConfigurationModule : BrackeysBotModule
     {
-        public ConfigurationService Config { get; set; }
+        private IUserMessage _lastConfigMessage;
+        private int _currentPage;
 
+        public ConfigurationService Config { get; set; }
+       
         [Command("config"), Alias("configuration", "c")]
         [Remarks("config [name] [value]")]
         [Summary("Shows the entire configuration, or just a single value, or changes a value.")]
         [RequireModerator]
         public async Task DisplayConfigAllAsync()
         {
-            EmbedBuilder builder = GetDefaultBuilder()
-                .WithTitle("Configuration")
-                .WithFields(Config.GetConfigurationValues()
-                    .Select(v => new EmbedFieldBuilder()
-                        .WithName(v.Name)
-                        .WithValue(LimitFieldLength(v.ToString()))
-                        .WithIsInline(true)));
+			EmbedBuilder builder = ConfigEmbedBuilder();
 
-            await builder.Build().SendToChannel(Context.Channel);
+			_lastConfigMessage = await Context.Channel.SendMessageAsync(string.Empty, false, builder.Build());
+            _currentPage = 0;
+            (Context.Client as DiscordSocketClient).ReactionAdded += HandleReactionAddedAsync;
+            var emojis = new Emoji[] { new Emoji("\U00002B05"), new Emoji("\U000027A1") };  // Unicode characters for left and right arrows, respectively
+            await _lastConfigMessage.AddReactionsAsync(emojis);
+		}
+
+		public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel originChannel, SocketReaction reaction)
+		{
+            var message = await cachedMessage.GetOrDownloadAsync();
+            if (message is null || 
+                reaction.UserId == message.Author.Id ||
+                message.Id != _lastConfigMessage?.Id)
+			{
+				return;
+			}
+
+            var left = new Emoji("\U00002B05").Emotify();
+            var right = new Emoji("\U000027A1").Emotify();
+            if (reaction.Emote.Emotify() == left)
+            {
+                _currentPage--;
+                var builder = ConfigEmbedBuilder();
+                await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                await message.ModifyAsync(p => p.Embed = builder.Build());
+            }
+            else if (reaction.Emote.Emotify() == right)
+			{
+                _currentPage++;
+                var builder = ConfigEmbedBuilder();
+                await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                await message.ModifyAsync(p => p.Embed = builder.Build());
+			}
+		}
+
+        private EmbedBuilder ConfigEmbedBuilder()
+        {          
+            EmbedBuilder builder = GetDefaultBuilder().WithTitle("Configuration");
+            var values = Config.GetConfigurationValues().ToList();
+
+            const int maxFieldsPerPage = 25;
+            var maxPages = (int) MathF.Ceiling((float) values.Count / maxFieldsPerPage);
+			
+            if (_currentPage < 0)
+			{
+                _currentPage = maxPages - 1;
+			}
+            else if(_currentPage >= maxPages)
+			{
+                _currentPage = 0;
+			}
+
+			for (int i = 0; i < maxFieldsPerPage; i++)
+            {
+                var valueIndex = _currentPage * maxFieldsPerPage + i;
+                if (valueIndex >= values.Count)
+                {
+                    break;
+                }
+
+                builder.AddField(new EmbedFieldBuilder()
+                    .WithName(values[valueIndex].Name)
+                    .WithValue(LimitFieldLength(values[i].ToString()))
+                    .WithIsInline(true));
+            }
+
+            return builder;
         }
 
         [Command("config"), Alias("configuration", "c", "viewconfig")]
