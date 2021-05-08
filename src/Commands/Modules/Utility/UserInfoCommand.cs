@@ -37,8 +37,8 @@ namespace BrackeysBot.Commands
                 .AddField("Username", user.ToString(), true)
                 .AddField("ID", user.Id.ToString(), true)
                 .AddFieldConditional(!string.IsNullOrEmpty(user.Nickname), "Nickname", user.Nickname, true)
-                .AddFieldConditional(user.JoinedAt.HasValue, "Join Date", user.JoinedAt?.ToShortDateString(), true)
-                .AddField("User Created", user.CreatedAt.ToShortDateString(), true)
+                .AddFieldConditional(user.JoinedAt.HasValue, "Join Date", user.JoinedAt?.DateTime.ToOrdinalWords(), true)
+                .AddField("User Created", user.CreatedAt.DateTime.ToOrdinalWords(), true)
                 .AddFieldConditional(starCount > 0, "Endorsements", $"{starCount} :star:", true)
                 .AddFieldConditional(infractionCount > 0, "Infractions", infractionCount.ToString(), true)
                 .AddField("Permission Level", user.GetPermissionLevel(Context).Humanize(), true);
