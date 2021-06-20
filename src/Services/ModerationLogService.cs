@@ -77,7 +77,7 @@ namespace BrackeysBot.Services
                 builder.WithFooter($"Infraction ID: {logEntry.InfractionId}");
             
             // First display the Reason, then any additional fields; looks better.
-            builder.AddField("Reason", logEntry.Reason);
+            builder.AddFieldConditional(!string.IsNullOrWhiteSpace(logEntry.Reason), "Reason", logEntry.Reason);
 
             // AddFieldConditional won't work because the logEntry.Duration.Value will be resolved first, which can be a NullReferenceException because
             //  it is not guarantueed Duration will be non-null.
