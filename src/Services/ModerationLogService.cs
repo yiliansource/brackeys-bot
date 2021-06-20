@@ -68,9 +68,9 @@ namespace BrackeysBot.Services
             if (logEntry.HasTarget)
             {
                 if (logEntry.Target != null)
-                    author.Append($" {logEntry.Target.ToString()}");
+                    author.Append($" {logEntry.Target.Username}#{logEntry.Target.Discriminator}");
                 else
-                    author.Append($" {logEntry.TargetMention}");
+                    author.Append($" {logEntry.TargetID}");
             }
 
             if (logEntry.InfractionId > -1) 
