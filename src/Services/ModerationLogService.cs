@@ -73,7 +73,7 @@ namespace BrackeysBot.Services
                 else
                     author.Append($" {logEntry.TargetID}");
                 
-                footnotes.Add($"User ID: {logEntry.TargetID}");
+                footnotes.Add(logEntry.TargetID.ToString());
             }
 
             if (logEntry.InfractionId > -1)
