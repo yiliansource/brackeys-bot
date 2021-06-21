@@ -64,17 +64,23 @@ namespace BrackeysBot.Services
             EmbedBuilder builder = new EmbedBuilder();
 
             StringBuilder author = new StringBuilder($"[{logEntry.ActionType.Humanize()}]");
+            List<string> footnotes = new List<string>();
             
             if (logEntry.HasTarget)
             {
                 if (logEntry.Target != null)
-                    author.Append($" {logEntry.Target.ToString()}");
+                    author.Append($" {logEntry.Target.Username}#{logEntry.Target.Discriminator}");
                 else
-                    author.Append($" {logEntry.TargetMention}");
+                    author.Append($" {logEntry.TargetID}");
+                
+                footnotes.Add(logEntry.TargetID.ToString());
             }
 
-            if (logEntry.InfractionId > -1) 
-                builder.WithFooter($"Infraction ID: {logEntry.InfractionId}");
+            if (logEntry.InfractionId > -1)
+                footnotes.Add($"Infraction ID: {logEntry.InfractionId}");
+
+            // Split user and infraction ID by bullet point
+            builder.WithFooter(string.Join(" \u2022 ", footnotes));
             
             // First display the Reason, then any additional fields; looks better.
             builder.AddFieldConditional(!string.IsNullOrWhiteSpace(logEntry.Reason), "Reason", logEntry.Reason);
