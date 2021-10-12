@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Discord;
 using Discord.WebSocket;
 
@@ -8,21 +9,11 @@ namespace BrackeysBot.Services
 {
     public class CollabService : BrackeysBotService
     {
-        private enum CollabChannel
-        {
-            Paid,
-            Hobby,
-            Gametest,
-            Mentor
-        }
-
-
+        
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
         private readonly Dictionary<ulong, int> _lastCollabUsages = new Dictionary<ulong, int>();
-        private readonly Dictionary<ulong, Conversation> _activeConversations = new Dictionary<ulong, Conversation>();
-
-        public ulong CollabUserID { get; private set; } //NOT INSTANCED, FIX!!!
+        private readonly Dictionary<ulong, CollabConversation> _activeConversations = new Dictionary<ulong, CollabConversation>();
 
         /// <inheritdoc />
         public CollabService(DataService data, DiscordSocketClient client)
@@ -58,7 +49,7 @@ namespace BrackeysBot.Services
         {
             if (!_activeConversations.ContainsKey(user.Id))
             {
-                var _conversation = new Conversation(_client, _data, this);
+                var _conversation = new CollabConversation(_client, _data, this);
                 _activeConversations.Add(user.Id, _conversation);
                 return true;
             }
@@ -81,8 +72,16 @@ namespace BrackeysBot.Services
             await _activeConversations[userId].HandleAnswer();
         }
 
-        private class Conversation
+        private class CollabConversation
         {
+            private enum CollabChannel
+            {
+                Paid,
+                Hobby,
+                Gametest,
+                Mentor
+            }
+
             public static int InstanceCount;
 
             private readonly DiscordSocketClient _client;
@@ -108,7 +107,7 @@ namespace BrackeysBot.Services
             private string _responsibilities;
             private string _link;
             
-            public Conversation(DiscordSocketClient client, DataService data, CollabService collab)
+            public CollabConversation(DiscordSocketClient client, DataService data, CollabService collab)
             {
                 InstanceCount++;
 
@@ -322,8 +321,7 @@ namespace BrackeysBot.Services
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("Provide a download link for your game. (optional, reply with \"-\" if you don't have a link)");
-                            FinalizeQuestionnaire();
-                            await BuildGametestEmbed();
+                            _buildStage++;
                         }
 
                         // Mentor, Not Hiring
@@ -527,7 +525,7 @@ namespace BrackeysBot.Services
                 _collab.DeactivateUser(_message.Author);
             }
 
-            public async Task BuildPaidNotHiringEmbed()   // Test
+            public async Task BuildPaidNotHiringEmbed()
             {
                 var title = "Looking for Work";
                 var color = Color.Green;
@@ -550,7 +548,7 @@ namespace BrackeysBot.Services
 
                 Console.WriteLine("InstanceCount: " + InstanceCount);
             }
-            public async Task BuildPaidHiringEmbed()      // Test
+            public async Task BuildPaidHiringEmbed()
             {
                 var title = "Hiring";
                 var color = Color.Blue;
@@ -575,7 +573,7 @@ namespace BrackeysBot.Services
 
                 Console.WriteLine("InstanceCount: " + InstanceCount);
             }
-            public async Task BuildHobbyNotHiringEmbed()  // Test
+            public async Task BuildHobbyNotHiringEmbed()
             {
                 var title = "Looking for work";
                 var color = Color.Green;
@@ -597,7 +595,7 @@ namespace BrackeysBot.Services
 
                 Console.WriteLine("InstanceCount: " + InstanceCount);
             }
-            public async Task BuildHobbyHiringEmbed()     // Test
+            public async Task BuildHobbyHiringEmbed()
             {
                 var title = "Hiring";
                 var color = Color.Blue;
@@ -621,9 +619,9 @@ namespace BrackeysBot.Services
 
                 Console.WriteLine("InstanceCount: " + InstanceCount);
             }
-            public async Task BuildGametestEmbed()        // Test
+            public async Task BuildGametestEmbed()
             {
-                var hasLink = _link != "-" || _link != "\"-\"";
+                var hasLink = _link != "-" && _link != "\"-\"";
 
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
 
@@ -633,11 +631,12 @@ namespace BrackeysBot.Services
                     .WithColor(Color.Blue)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("Platforms", _platforms, true)
-                    .AddField("Project Name", _projectName, true)
                     .AddFieldConditional(hasLink, "Download Link", _link, true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
+
+                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
             public async Task BuildMentorEmbed()
             {
@@ -660,7 +659,7 @@ namespace BrackeysBot.Services
                 Console.WriteLine("InstanceCount: " + InstanceCount);
             }
 
-            ~Conversation()
+            ~CollabConversation()
             {
                 InstanceCount--;
             }
