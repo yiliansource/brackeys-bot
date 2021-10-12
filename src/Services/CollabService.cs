@@ -414,9 +414,8 @@ namespace BrackeysBot.Services
                         else if (_collabChannel == CollabChannel.Hobby && !_hiring)
                         {
                             _experience = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
-                            FinalizeQuestionnaire();
-                            await BuildHobbyNotHiringEmbed();
+                            await _message.Author.TrySendMessageAsync("Add a decription.");
+                            _buildStage++;
                         }
                         // Hobby, Hiring
                         else if (_collabChannel == CollabChannel.Hobby && _hiring)
@@ -442,7 +441,15 @@ namespace BrackeysBot.Services
                             await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
                             _buildStage++;
                         }
-
+                       
+                        // Hobby, Not Hiring
+                        else if (_collabChannel == CollabChannel.Hobby && !_hiring)
+                        {
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
+                            FinalizeQuestionnaire();
+                            await BuildHobbyNotHiringEmbed();
+                        }
                         // Hobby, Hiring
                         else if (_collabChannel == CollabChannel.Hobby && _hiring)
                         {
@@ -473,9 +480,8 @@ namespace BrackeysBot.Services
                         else if (_collabChannel == CollabChannel.Hobby && _hiring)
                         {
                             _responsibilities = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
-                            FinalizeQuestionnaire();
-                            await BuildHobbyHiringEmbed();
+                            await _message.Author.TrySendMessageAsync("Please describe your game.");
+                            _buildStage++;
                         }
                         break;
 
@@ -486,6 +492,15 @@ namespace BrackeysBot.Services
                             _compensation = _message.Content;
                             await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have? (*Ie. Implementing physics system, writing character backstories etc.*)");
                             _buildStage++;
+                        }
+
+                        // Hobby, Hiring
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        {
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
+                            FinalizeQuestionnaire();
+                            await BuildHobbyHiringEmbed();
                         }
                         break;
 
