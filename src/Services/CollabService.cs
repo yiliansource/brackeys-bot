@@ -119,7 +119,7 @@ namespace BrackeysBot.Services
             public void UpdateMessage(SocketUserMessage message)
                 => _message = message;
 
-            public async Task HandleAnswer()
+            public async Task HandleAnswer()    // TO DO: Split the method into seperate channel methods called by this method
             {
                 if (_message == null) return;
 
