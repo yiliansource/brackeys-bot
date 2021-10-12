@@ -79,6 +79,26 @@ namespace BrackeysBot
         [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
         public ulong AmaChannelID { get; set; }
 
+        [YamlMember(Alias = "paidChannelId")]
+        [Description("Channel to post paid collaboration embeds.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
+        public ulong PaidChannelId { get; set; }
+
+        [YamlMember(Alias = "hobbyChannelId")]
+        [Description("Channel to post hobby collaboration embeds.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
+        public ulong HobbyChannelId { get; set; }
+
+        [YamlMember(Alias = "gametestChannelId")]
+        [Description("Channel to post gametest collaboration embeds.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
+        public ulong GametestChannelId { get; set; }
+
+        [YamlMember(Alias = "mentorChannelId")]
+        [Description("Channel to post mentor collaboration embeds.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
+        public ulong MentorChannelId { get; set; }
+
         #endregion
 
         [YamlMember(Alias = "moduleConfigs")]
@@ -126,6 +146,10 @@ namespace BrackeysBot
         [YamlMember(Alias = "latexTimeoutMillis")]
         [Description("The minimum time between being able to use the latex command again, in milliseconds")]
         public int LatexTimeoutMillis { get; set; }
+ 
+        [YamlMember(Alias = "collabTimeoutMillis")]
+        [Description("The minimum time between being able to use the collab command again, in milliseconds")]
+        public int CollabTimeoutMillis { get; set; }
 
         [YamlMember(Alias = "codeFormatterDeleteTresholdMillis")]
         [Description("The maximum time before a message can be deleted when the format code command is used by a guru, in milliseconds")]

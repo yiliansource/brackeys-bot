@@ -16,6 +16,7 @@ namespace BrackeysBot.Services
         private readonly CommandService _commands;
         private readonly CustomCommandService _customCommands;
         private readonly DataService _dataService;
+        private readonly CollabService _collabService;
         private readonly IServiceProvider _provider;
         private readonly LoggingService _log;
 
@@ -27,6 +28,7 @@ namespace BrackeysBot.Services
             CommandService commands,
             CustomCommandService customCommands,
             DataService dataService,
+            CollabService collabService,
             IServiceProvider provider,
             LoggingService log)
         {
@@ -34,6 +36,7 @@ namespace BrackeysBot.Services
             _commands = commands;
             _customCommands = customCommands;
             _dataService = dataService;
+            _collabService = collabService;
             _provider = provider;
             _log = log;
         }
@@ -133,18 +136,23 @@ namespace BrackeysBot.Services
 
         private async Task HandleCommandAsync(SocketMessage s)
         {
-            if (!(s is SocketUserMessage msg)) return;
+            if (!(s is SocketUserMessage msg) || msg.Author.IsBot) return;
+
+            int argPos = 0;
             if (!(s.Channel is IGuildChannel))
             {
-                if (!s.Author.IsBot)
+                if (_collabService.IsActiveUser(msg.Author) &&   // Should check dictionary stuff, probably better to call a method from _collabService
+                    !msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos))
+                {
+                    await _collabService.Converse(msg);
+                }
+                else
                 {
                     await s.Channel.SendMessageAsync("I'm not available in DMs. Please use the Brackeys Discord Server to communicate with me!");
                 }
-            }
-
-            int argPos = 0;
-            if (!msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos) ||
-                msg.Author.IsBot)
+                return;
+            }           
+            else if (!msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos))
                 return;
 
             var context = new BrackeysBotContext(msg, _provider);
