@@ -179,7 +179,7 @@ namespace BrackeysBot.Services
                         {
                             await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking for\n**- Work**\nOr are you looking to\n**- Hire**?");
                         }
-                        
+
                         // Hobby, Not Hiring
                         else if (_collabChannel == CollabChannel.Hobby && uppercaseMessage.Contains("TEAM"))
                         {
@@ -244,7 +244,6 @@ namespace BrackeysBot.Services
                             await _message.Author.TrySendMessageAsync("Describe your project.");
                             _buildStage++;
                         }
-                       
 
                         // Hobby, Not Hiring
                         else if (_collabChannel == CollabChannel.Hobby && !_hiring)
@@ -331,7 +330,7 @@ namespace BrackeysBot.Services
                             await _message.Author.TrySendMessageAsync("How much are your rates? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                         }
-                        // Mentor Hiring
+                        // Mentor, Hiring
                         else if (_collabChannel == CollabChannel.Mentor && _hiring)
                         {
                             _description = _message.Content;
@@ -355,7 +354,6 @@ namespace BrackeysBot.Services
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (**N/A** *if none*)");
                             _buildStage++;
                         }
-                        
 
                         // Hobby, Not Hiring
                         else if (_collabChannel == CollabChannel.Hobby && !_hiring)
@@ -372,7 +370,7 @@ namespace BrackeysBot.Services
                             _buildStage++;
                         }
 
-                        // Gametest
+                        // Gametest, Complete
                         else if (_collabChannel == CollabChannel.Gametest)
                         {
                             _link = _message.Content;
@@ -381,7 +379,7 @@ namespace BrackeysBot.Services
                             await BuildGametestEmbed();
                         }
 
-                        // Mentor
+                        // Mentor, Complete
                         else if (_collabChannel == CollabChannel.Mentor)
                         {
                             _compensation = _message.Content;
@@ -392,7 +390,6 @@ namespace BrackeysBot.Services
                         break;
 
                     case 5:
-
                         // Paid, Not Hiring
                         if (_collabChannel == CollabChannel.Paid && !_hiring)
                         {
@@ -439,8 +436,8 @@ namespace BrackeysBot.Services
                             await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
                             _buildStage++;
                         }
-                       
-                        // Hobby, Not Hiring
+
+                        // Hobby, Not Hiring, Complete
                         else if (_collabChannel == CollabChannel.Hobby && !_hiring)
                         {
                             _description = _message.Content;
@@ -458,7 +455,7 @@ namespace BrackeysBot.Services
                         break;
 
                     case 7:
-                        // Paid, Not Hiring
+                        // Paid, Not Hiring, Complete
                         if (_collabChannel == CollabChannel.Paid && !_hiring)
                         {
                             _compensation = _message.Content;
@@ -492,7 +489,7 @@ namespace BrackeysBot.Services
                             _buildStage++;
                         }
 
-                        // Hobby, Hiring
+                        // Hobby, Hiring, Complete
                         else if (_collabChannel == CollabChannel.Hobby && _hiring)
                         {
                             _description = _message.Content;
@@ -503,7 +500,7 @@ namespace BrackeysBot.Services
                         break;
 
                     case 9:
-                        // Paid, Hiring
+                        // Paid, Hiring, Complete
                         if (_collabChannel == CollabChannel.Paid && _hiring)
                         {
                             _responsibilities = _message.Content;
@@ -511,10 +508,6 @@ namespace BrackeysBot.Services
                             FinalizeQuestionnaire();
                             await BuildPaidHiringEmbed();
                         }
-
-                        break;
-
-                    default:
                         break;
                 }
             }
