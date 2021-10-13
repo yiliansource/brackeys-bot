@@ -148,7 +148,23 @@ namespace BrackeysBot.Services
             }           
             private async Task HandleHobbyAnswer(string uppercaseMessage)
             {
+                if (_hiring == HiringStatus.NotHiring || uppercaseMessage.Contains("TEAM"))
+                {
+                    await HandleNotHiring();
+                }
+                else if (_hiring == HiringStatus.Hiring || uppercaseMessage.Contains("PEOPLE"))
+                {
+                    await HandleHiring();
+                }
 
+                async Task HandleNotHiring()
+                {
+
+                }
+                async Task HandleHiring()
+                {
+
+                }
             }
             private async Task HandleGametestAnswer()
             {
@@ -156,7 +172,23 @@ namespace BrackeysBot.Services
             }
             private async Task HandleMentorAnswer(string uppercaseMessage)
             {
+                if (_hiring == HiringStatus.NotHiring || uppercaseMessage.Contains("TO"))
+                {
+                    await HandleNotHiring();
+                }
+                else if (_hiring == HiringStatus.Hiring || uppercaseMessage.Contains("FOR"))
+                {
+                    await HandleHiring();
+                }
 
+                async Task HandleNotHiring()
+                {
+
+                }
+                async Task HandleHiring()
+                {
+
+                }
             }
             public async Task HandleAnswer()    // TO DO: Split the method into seperate channel methods called by this method
             {
