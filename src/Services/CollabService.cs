@@ -76,10 +76,17 @@ namespace BrackeysBot.Services
         {
             private enum CollabChannel
             {
+                Unknown,
                 Paid,
                 Hobby,
                 Gametest,
                 Mentor
+            }
+            private enum HiringStatus
+            {
+                Unknown,
+                NotHiring,
+                Hiring
             }
 
             public static int InstanceCount;
@@ -91,8 +98,8 @@ namespace BrackeysBot.Services
             private SocketUserMessage _message;
             
             private int _buildStage = 0;
-            private CollabChannel _collabChannel;
-            private bool _hiring;
+            private CollabChannel _collabChannel = CollabChannel.Unknown;
+            private HiringStatus _hiring = HiringStatus.Unknown;
             private string _projectName;
             private string _roles;
             private string _skills;
@@ -119,11 +126,64 @@ namespace BrackeysBot.Services
             public void UpdateMessage(SocketUserMessage message)
                 => _message = message;
 
+            private async Task HandlePaidAnswer(string uppercaseMessage)
+            {
+                if (_hiring == HiringStatus.NotHiring || uppercaseMessage.Contains("WORK"))
+                {
+                    await HandleNotHiring();
+                }
+                else if (_hiring == HiringStatus.Hiring || uppercaseMessage.Contains("HIRE"))
+                {
+                    await HandleHiring();
+                }
+
+                async Task HandleNotHiring()
+                {
+
+                }
+                async Task HandleHiring()
+                {
+
+                }
+            }           
+            private async Task HandleHobbyAnswer(string uppercaseMessage)
+            {
+
+            }
+            private async Task HandleGametestAnswer()
+            {
+
+            }
+            private async Task HandleMentorAnswer(string uppercaseMessage)
+            {
+
+            }
             public async Task HandleAnswer()    // TO DO: Split the method into seperate channel methods called by this method
             {
                 if (_message == null) return;
 
                 var uppercaseMessage = _message.Content.ToUpper();
+
+                if (_collabChannel == CollabChannel.Paid || uppercaseMessage.Contains("PAID") || _message.Content == "1")
+                {
+                    await HandlePaidAnswer(uppercaseMessage);
+                }
+                else if (_collabChannel == CollabChannel.Hobby || uppercaseMessage.Contains("HOBBY") || _message.Content == "2")
+                {
+                    await HandleHobbyAnswer(uppercaseMessage);
+                }
+                else if (_collabChannel == CollabChannel.Gametest || uppercaseMessage.Contains("GAMETEST") || _message.Content == "3")
+                {
+                    await HandleGametestAnswer();
+                }
+                else if (_collabChannel == CollabChannel.Mentor || uppercaseMessage.Contains("MENTOR") || _message.Content == "4")
+                {
+                    await HandleMentorAnswer(uppercaseMessage);
+                }
+                else
+                {
+                    await _message.Author.TrySendMessageAsync("**Invalid answer!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor");
+                }
 
                 switch (_buildStage)
                 {
@@ -163,14 +223,14 @@ namespace BrackeysBot.Services
                         // Paid, Not Hiring
                         if (_collabChannel == CollabChannel.Paid && uppercaseMessage.Contains("WORK"))
                         {
-                            _hiring = false;
+                            _hiring = HiringStatus.NotHiring;
                             await _message.Author.TrySendMessageAsync("Selected: **Looking for work**.\nWhat is/are your role(s)?");
                             _buildStage++;
                         }
                         // Paid, Hiring
                         else if (_collabChannel == CollabChannel.Paid && uppercaseMessage.Contains("HIRE"))
                         {
-                            _hiring = true;
+                            _hiring = HiringStatus.Hiring;
                             await _message.Author.TrySendMessageAsync("Selected: **Looking to hire**.\nWhat is the name of your project?");
                             _buildStage++;
                         }
@@ -183,14 +243,14 @@ namespace BrackeysBot.Services
                         // Hobby, Not Hiring
                         else if (_collabChannel == CollabChannel.Hobby && uppercaseMessage.Contains("TEAM"))
                         {
-                            _hiring = false;
+                            _hiring = HiringStatus.NotHiring;
                             await _message.Author.TrySendMessageAsync("Selected: **Looking for a team**.\nWhat is/are your role(s)?");
                             _buildStage++;
                         }
                         // Hobby, Hiring
                         else if (_collabChannel == CollabChannel.Hobby && uppercaseMessage.Contains("PEOPLE"))
                         {
-                            _hiring = true;
+                            _hiring = HiringStatus.Hiring;
                             await _message.Author.TrySendMessageAsync("Selected: **Looking for people**.\nWhat is the name of your project?");
                             _buildStage++;
                         }
@@ -211,14 +271,14 @@ namespace BrackeysBot.Services
                         // Mentor, Hiring
                         else if (_collabChannel == CollabChannel.Mentor && uppercaseMessage.Contains("FOR"))
                         {
-                            _hiring = true;
+                            _hiring = HiringStatus.Hiring;
                             await _message.Author.TrySendMessageAsync("Selected: **Looking for a mentor**.\nOn which subjects are you interested in being mentored?");
                             _buildStage++;
                         }
                         // Mentor, Not Hiring
                         else if (_collabChannel == CollabChannel.Mentor && uppercaseMessage.Contains("TO"))
                         {
-                            _hiring = false;
+                            _hiring = HiringStatus.NotHiring;
                             await _message.Author.TrySendMessageAsync("Selected: **Looking to mentor**.\nOn which subjects are you interested in mentoring?");
                             _buildStage++;
                         }
@@ -231,14 +291,14 @@ namespace BrackeysBot.Services
 
                     case 2:
                         // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && !_hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
                         {
                             _roles = _message.Content;
                             await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
                             _buildStage++;
                         }
                         // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring)
+                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _projectName = _message.Content;
                             await _message.Author.TrySendMessageAsync("Describe your project.");
@@ -246,14 +306,14 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && !_hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
                         {
                             _roles = _message.Content;
                             await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
                             _buildStage++;
                         }
                         // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _projectName = _message.Content;
                             await _message.Author.TrySendMessageAsync("Which roles are you looking for?");
@@ -269,14 +329,14 @@ namespace BrackeysBot.Services
                         }
 
                         // Mentor, Not Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && !_hiring)
+                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.NotHiring)
                         {
                             _areasOfInterest = _message.Content;
                             await _message.Author.TrySendMessageAsync("(*Optional*) Add a description:");
                             _buildStage++;
                         }
                         // Mentor Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && _hiring)
+                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.Hiring)
                         {
                             _areasOfInterest = _message.Content;
                             await _message.Author.TrySendMessageAsync("(*Optional*) Add a description:");
@@ -286,14 +346,14 @@ namespace BrackeysBot.Services
 
                     case 3:
                         // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && !_hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
                         {
                             _skills = _message.Content;
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
                             _buildStage++;
                         }
                         // Paid, Hiring                      
-                        else if (_collabChannel == CollabChannel.Paid && _hiring)
+                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("Which roles are you looking to hire?");
@@ -301,14 +361,14 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && !_hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
                         {
                             _skills = _message.Content;
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
                             _buildStage++;
                         }
                         // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _roles = _message.Content;
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
@@ -324,14 +384,14 @@ namespace BrackeysBot.Services
                         }
 
                         // Mentor, Not Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && !_hiring)
+                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.NotHiring)
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much are your rates? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                         }
                         // Mentor, Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && _hiring)
+                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.Hiring)
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much are you willing to pay? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
@@ -341,14 +401,14 @@ namespace BrackeysBot.Services
 
                     case 4:
                         // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && !_hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
                         {
                             _portfolio = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
                             _buildStage++;
                         }
                         // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring)
+                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _roles = _message.Content;
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (**N/A** *if none*)");
@@ -356,14 +416,14 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && !_hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
                         {
                             _portfolio = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
                             _buildStage++;
                         }
                         // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _portfolio = _message.Content;
                             await _message.Author.TrySendMessageAsync("What is the current team size?");
@@ -391,14 +451,14 @@ namespace BrackeysBot.Services
 
                     case 5:
                         // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && !_hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
                         {
                             _experience = _message.Content;
                             await _message.Author.TrySendMessageAsync("Add a description. (Optional)");
                             _buildStage++;
                         }
                         // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring)
+                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _portfolio = _message.Content;
                             await _message.Author.TrySendMessageAsync("What is the current team size?");
@@ -406,14 +466,14 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && !_hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
                         {
                             _experience = _message.Content;
                             await _message.Author.TrySendMessageAsync("Add a decription.");
                             _buildStage++;
                         }
                         // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _teamSize = _message.Content;
                             await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
@@ -423,14 +483,14 @@ namespace BrackeysBot.Services
 
                     case 6:
                         // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && !_hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much are your rates ? (*Ie. \"**5$/work done**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                         }
                         // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring)
+                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _teamSize = _message.Content;
                             await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
@@ -438,7 +498,7 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Not Hiring, Complete
-                        else if (_collabChannel == CollabChannel.Hobby && !_hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
@@ -446,7 +506,7 @@ namespace BrackeysBot.Services
                             await BuildHobbyNotHiringEmbed();
                         }
                         // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _projectLength = _message.Content;
                             await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have ? (*Ie.Implementing physics system, writing character backstories etc.*)");
@@ -456,7 +516,7 @@ namespace BrackeysBot.Services
 
                     case 7:
                         // Paid, Not Hiring, Complete
-                        if (_collabChannel == CollabChannel.Paid && !_hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
                         {
                             _compensation = _message.Content;
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
@@ -464,7 +524,7 @@ namespace BrackeysBot.Services
                             await BuildPaidNotHiringEmbed();
                         }
                         // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring)
+                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _projectLength = _message.Content;
                             await _message.Author.TrySendMessageAsync("What is the compensation? (*Ie. \"**5$/work done**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
@@ -472,7 +532,7 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _responsibilities = _message.Content;
                             await _message.Author.TrySendMessageAsync("Please describe your game.");
@@ -482,7 +542,7 @@ namespace BrackeysBot.Services
 
                     case 8:
                         // Paid, Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _compensation = _message.Content;
                             await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have? (*Ie. Implementing physics system, writing character backstories etc.*)");
@@ -490,7 +550,7 @@ namespace BrackeysBot.Services
                         }
 
                         // Hobby, Hiring, Complete
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring)
+                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
                         {
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
@@ -501,7 +561,7 @@ namespace BrackeysBot.Services
 
                     case 9:
                         // Paid, Hiring, Complete
-                        if (_collabChannel == CollabChannel.Paid && _hiring)
+                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
                         {
                             _responsibilities = _message.Content;
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
@@ -511,6 +571,8 @@ namespace BrackeysBot.Services
                         break;
                 }
             }
+
+            
 
             private void FinalizeQuestionnaire()
             {
@@ -633,8 +695,8 @@ namespace BrackeysBot.Services
             }
             public async Task BuildMentorEmbed()
             {
-                var title = _hiring ? "Looking for a mentor" : "Looking to mentor";
-                var color = _hiring ? Color.Blue : Color.Green;
+                var title = _hiring == HiringStatus.Hiring ? "Looking for a mentor" : "Looking to mentor";
+                var color = _hiring == HiringStatus.Hiring ? Color.Blue : Color.Green;
 
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
 
