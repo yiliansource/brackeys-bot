@@ -74,6 +74,17 @@ namespace BrackeysBot.Services
 
         private class CollabConversation
         {
+            private readonly DiscordSocketClient _client;
+            private readonly DataService _data;
+            private readonly CollabService _collab;
+
+            public CollabConversation(DiscordSocketClient client, DataService data, CollabService collab)
+            {
+                _client = client;
+                _data = data;
+                _collab = collab;
+            }
+
             private enum CollabChannel
             {
                 Unknown,
@@ -91,10 +102,7 @@ namespace BrackeysBot.Services
 
             public static int InstanceCount;
 
-            private readonly DiscordSocketClient _client;
-            private readonly DataService _data;
-            private readonly CollabService _collab;
-           
+            
             private SocketUserMessage _message;
             
             private int _buildStage = 0;
@@ -114,497 +122,406 @@ namespace BrackeysBot.Services
             private string _responsibilities;
             private string _link;
             
-            public CollabConversation(DiscordSocketClient client, DataService data, CollabService collab)
-            {
-                InstanceCount++;
-
-                _client = client;
-                _data = data;
-                _collab = collab;
-            }
-
             public void UpdateMessage(SocketUserMessage message)
                 => _message = message;
-
-            private async Task HandlePaidAnswer(string uppercaseMessage)
+            public async Task HandleAnswer()
             {
-                if (_hiring == HiringStatus.NotHiring || uppercaseMessage.Contains("WORK"))
-                {
-                    await HandleNotHiring();
-                }
-                else if (_hiring == HiringStatus.Hiring || uppercaseMessage.Contains("HIRE"))
-                {
-                    await HandleHiring();
-                }
-
-                async Task HandleNotHiring()
-                {
-
-                }
-                async Task HandleHiring()
-                {
-
-                }
-            }           
-            private async Task HandleHobbyAnswer(string uppercaseMessage)
-            {
-                if (_hiring == HiringStatus.NotHiring || uppercaseMessage.Contains("TEAM"))
-                {
-                    await HandleNotHiring();
-                }
-                else if (_hiring == HiringStatus.Hiring || uppercaseMessage.Contains("PEOPLE"))
-                {
-                    await HandleHiring();
-                }
-
-                async Task HandleNotHiring()
-                {
-
-                }
-                async Task HandleHiring()
-                {
-
-                }
-            }
-            private async Task HandleGametestAnswer()
-            {
-
-            }
-            private async Task HandleMentorAnswer(string uppercaseMessage)
-            {
-                if (_hiring == HiringStatus.NotHiring || uppercaseMessage.Contains("TO"))
-                {
-                    await HandleNotHiring();
-                }
-                else if (_hiring == HiringStatus.Hiring || uppercaseMessage.Contains("FOR"))
-                {
-                    await HandleHiring();
-                }
-
-                async Task HandleNotHiring()
-                {
-
-                }
-                async Task HandleHiring()
-                {
-
-                }
-            }
-            public async Task HandleAnswer()    // TO DO: Split the method into seperate channel methods called by this method
-            {
-                if (_message == null) return;
+                if (_message == null)
+                    return;
 
                 var uppercaseMessage = _message.Content.ToUpper();
 
-                if (_collabChannel == CollabChannel.Paid || uppercaseMessage.Contains("PAID") || _message.Content == "1")
+                // Channel Select
+                if (_collabChannel == CollabChannel.Unknown)
+                {
+                    if (uppercaseMessage.Contains("PAID") || _message.Content == "1")
+                    {
+                        _collabChannel = CollabChannel.Paid;
+                        await _message.Author.TrySendMessageAsync("Selected Channel: **Paid**.\nAre you looking for **work** or looking to **hire**?");
+                    }
+                    else if (uppercaseMessage.Contains("HOBBY") || _message.Content == "2")
+                    {
+                        _collabChannel = CollabChannel.Hobby;
+                        await _message.Author.TrySendMessageAsync("Selected Channel: **Hobby**.\nAre you looking for a **team** or looking for **people**?");
+                    }
+                    else if (uppercaseMessage.Contains("GAMETEST") || _message.Content == "3")
+                    {
+                        _collabChannel = CollabChannel.Gametest;
+                        await _message.Author.TrySendMessageAsync("Selected Channel: **Gametest**.\nWhat is the name of your project?");
+                    }
+                    else if (uppercaseMessage.Contains("MENTOR") || _message.Content == "4")
+                    {
+                        _collabChannel = CollabChannel.Mentor;
+                        await _message.Author.TrySendMessageAsync("Selected Channel: **Mentor**.\nAre you looking **for** a mentor or looking **to** mentor people?");
+                    }
+                    else
+                    {
+                        await _message.Author.TrySendMessageAsync("**Invalid answer!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor");
+                    }
+                }
+                else if (_collabChannel == CollabChannel.Paid)
                 {
                     await HandlePaidAnswer(uppercaseMessage);
                 }
-                else if (_collabChannel == CollabChannel.Hobby || uppercaseMessage.Contains("HOBBY") || _message.Content == "2")
+                else if (_collabChannel == CollabChannel.Hobby)
                 {
                     await HandleHobbyAnswer(uppercaseMessage);
                 }
-                else if (_collabChannel == CollabChannel.Gametest || uppercaseMessage.Contains("GAMETEST") || _message.Content == "3")
+                else if (_collabChannel == CollabChannel.Gametest)
                 {
                     await HandleGametestAnswer();
                 }
-                else if (_collabChannel == CollabChannel.Mentor || uppercaseMessage.Contains("MENTOR") || _message.Content == "4")
+                else if (_collabChannel == CollabChannel.Mentor)
                 {
                     await HandleMentorAnswer(uppercaseMessage);
                 }
-                else
+            }
+
+            private async Task HandlePaidAnswer(string uppercaseMessage)
+            {
+                if (_hiring == HiringStatus.Unknown)
                 {
-                    await _message.Author.TrySendMessageAsync("**Invalid answer!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor");
+                    if (uppercaseMessage.Contains("WORK"))
+                    {
+                        _hiring = HiringStatus.NotHiring;
+                        await _message.Author.TrySendMessageAsync("Selected: **Looking for work**.\nWhat is/are your role(s)?");
+                    }
+                    else if (uppercaseMessage.Contains("HIRE"))
+                    {
+                        _hiring = HiringStatus.Hiring;
+                        await _message.Author.TrySendMessageAsync("Selected: **Looking to hire**.\nWhat is the name of your project?");
+                    }
+                    else
+                    {
+                        await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking for\n**- Work**\nOr are you looking to\n**- Hire**?");
+                    }
+                }
+                else if (_hiring == HiringStatus.NotHiring)
+                {
+                    await HandleNotHiring();
+                }
+                else if (_hiring == HiringStatus.Hiring)
+                {
+                    await HandleHiring();
                 }
 
-                switch (_buildStage)
+                async Task HandleNotHiring()
                 {
-                    case 0:
-                        // Channel Select
-                        if (uppercaseMessage.Contains("PAID") || _message.Content == "1")
-                        {
-                            _collabChannel = CollabChannel.Paid;
-                            await _message.Author.TrySendMessageAsync("Selected Channel: **Paid**.\nAre you looking for **work** or looking to **hire**?");
-                            _buildStage++;
-                        }
-                        else if (uppercaseMessage.Contains("HOBBY") || _message.Content == "2")
-                        {
-                            _collabChannel = CollabChannel.Hobby;
-                            await _message.Author.TrySendMessageAsync("Selected Channel: **Hobby**.\nAre you looking for a **team** or looking for **people**?");
-                            _buildStage++;
-                        }
-                        else if (uppercaseMessage.Contains("GAMETEST") || _message.Content == "3")
-                        {
-                            _collabChannel = CollabChannel.Gametest;
-                            await _message.Author.TrySendMessageAsync("Selected Channel: **Gametest**.\nWhat is the name of your project?");
-                            _buildStage++;
-                        }
-                        else if (uppercaseMessage.Contains("MENTOR") || _message.Content == "4")
-                        {
-                            _collabChannel = CollabChannel.Mentor;
-                            await _message.Author.TrySendMessageAsync("Selected Channel: **Mentor**.\nAre you looking **for** a mentor or looking **to** mentor people?"); // Too ambiguous?
-                            _buildStage++;
-                        }
-                        else
-                        {
-                            await _message.Author.TrySendMessageAsync("**Invalid answer!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor");
-                        }
-                        break;
-
-                    case 1:
-                        // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && uppercaseMessage.Contains("WORK"))
-                        {
-                            _hiring = HiringStatus.NotHiring;
-                            await _message.Author.TrySendMessageAsync("Selected: **Looking for work**.\nWhat is/are your role(s)?");
-                            _buildStage++;
-                        }
-                        // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && uppercaseMessage.Contains("HIRE"))
-                        {
-                            _hiring = HiringStatus.Hiring;
-                            await _message.Author.TrySendMessageAsync("Selected: **Looking to hire**.\nWhat is the name of your project?");
-                            _buildStage++;
-                        }
-                        // Paid, Error
-                        else if (_collabChannel == CollabChannel.Paid)
-                        {
-                            await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking for\n**- Work**\nOr are you looking to\n**- Hire**?");
-                        }
-
-                        // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && uppercaseMessage.Contains("TEAM"))
-                        {
-                            _hiring = HiringStatus.NotHiring;
-                            await _message.Author.TrySendMessageAsync("Selected: **Looking for a team**.\nWhat is/are your role(s)?");
-                            _buildStage++;
-                        }
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && uppercaseMessage.Contains("PEOPLE"))
-                        {
-                            _hiring = HiringStatus.Hiring;
-                            await _message.Author.TrySendMessageAsync("Selected: **Looking for people**.\nWhat is the name of your project?");
-                            _buildStage++;
-                        }
-                        // Hobby, Error
-                        else if (_collabChannel == CollabChannel.Hobby)
-                        {
-                            await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking for a \n**- Team**\nOr are you looking for\n**- People**?");
-                        }
-
-                        // Gametest
-                        else if (_collabChannel == CollabChannel.Gametest)
-                        {
-                            _projectName = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Which platform(s) is your game made for? (*Ie. Windows, Android etc.*)");
-                            _buildStage++;
-                        }
-
-                        // Mentor, Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && uppercaseMessage.Contains("FOR"))
-                        {
-                            _hiring = HiringStatus.Hiring;
-                            await _message.Author.TrySendMessageAsync("Selected: **Looking for a mentor**.\nOn which subjects are you interested in being mentored?");
-                            _buildStage++;
-                        }
-                        // Mentor, Not Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && uppercaseMessage.Contains("TO"))
-                        {
-                            _hiring = HiringStatus.NotHiring;
-                            await _message.Author.TrySendMessageAsync("Selected: **Looking to mentor**.\nOn which subjects are you interested in mentoring?");
-                            _buildStage++;
-                        }
-                        // Mentor, Error
-                        else if (_collabChannel == CollabChannel.Mentor)
-                        {
-                            await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking \n**- For** a mentor\nOr are you looking \n**- To** mentor?");
-                        }
-                        break;
-
-                    case 2:
-                        // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
-                        {
+                    switch (_buildStage)
+                    {
+                        case 0:
                             _roles = _message.Content;
                             await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
                             _buildStage++;
-                        }
-                        // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
-                            _projectName = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Describe your project.");
-                            _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
-                        {
-                            _roles = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
-                            _buildStage++;
-                        }
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _projectName = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Which roles are you looking for?");
-                            _buildStage++;
-                        }
-
-                        // Gametest
-                        else if (_collabChannel == CollabChannel.Gametest)
-                        {
-                            _platforms = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Please describe your game.");
-                            _buildStage++;
-                        }
-
-                        // Mentor, Not Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.NotHiring)
-                        {
-                            _areasOfInterest = _message.Content;
-                            await _message.Author.TrySendMessageAsync("(*Optional*) Add a description:");
-                            _buildStage++;
-                        }
-                        // Mentor Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.Hiring)
-                        {
-                            _areasOfInterest = _message.Content;
-                            await _message.Author.TrySendMessageAsync("(*Optional*) Add a description:");
-                            _buildStage++;
-                        }
-                        break;
-
-                    case 3:
-                        // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
-                        {
+                        case 1:
                             _skills = _message.Content;
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
                             _buildStage++;
-                        }
-                        // Paid, Hiring                      
-                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
-                            _description = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Which roles are you looking to hire?");
-                            _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
-                        {
-                            _skills = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
-                            _buildStage++;
-                        }
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _roles = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
-                            _buildStage++;
-                        }
-
-                        // Gametest
-                        else if (_collabChannel == CollabChannel.Gametest)
-                        {
-                            _description = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Provide a download link for your game. (optional, reply with \"-\" if you don't have a link)");
-                            _buildStage++;
-                        }
-
-                        // Mentor, Not Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.NotHiring)
-                        {
-                            _description = _message.Content;
-                            await _message.Author.TrySendMessageAsync("How much are your rates? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
-                            _buildStage++;
-                        }
-                        // Mentor, Hiring
-                        else if (_collabChannel == CollabChannel.Mentor && _hiring == HiringStatus.Hiring)
-                        {
-                            _description = _message.Content;
-                            await _message.Author.TrySendMessageAsync("How much are you willing to pay? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
-                            _buildStage++;
-                        }
-                        break;
-
-                    case 4:
-                        // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
-                        {
+                        case 2:
                             _portfolio = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
                             _buildStage++;
-                        }
-                        // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
-                            _roles = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (**N/A** *if none*)");
-                            _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
-                        {
-                            _portfolio = _message.Content;
-                            await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
-                            _buildStage++;
-                        }
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _portfolio = _message.Content;
-                            await _message.Author.TrySendMessageAsync("What is the current team size?");
-                            _buildStage++;
-                        }
-
-                        // Gametest, Complete
-                        else if (_collabChannel == CollabChannel.Gametest)
-                        {
-                            _link = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the gametest channel");
-                            FinalizeQuestionnaire();
-                            await BuildGametestEmbed();
-                        }
-
-                        // Mentor, Complete
-                        else if (_collabChannel == CollabChannel.Mentor)
-                        {
-                            _compensation = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
-                            FinalizeQuestionnaire();
-                            await BuildMentorEmbed();
-                        }
-                        break;
-
-                    case 5:
-                        // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
-                        {
+                        case 3:
                             _experience = _message.Content;
                             await _message.Author.TrySendMessageAsync("Add a description. (Optional)");
                             _buildStage++;
-                        }
-                        // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
-                            _portfolio = _message.Content;
-                            await _message.Author.TrySendMessageAsync("What is the current team size?");
-                            _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Not Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
-                        {
-                            _experience = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Add a decription.");
-                            _buildStage++;
-                        }
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _teamSize = _message.Content;
-                            await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
-                            _buildStage++;
-                        }
-                        break;
-
-                    case 6:
-                        // Paid, Not Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
-                        {
+                        case 4:
                             _description = _message.Content;
                             await _message.Author.TrySendMessageAsync("How much are your rates ? (*Ie. \"**5$/work done**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
-                        }
-                        // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
-                            _teamSize = _message.Content;
-                            await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
-                            _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Not Hiring, Complete
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.NotHiring)
-                        {
-                            _description = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
-                            FinalizeQuestionnaire();
-                            await BuildHobbyNotHiringEmbed();
-                        }
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _projectLength = _message.Content;
-                            await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have ? (*Ie.Implementing physics system, writing character backstories etc.*)");
-                            _buildStage++;
-                        }
-                        break;
-
-                    case 7:
-                        // Paid, Not Hiring, Complete
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.NotHiring)
-                        {
+                        case 5:
                             _compensation = _message.Content;
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
                             FinalizeQuestionnaire();
                             await BuildPaidNotHiringEmbed();
-                        }
-                        // Paid, Hiring
-                        else if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
+                            break;
+                    }
+                }
+                async Task HandleHiring()
+                {
+                    switch (_buildStage)
+                    {
+                        case 0:
+                            _projectName = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Describe your project.");
+                            _buildStage++;
+                            break;
+
+                        case 1:
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Which roles are you looking to hire?");
+                            _buildStage++;
+                            break;
+
+                        case 2:
+                            _roles = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (**N/A** *if none*)");
+                            _buildStage++;
+                            break;
+
+                        case 3:
+                            _portfolio = _message.Content;
+                            await _message.Author.TrySendMessageAsync("What is the current team size?");
+                            _buildStage++;
+                            break;
+
+                        case 4:
+                            _teamSize = _message.Content;
+                            await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
+                            _buildStage++;
+                            break;
+
+                        case 5:
                             _projectLength = _message.Content;
                             await _message.Author.TrySendMessageAsync("What is the compensation? (*Ie. \"**5$/work done**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Hiring
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _responsibilities = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Please describe your game.");
-                            _buildStage++;
-                        }
-                        break;
-
-                    case 8:
-                        // Paid, Hiring
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
+                        case 6:
                             _compensation = _message.Content;
                             await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have? (*Ie. Implementing physics system, writing character backstories etc.*)");
                             _buildStage++;
-                        }
+                            break;
 
-                        // Hobby, Hiring, Complete
-                        else if (_collabChannel == CollabChannel.Hobby && _hiring == HiringStatus.Hiring)
-                        {
-                            _description = _message.Content;
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
-                            FinalizeQuestionnaire();
-                            await BuildHobbyHiringEmbed();
-                        }
-                        break;
-
-                    case 9:
-                        // Paid, Hiring, Complete
-                        if (_collabChannel == CollabChannel.Paid && _hiring == HiringStatus.Hiring)
-                        {
+                        case 7:
                             _responsibilities = _message.Content;
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
                             FinalizeQuestionnaire();
                             await BuildPaidHiringEmbed();
-                        }
+                            break;
+                    }
+                }
+            }              
+            private async Task HandleHobbyAnswer(string uppercaseMessage)
+            {
+                if (_hiring == HiringStatus.Unknown)
+                {
+                    if (uppercaseMessage.Contains("TEAM"))
+                    {
+                        _hiring = HiringStatus.NotHiring;
+                        await _message.Author.TrySendMessageAsync("Selected: **Looking for a team**.\nWhat is/are your role(s)?");
+                    }
+                    else if (uppercaseMessage.Contains("PEOPLE"))
+                    {
+                        _hiring = HiringStatus.Hiring;
+                        await _message.Author.TrySendMessageAsync("Selected: **Looking for people**.\nWhat is the name of your project?");
+                    }
+                    else
+                    {
+                        await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking for a \n**- Team**\nOr are you looking for\n**- People**?");
+                    }
+                }
+                else if (_hiring == HiringStatus.NotHiring)
+                {
+                    await HandleNotHiring();
+                }
+                else if (_hiring == HiringStatus.Hiring)
+                {
+                    await HandleHiring();
+                }
+
+                async Task HandleNotHiring()
+                {
+                    switch (_buildStage)
+                    {
+                        case 0:
+                            _roles = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
+                            _buildStage++;
+                            break;
+
+                        case 1:
+                            _skills = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
+                            _buildStage++;
+                            break;
+
+                        case 2:
+                            _portfolio = _message.Content;
+                            await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
+                            _buildStage++;
+                            break;
+
+                        case 3:
+                            _experience = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Add a decription.");
+                            _buildStage++;
+                            break;
+
+                        case 4:
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
+                            FinalizeQuestionnaire();
+                            await BuildHobbyNotHiringEmbed();
+                            break;
+                    }
+                }
+                async Task HandleHiring()
+                {
+                    switch (_buildStage)
+                    {
+                        case 0:
+                            _projectName = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Which roles are you looking for?");
+                            _buildStage++;
+                            break;
+
+                        case 1:
+                            _roles = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
+                            _buildStage++;
+                            break;
+
+                        case 2:
+                            _portfolio = _message.Content;
+                            await _message.Author.TrySendMessageAsync("What is the current team size?");
+                            _buildStage++;
+                            break;
+
+                        case 3:
+                            _teamSize = _message.Content;
+                            await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
+                            _buildStage++;
+                            break;
+
+                        case 4:
+                            _projectLength = _message.Content;
+                            await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have ? (*Ie.Implementing physics system, writing character backstories etc.*)");
+                            _buildStage++;
+                            break;
+
+                        case 5:
+                            _responsibilities = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Please describe your game.");
+                            _buildStage++;
+                            break;
+
+                        case 6:
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
+                            FinalizeQuestionnaire();
+                            await BuildHobbyHiringEmbed();
+                            break;
+                    }
+                }
+            }
+            private async Task HandleGametestAnswer()
+            {
+                switch (_buildStage)
+                {
+                    case 0:
+                        _projectName = _message.Content;
+                        await _message.Author.TrySendMessageAsync("Which platform(s) is your game made for? (*Ie. Windows, Android etc.*)");
+                        _buildStage++;
+                        break;
+
+                    case 1:
+                        _platforms = _message.Content;
+                        await _message.Author.TrySendMessageAsync("Please describe your game.");
+                        _buildStage++;
+                        break;
+
+                    case 2:
+                        _description = _message.Content;
+                        await _message.Author.TrySendMessageAsync("Provide a download link for your game. (optional, reply with \"-\" if you don't have a link)");
+                        _buildStage++;
+                        break;
+
+                    case 3:
+                        _link = _message.Content;
+                        await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the gametest channel");
+                        FinalizeQuestionnaire();
+                        await BuildGametestEmbed();
                         break;
                 }
             }
+            private async Task HandleMentorAnswer(string uppercaseMessage)
+            {
+                if (_hiring == HiringStatus.Unknown)
+                {
+                    if (uppercaseMessage.Contains("TO"))
+                    {
+                        _hiring = HiringStatus.NotHiring;
+                        await _message.Author.TrySendMessageAsync("Selected: **Looking to mentor**.\nOn which subjects are you interested in mentoring?");
+                    }
+                    else if (uppercaseMessage.Contains("FOR"))
+                    {
+                        _hiring = HiringStatus.Hiring;
+                        await _message.Author.TrySendMessageAsync("Selected: **Looking for a mentor**.\nOn which subjects are you interested in being mentored?");
+                    }
+                    else
+                    {
+                        await _message.Author.TrySendMessageAsync("Invalid input.\nAre you looking \n**- For** a mentor\nOr are you looking \n**- To** mentor?");
+                    }
+                }
+                else if (_hiring == HiringStatus.NotHiring)
+                {
+                    await HandleNotHiring();
+                }
+                else if (_hiring == HiringStatus.Hiring)
+                {
+                    await HandleHiring();
+                }
 
-            
+                async Task HandleNotHiring()
+                {
+                    switch (_buildStage)
+                    {
+                        case 0:
+                            _areasOfInterest = _message.Content;
+                            await _message.Author.TrySendMessageAsync("(Add a description:");
+                            _buildStage++;
+                            break;
+
+                        case 1:
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("How much are your rates? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
+                            _buildStage++;
+                            break;
+
+                        case 2:
+                            _compensation = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
+                            FinalizeQuestionnaire();
+                            await BuildMentorEmbed();
+                            break;
+                    }
+                }
+                async Task HandleHiring()
+                {
+                    switch (_buildStage)
+                    {
+                        case 0:
+                            _areasOfInterest = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Add a description:");
+                            _buildStage++;
+                            break;
+
+                        case 1:
+                            _description = _message.Content;
+                            await _message.Author.TrySendMessageAsync("How much are you willing to pay? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
+                            _buildStage++;
+                            break;
+
+                        case 2:
+                            _compensation = _message.Content;
+                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
+                            FinalizeQuestionnaire();
+                            await BuildMentorEmbed();
+                            break;
+                    }
+                }
+            }
 
             private void FinalizeQuestionnaire()
             {
@@ -619,10 +536,10 @@ namespace BrackeysBot.Services
 
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
-                await new EmbedBuilder().WithTitle(title)
+                await new EmbedBuilder().WithTitle("Looking for Work")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
-                    .WithColor(color)
+                    .WithColor(Color.Blue)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("My Role", _roles, true)
                     .AddField("My Skills", _skills, true)
@@ -637,15 +554,12 @@ namespace BrackeysBot.Services
             }
             public async Task BuildPaidHiringEmbed()
             {
-                var title = "Hiring";
-                var color = Color.Blue;
-
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
-                await new EmbedBuilder().WithTitle(title)
+                await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
-                    .WithColor(color)
+                    .WithColor(Color.Green)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("Project Title", _projectName, true)
                     .AddField("Role(s) required", _roles, true)
@@ -662,15 +576,12 @@ namespace BrackeysBot.Services
             }
             public async Task BuildHobbyNotHiringEmbed()
             {
-                var title = "Looking for work";
-                var color = Color.Green;
-
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
-                await new EmbedBuilder().WithTitle(title)
+                await new EmbedBuilder().WithTitle("Looking for work")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
-                    .WithColor(color)
+                    .WithColor(Color.Blue)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("My Role(s)", _roles, true)
                     .AddField("My Skills", _skills, true)
@@ -684,15 +595,12 @@ namespace BrackeysBot.Services
             }
             public async Task BuildHobbyHiringEmbed()
             {
-                var title = "Hiring";
-                var color = Color.Blue;
-
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
-                await new EmbedBuilder().WithTitle(title)
+                await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
-                    .WithColor(color)
+                    .WithColor(Color.Green)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("Project Title", _projectName, true)
                     .AddField("Role(s) Required", _roles, true)
@@ -715,7 +623,7 @@ namespace BrackeysBot.Services
                 await new EmbedBuilder().WithTitle(_projectName)
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
-                    .WithColor(Color.Blue)
+                    .WithColor(Color.Orange)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("Platforms", _platforms, true)
                     .AddFieldConditional(hasLink, "Download Link", _link, true)
@@ -728,7 +636,7 @@ namespace BrackeysBot.Services
             public async Task BuildMentorEmbed()
             {
                 var title = _hiring == HiringStatus.Hiring ? "Looking for a mentor" : "Looking to mentor";
-                var color = _hiring == HiringStatus.Hiring ? Color.Blue : Color.Green;
+                var color = _hiring == HiringStatus.Hiring ? Color.Green : Color.Blue;
 
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
 
@@ -744,11 +652,6 @@ namespace BrackeysBot.Services
                     .SendToChannel(channel);
 
                 Console.WriteLine("InstanceCount: " + InstanceCount);
-            }
-
-            ~CollabConversation()
-            {
-                InstanceCount--;
             }
         }       
     }
