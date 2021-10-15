@@ -523,7 +523,6 @@ namespace BrackeysBot.Services
                 }
             }
 
-
             private void FinalizeQuestionnaire()
             {
                 _collab.UpdateCollabTimeout(_message.Author);
