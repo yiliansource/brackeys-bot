@@ -100,9 +100,6 @@ namespace BrackeysBot.Services
                 Hiring
             }
 
-            public static int InstanceCount;
-
-            
             private SocketUserMessage _message;
             
             private int _buildStage = 0;
@@ -531,9 +528,6 @@ namespace BrackeysBot.Services
 
             public async Task BuildPaidNotHiringEmbed()
             {
-                var title = "Looking for Work";
-                var color = Color.Green;
-
                 var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
                 await new EmbedBuilder().WithTitle("Looking for Work")
@@ -549,8 +543,6 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
-
-                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
             public async Task BuildPaidHiringEmbed()
             {
@@ -571,8 +563,6 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
-
-                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
             public async Task BuildHobbyNotHiringEmbed()
             {
@@ -590,8 +580,6 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
-
-                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
             public async Task BuildHobbyHiringEmbed()
             {
@@ -611,8 +599,6 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
-
-                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
             public async Task BuildGametestEmbed()
             {
@@ -630,8 +616,6 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
-
-                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
             public async Task BuildMentorEmbed()
             {
@@ -650,8 +634,6 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
-
-                Console.WriteLine("InstanceCount: " + InstanceCount);
             }
         }       
     }
