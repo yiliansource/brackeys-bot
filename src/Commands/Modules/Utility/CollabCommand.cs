@@ -21,19 +21,19 @@ namespace BrackeysBot.Commands
             if (!canOverride && remaining > 0)
                 throw new TimeoutException($"You need to wait {TimeSpan.FromMilliseconds(remaining).Humanize(2, minUnit: TimeUnit.Second)} before you can use this command again!");
 
+            // Does the user already have an active conversation
             if (CollabService.TrySetActiveUser(Context.User))
             {
-                var message = $"Hello **{Context.User.Username}!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor";
+                await Context.Channel.SendMessageAsync("Please check your DMs. If you want to cancel or restart the process, use the command again.");
 
+                var message = $"Hello **{Context.User.Username}!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor";
                 await Context.User.TrySendMessageAsync(message);
             }
             else
             {
-                await Context.Channel.SendMessageAsync("You already have an active questionnaire.");
-            }
-
-            
-            
+                CollabService.DeactivateUser(Context.User);
+                await Context.Channel.SendMessageAsync("Process cancelled. You can run the command again to restart the process.");
+            }          
         }	
     }
 }

@@ -141,7 +141,7 @@ namespace BrackeysBot.Services
             int argPos = 0;
             if (!(s.Channel is IGuildChannel))
             {
-                if (_collabService.IsActiveUser(msg.Author) &&   // Should check dictionary stuff, probably better to call a method from _collabService
+                if (_collabService.IsActiveUser(msg.Author) &&
                     !msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos))
                 {
                     await _collabService.Converse(msg);
