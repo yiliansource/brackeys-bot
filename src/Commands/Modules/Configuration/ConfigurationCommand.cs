@@ -87,7 +87,7 @@ namespace BrackeysBot.Commands
 
                 builder.AddField(new EmbedFieldBuilder()
                     .WithName(values[valueIndex].Name)
-                    .WithValue(LimitFieldLength(values[i].ToString()))
+                    .WithValue(LimitFieldLength(values[valueIndex].ToString()))
                     .WithIsInline(true));
             }
 
