@@ -26,7 +26,7 @@ namespace BrackeysBot.Commands
             {
                 await Context.Channel.SendMessageAsync("Please check your DMs. If you want to cancel or restart the process, use the command again.");
 
-                var message = $"Hello **{Context.User.Username}!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor";
+                string message = $"Hello **{Context.User.Username}!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor";
                 await Context.User.TrySendMessageAsync(message);
             }
             else
