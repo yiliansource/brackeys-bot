@@ -50,7 +50,7 @@ namespace BrackeysBot.Services
         {
             if (!_activeConversations.ContainsKey(user.Id))
             {
-                var _conversation = new CollabConversation(_client, _data, this);
+                CollabConversation _conversation = new CollabConversation(_client, _data, this);
                 _activeConversations.TryAdd(user.Id, _conversation);
                 return true;
             }
@@ -68,7 +68,7 @@ namespace BrackeysBot.Services
 
         public async Task Converse(SocketUserMessage message)
         {
-            var userId = message.Author.Id;
+            ulong userId = message.Author.Id;
             _activeConversations[userId].UpdateMessage(message);
             await _activeConversations[userId].HandleAnswer();
         }
@@ -127,7 +127,7 @@ namespace BrackeysBot.Services
                 if (_message == null)
                     return;
 
-                var uppercaseMessage = _message.Content.ToUpper();
+                string uppercaseMessage = _message.Content.ToUpper();
 
                 // Channel Select
                 if (_collabChannel == CollabChannel.Unknown)
@@ -529,7 +529,7 @@ namespace BrackeysBot.Services
 
             public async Task BuildPaidNotHiringEmbed()
             {
-                var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
+                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
                 await new EmbedBuilder().WithTitle("Looking for Work")
                     .WithDescription(_description)
@@ -547,7 +547,7 @@ namespace BrackeysBot.Services
             }
             public async Task BuildPaidHiringEmbed()
             {
-                var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
+                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
                 await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
@@ -567,7 +567,7 @@ namespace BrackeysBot.Services
             }
             public async Task BuildHobbyNotHiringEmbed()
             {
-                var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
+                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
                 await new EmbedBuilder().WithTitle("Looking for work")
                     .WithDescription(_description)
@@ -584,7 +584,7 @@ namespace BrackeysBot.Services
             }
             public async Task BuildHobbyHiringEmbed()
             {
-                var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
+                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
                 await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
@@ -603,9 +603,9 @@ namespace BrackeysBot.Services
             }
             public async Task BuildGametestEmbed()
             {
-                var hasLink = _link != "-" && _link != "\"-\"";
+                bool hasLink = _link != "-" && _link != "\"-\"";
 
-                var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
+                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
 
                 await new EmbedBuilder().WithTitle(_projectName)
                     .WithDescription(_description)
@@ -620,10 +620,10 @@ namespace BrackeysBot.Services
             }
             public async Task BuildMentorEmbed()
             {
-                var title = _hiring == HiringStatus.Hiring ? "Looking for a mentor" : "Looking to mentor";
-                var color = _hiring == HiringStatus.Hiring ? Color.Green : Color.Blue;
+                string title = _hiring == HiringStatus.Hiring ? "Looking for a mentor" : "Looking to mentor";
+                Color color = _hiring == HiringStatus.Hiring ? Color.Green : Color.Blue;
 
-                var channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
+                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
 
                 await new EmbedBuilder().WithTitle(title)
                     .WithDescription(_description)
