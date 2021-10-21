@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,16 +8,16 @@ using Discord.WebSocket;
 
 namespace BrackeysBot.Services
 {
-    public class CollabService : BrackeysBotService
+    public class CollaborationService : BrackeysBotService
     {
         
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
         private readonly Dictionary<ulong, int> _lastCollabUsages = new Dictionary<ulong, int>();
-        private readonly Dictionary<ulong, CollabConversation> _activeConversations = new Dictionary<ulong, CollabConversation>();
+        private readonly ConcurrentDictionary<ulong, CollabConversation> _activeConversations = new ConcurrentDictionary<ulong, CollabConversation>();
 
         /// <inheritdoc />
-        public CollabService(DataService data, DiscordSocketClient client)
+        public CollaborationService(DataService data, DiscordSocketClient client)
         {
             _data = data;
             _client = client;
@@ -50,7 +51,7 @@ namespace BrackeysBot.Services
             if (!_activeConversations.ContainsKey(user.Id))
             {
                 var _conversation = new CollabConversation(_client, _data, this);
-                _activeConversations.Add(user.Id, _conversation);
+                _activeConversations.TryAdd(user.Id, _conversation);
                 return true;
             }
             else
@@ -62,8 +63,8 @@ namespace BrackeysBot.Services
         public bool IsActiveUser(IUser user) 
             => _activeConversations.ContainsKey(user.Id);
 
-        public void DeactivateUser(IUser user)
-            => _activeConversations.Remove(user.Id);
+        public void DeactivateUser(IUser user) 
+            => _activeConversations.TryRemove(user.Id, out _);
 
         public async Task Converse(SocketUserMessage message)
         {
@@ -76,9 +77,9 @@ namespace BrackeysBot.Services
         {
             private readonly DiscordSocketClient _client;
             private readonly DataService _data;
-            private readonly CollabService _collab;
+            private readonly CollaborationService _collab;
 
-            public CollabConversation(DiscordSocketClient client, DataService data, CollabService collab)
+            public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab)
             {
                 _client = client;
                 _data = data;

@@ -16,6 +16,6 @@ namespace BrackeysBot.Commands
 
         public FormatCodeService FormatCodeService { get; set; }
 
-        public CollabService CollabService { get; set; }
+        public CollaborationService CollabService { get; set; }
     }
 }

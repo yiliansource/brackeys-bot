@@ -16,7 +16,7 @@ namespace BrackeysBot.Services
         private readonly CommandService _commands;
         private readonly CustomCommandService _customCommands;
         private readonly DataService _dataService;
-        private readonly CollabService _collabService;
+        private readonly CollaborationService _collabService;
         private readonly IServiceProvider _provider;
         private readonly LoggingService _log;
 
@@ -28,7 +28,7 @@ namespace BrackeysBot.Services
             CommandService commands,
             CustomCommandService customCommands,
             DataService dataService,
-            CollabService collabService,
+            CollaborationService collabService,
             IServiceProvider provider,
             LoggingService log)
         {
