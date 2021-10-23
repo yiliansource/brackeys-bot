@@ -13,7 +13,7 @@ namespace BrackeysBot.Services
         
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
-        private readonly Dictionary<ulong, int> _lastCollabUsages = new Dictionary<ulong, int>();
+        private readonly ConcurrentDictionary<ulong, int> _lastCollabUsages = new ConcurrentDictionary<ulong, int>();
         private readonly ConcurrentDictionary<ulong, CollabConversation> _activeConversations = new ConcurrentDictionary<ulong, CollabConversation>();
 
         /// <inheritdoc />
@@ -25,8 +25,8 @@ namespace BrackeysBot.Services
 
         public void UpdateCollabTimeout(IUser user)
         {
-            _lastCollabUsages.Remove(user.Id);
-            _lastCollabUsages.Add(user.Id, Environment.TickCount);
+            _lastCollabUsages.TryRemove(user.Id, out _);
+            _lastCollabUsages.TryAdd(user.Id, Environment.TickCount);
         }
         
         public int CollabTimeoutRemaining(IUser user) 
