@@ -15,5 +15,7 @@ namespace BrackeysBot.Commands
         public MathService MathService { get; set; }
 
         public FormatCodeService FormatCodeService { get; set; }
+
+        public CollaborationService CollabService { get; set; }
     }
 }
