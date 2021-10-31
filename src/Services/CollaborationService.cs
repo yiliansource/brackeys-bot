@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord;
@@ -531,6 +532,9 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
+                string[] _portfolioArray = _portfolio.Split(' ');
+                _portfolio = string.Join('\n', _portfolioArray);
+
                 await new EmbedBuilder().WithTitle("Looking for Work")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
@@ -538,7 +542,7 @@ namespace BrackeysBot.Services
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("My Role", _roles, true)
                     .AddField("My Skills", _skills, true)
-                    .AddField("My Portfolio", _portfolio, true)
+                    .AddField("My Portfolio", _portfolio, false)
                     .AddField("Experience in Field", _experience, true)
                     .AddField("My Rates", _compensation, true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
@@ -549,6 +553,9 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
+                string[] _portfolioArray = _portfolio.Split(' ');
+                _portfolio = string.Join('\n', _portfolioArray);
+
                 await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
@@ -556,7 +563,7 @@ namespace BrackeysBot.Services
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("Project Title", _projectName, true)
                     .AddField("Role(s) required", _roles, true)
-                    .AddField("Previous Projects/Portfolio", _portfolio, true)
+                    .AddField("Previous Projects/Portfolio", _portfolio, false)
                     .AddField("Current Team Size", _teamSize, true)
                     .AddField("Project Length", _projectLength, true)
                     .AddField("Compensation", _compensation, true)
@@ -569,6 +576,9 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
+                string[] _portfolioArray = _portfolio.Split(' ');
+                _portfolio = string.Join('\n', _portfolioArray);
+
                 await new EmbedBuilder().WithTitle("Looking for work")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
@@ -576,7 +586,7 @@ namespace BrackeysBot.Services
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("My Role(s)", _roles, true)
                     .AddField("My Skills", _skills, true)
-                    .AddField("Previous Projects/Portfolio", _portfolio, true)
+                    .AddField("Previous Projects/Portfolio", _portfolio, false)
                     .AddField("Experience in the field", _experience, true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
@@ -586,6 +596,9 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
+                string[] _portfolioArray = _portfolio.Split(' ');
+                _portfolio = string.Join('\n', _portfolioArray);
+
                 await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
                     .WithAuthor(_message.Author)
@@ -593,7 +606,7 @@ namespace BrackeysBot.Services
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
                     .AddField("Project Title", _projectName, true)
                     .AddField("Role(s) Required", _roles, true)
-                    .AddField("Previous Projects/Portfolio", _portfolio, true)
+                    .AddField("Previous Projects/Portfolio", _portfolio, false)
                     .AddField("Current Team Size", _teamSize, true)
                     .AddField("Project Length", _projectLength, true)
                     .AddField("Responsibilities", _responsibilities, true)
