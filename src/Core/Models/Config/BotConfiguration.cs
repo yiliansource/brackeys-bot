@@ -98,6 +98,11 @@ namespace BrackeysBot
         [Description("Channel to post mentor collaboration embeds.")]
         [ConfigDisplay(ConfigDisplayAttribute.Mode.ChannelId)]
         public ulong MentorChannelId { get; set; }
+        
+        [YamlMember(Alias = "noCollabRoleId")]
+        [Description("Role ID of the no collab role.")]
+        [ConfigDisplay(ConfigDisplayAttribute.Mode.RoleId)]
+        public ulong NoCollabRoleId { get; set; }
 
         #endregion
 

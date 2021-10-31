@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Discord;
@@ -15,7 +16,12 @@ namespace BrackeysBot.Commands
         [Summary("Starts building an embed to be sent into the collaboration channels. Check your direct messages after using the command.")]
         public async Task StartCollabDialogueAsync()
         {
-            bool canOverride = (Context.User as IGuildUser).GetPermissionLevel(Context) >= PermissionLevel.Moderator;
+            var user = Context.User as IGuildUser;
+
+            if (user.RoleIds.Contains(Data.Configuration.NoCollabRoleId))
+                throw new UnauthorizedAccessException("User not allowed to post in collaboration channels.");
+            
+            bool canOverride = user.GetPermissionLevel(Context) >= PermissionLevel.Moderator;
             int remaining = CollabService.CollabTimeoutRemaining(Context.User);
 
             if (!canOverride && remaining > 0)
