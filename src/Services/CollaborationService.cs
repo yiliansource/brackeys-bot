@@ -14,14 +14,16 @@ namespace BrackeysBot.Services
     {      
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
+        private readonly FilterService _filterService;
         private readonly ConcurrentDictionary<ulong, int> _lastCollabUsages = new ConcurrentDictionary<ulong, int>();
         private readonly ConcurrentDictionary<ulong, CollabConversation> _activeConversations = new ConcurrentDictionary<ulong, CollabConversation>();
 
         /// <inheritdoc />
-        public CollaborationService(DataService data, DiscordSocketClient client)
+        public CollaborationService(DataService data, DiscordSocketClient client, FilterService filterService)
         {
             _data = data;
             _client = client;
+            _filterService = filterService;
         }
 
         public void UpdateCollabTimeout(IUser user)
@@ -51,7 +53,7 @@ namespace BrackeysBot.Services
         {
             if (!_activeConversations.ContainsKey(user.Id))
             {
-                CollabConversation _conversation = new CollabConversation(_client, _data, this);
+                CollabConversation _conversation = new CollabConversation(_client, _data, this, _filterService);
                 _activeConversations.TryAdd(user.Id, _conversation);
                 return true;
             }
@@ -79,15 +81,17 @@ namespace BrackeysBot.Services
             private readonly DiscordSocketClient _client;
             private readonly DataService _data;
             private readonly CollaborationService _collab;
+            private readonly FilterService _filterService;
 
             // Characters which need escaping
             private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
 
-            public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab)
+            public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab, FilterService filterService)
             {
                 _client = client;
                 _data = data;
                 _collab = collab;
+                _filterService = filterService;
             }
 
             private enum CollabChannel
@@ -119,6 +123,12 @@ namespace BrackeysBot.Services
             {
                 if (_message == null)
                     return;
+
+                if (_filterService.ContainsBlockedWord(_message.Content))
+                {
+                    await _message.Author.TrySendMessageAsync("Seems like you were using a blocked word! Please try again, but without rude words and racial slurs.");
+                    return;
+                }
 
                 string uppercaseMessage = _message.Content.ToUpper();
 
