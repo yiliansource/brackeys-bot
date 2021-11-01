@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Discord;
@@ -532,8 +533,7 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _portfolio = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Looking for Work")
                     .WithDescription(_description)
@@ -553,8 +553,7 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _portfolio = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
@@ -576,8 +575,7 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _portfolio = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Looking for work")
                     .WithDescription(_description)
@@ -596,8 +594,7 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _portfolio = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_description)
@@ -649,6 +646,29 @@ namespace BrackeysBot.Services
                     .Build()
                     .SendToChannel(channel);
             }
-        }       
+
+            private string MoveLinksToNewline()
+            {
+                const string linkRegex = @"https?//|www\.|(\S\.\S)";
+                const string httpsRegex = @"https?";
+
+                string[] _portfolioArray = _portfolio.Split(' ');
+                for (int i = 0; i < _portfolioArray.Length; i++)
+                {
+                    // Is current iteration a link?
+                    if (Regex.Match(_portfolioArray[i], linkRegex).Success)
+                    {
+                        // Does current iteration include "https://" (required for the link to be displayed as hypertext in the embed)
+                        if (!Regex.Match(_portfolioArray[i], httpsRegex).Success)
+                        {
+                            _portfolioArray[i] = $"https://{_portfolioArray[i]}";
+                        }
+                        _portfolioArray[i] = $"\n{_portfolioArray[i]}\n";
+                    }
+                }
+
+                return string.Join(' ', _portfolioArray);
+            }
+        }
     }
 }
