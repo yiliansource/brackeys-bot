@@ -14,14 +14,16 @@ namespace BrackeysBot.Services
     {      
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
+        private readonly FilterService _filterService;
         private readonly ConcurrentDictionary<ulong, int> _lastCollabUsages = new ConcurrentDictionary<ulong, int>();
         private readonly ConcurrentDictionary<ulong, CollabConversation> _activeConversations = new ConcurrentDictionary<ulong, CollabConversation>();
 
         /// <inheritdoc />
-        public CollaborationService(DataService data, DiscordSocketClient client)
+        public CollaborationService(DataService data, DiscordSocketClient client, FilterService filterService)
         {
             _data = data;
             _client = client;
+            _filterService = filterService;
         }
 
         public void UpdateCollabTimeout(IUser user)
@@ -69,6 +71,12 @@ namespace BrackeysBot.Services
 
         public async Task Converse(SocketUserMessage message)
         {
+            if (_filterService.ContainsBlockedWord(message.Content))
+            {
+                await _message.Author.TrySendMessageAsync("Seems like you were using a blocked word! Please try again, but without rude words and racial slurs.");
+                return;
+            }
+        
             ulong userId = message.Author.Id;
             _activeConversations[userId].UpdateMessage(message);
             await _activeConversations[userId].HandleAnswer();
