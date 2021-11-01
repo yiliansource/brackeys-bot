@@ -80,8 +80,8 @@ namespace BrackeysBot.Services
             private readonly DataService _data;
             private readonly CollaborationService _collab;
 
-            // Characters which need escaping        // TODO: Find a way to escape hidden links (do some regex black magic maybe)
-            private static readonly string[] SensitiveCharacters = { /*"\\",*/ "*", "_", "~", "`", "|", ">", "[", "(" };
+            // Characters which need escaping
+            private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
 
             public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab)
             {
@@ -470,7 +470,7 @@ namespace BrackeysBot.Services
                     {
                         case 0:
                             _fields.TryAdd("areasOfInterest", _message.Content);
-                            await _message.Author.TrySendMessageAsync("(Add a description:");
+                            await _message.Author.TrySendMessageAsync("Add a description:");
                             _buildStage++;
                             break;
 
@@ -518,10 +518,9 @@ namespace BrackeysBot.Services
             {
                 _collab.UpdateCollabTimeout(_message.Author);
                 _collab.DeactivateUser(_message.Author);
-                for (int i = 0; i < _fields.Count; i++) // Test
+                for (int i = 0; i < _fields.Count; i++)
                 {
-                    _fields[_fields.ElementAt(0).Key] = SanitizeMarkdown(_fields.ElementAt(0).Value);
-                    Console.WriteLine(_fields.ElementAt(0).Value);
+                    _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i).Value);
                 }
             }
 
@@ -665,7 +664,7 @@ namespace BrackeysBot.Services
 
                 return string.Join(' ', _portfolioArray);
             }
-            private static string SanitizeMarkdown(string text) // Test
+            private static string SanitizeMarkdown(string text)
             {
                 foreach (string unsafeChar in SensitiveCharacters)
                     text = text.Replace(unsafeChar, $"\\{unsafeChar}");
