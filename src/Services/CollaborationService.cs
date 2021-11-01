@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Discord;
@@ -10,8 +11,7 @@ using Discord.WebSocket;
 namespace BrackeysBot.Services
 {
     public class CollaborationService : BrackeysBotService
-    {
-        
+    {      
         private readonly DataService _data;
         private readonly DiscordSocketClient _client;
         private readonly ConcurrentDictionary<ulong, int> _lastCollabUsages = new ConcurrentDictionary<ulong, int>();
@@ -80,6 +80,9 @@ namespace BrackeysBot.Services
             private readonly DataService _data;
             private readonly CollaborationService _collab;
 
+            // Characters which need escaping
+            private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
+
             public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab)
             {
                 _client = client;
@@ -107,20 +110,9 @@ namespace BrackeysBot.Services
             private int _buildStage = 0;
             private CollabChannel _collabChannel = CollabChannel.Unknown;
             private HiringStatus _hiring = HiringStatus.Unknown;
-            private string _projectName;
-            private string _roles;
-            private string _skills;
-            private string _portfolio;
-            private string _areasOfInterest;
-            private string _platforms;
-            private string _description;
-            private string _compensation;
-            private string _teamSize;
-            private string _experience;
-            private string _projectLength;
-            private string _responsibilities;
-            private string _link;
-            
+
+            private ConcurrentDictionary<string, string> _fields = new ConcurrentDictionary<string, string>();
+
             public void UpdateMessage(SocketUserMessage message)
                 => _message = message;
             public async Task HandleAnswer()
@@ -209,37 +201,37 @@ namespace BrackeysBot.Services
                     switch (_buildStage)
                     {
                         case 0:
-                            _roles = _message.Content;
+                            _fields.TryAdd("roles", _message.Content);
                             await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
                             _buildStage++;
                             break;
 
                         case 1:
-                            _skills = _message.Content;
+                            _fields.TryAdd("skills", _message.Content);
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
                             _buildStage++;
                             break;
 
                         case 2:
-                            _portfolio = _message.Content;
+                            _fields.TryAdd("portfolio", _message.Content);
                             await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
                             _buildStage++;
                             break;
 
                         case 3:
-                            _experience = _message.Content;
+                            _fields.TryAdd("experience", _message.Content);
                             await _message.Author.TrySendMessageAsync("Add a description. (Optional)");
                             _buildStage++;
                             break;
 
                         case 4:
-                            _description = _message.Content;
+                            _fields.TryAdd("description", _message.Content);
                             await _message.Author.TrySendMessageAsync("How much are your rates ? (*Ie. \"**5$/work done**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                             break;
 
                         case 5:
-                            _compensation = _message.Content;
+                            _fields.TryAdd("compensation", _message.Content);
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
                             FinalizeQuestionnaire();
                             await BuildPaidNotHiringEmbed();
@@ -251,49 +243,49 @@ namespace BrackeysBot.Services
                     switch (_buildStage)
                     {
                         case 0:
-                            _projectName = _message.Content;
+                            _fields.TryAdd("projectName", _message.Content);
                             await _message.Author.TrySendMessageAsync("Describe your project.");
                             _buildStage++;
                             break;
 
                         case 1:
-                            _description = _message.Content;
+                            _fields.TryAdd("description", _message.Content);
                             await _message.Author.TrySendMessageAsync("Which roles are you looking to hire?");
                             _buildStage++;
                             break;
 
                         case 2:
-                            _roles = _message.Content;
+                            _fields.TryAdd("roles", _message.Content);
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (**N/A** *if none*)");
                             _buildStage++;
                             break;
 
                         case 3:
-                            _portfolio = _message.Content;
+                            _fields.TryAdd("portfolio", _message.Content);
                             await _message.Author.TrySendMessageAsync("What is the current team size?");
                             _buildStage++;
                             break;
 
                         case 4:
-                            _teamSize = _message.Content;
+                            _fields.TryAdd("teamSize", _message.Content);
                             await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
                             _buildStage++;
                             break;
 
                         case 5:
-                            _projectLength = _message.Content;
+                            _fields.TryAdd("projectLength", _message.Content);
                             await _message.Author.TrySendMessageAsync("What is the compensation? (*Ie. \"**5$/work done**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                             break;
 
                         case 6:
-                            _compensation = _message.Content;
+                            _fields.TryAdd("compensation", _message.Content);
                             await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have? (*Ie. Implementing physics system, writing character backstories etc.*)");
                             _buildStage++;
                             break;
 
                         case 7:
-                            _responsibilities = _message.Content;
+                            _fields.TryAdd("responsibilities", _message.Content);
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
                             FinalizeQuestionnaire();
                             await BuildPaidHiringEmbed();
@@ -334,31 +326,31 @@ namespace BrackeysBot.Services
                     switch (_buildStage)
                     {
                         case 0:
-                            _roles = _message.Content;
+                            _fields.TryAdd("roles", _message.Content);
                             await _message.Author.TrySendMessageAsync("Which specific skills do you have? (*Ie. Unity, C#, Photoshop, Microsoft Excel etc.*)");
                             _buildStage++;
                             break;
 
                         case 1:
-                            _skills = _message.Content;
+                            _fields.TryAdd("skills", _message.Content);
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
                             _buildStage++;
                             break;
 
                         case 2:
-                            _portfolio = _message.Content;
+                            _fields.TryAdd("portfolio", _message.Content);
                             await _message.Author.TrySendMessageAsync("How much experience do you have in the field? (*Ie. 2 Months, 5 Years etc.*)");
                             _buildStage++;
                             break;
 
                         case 3:
-                            _experience = _message.Content;
+                            _fields.TryAdd("experience", _message.Content);
                             await _message.Author.TrySendMessageAsync("Add a decription.");
                             _buildStage++;
                             break;
 
                         case 4:
-                            _description = _message.Content;
+                            _fields.TryAdd("description", _message.Content);
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
                             FinalizeQuestionnaire();
                             await BuildHobbyNotHiringEmbed();
@@ -370,43 +362,43 @@ namespace BrackeysBot.Services
                     switch (_buildStage)
                     {
                         case 0:
-                            _projectName = _message.Content;
+                            _fields.TryAdd("projectName", _message.Content);
                             await _message.Author.TrySendMessageAsync("Which roles are you looking for?");
                             _buildStage++;
                             break;
 
                         case 1:
-                            _roles = _message.Content;
+                            _fields.TryAdd("roles", _message.Content);
                             await _message.Author.TrySendMessageAsync("Please list any previous projects or portfolio if you have one. (*N/A if none*)");
                             _buildStage++;
                             break;
 
                         case 2:
-                            _portfolio = _message.Content;
+                            _fields.TryAdd("portfolio", _message.Content);
                             await _message.Author.TrySendMessageAsync("What is the current team size?");
                             _buildStage++;
                             break;
 
                         case 3:
-                            _teamSize = _message.Content;
+                            _fields.TryAdd("teamSize", _message.Content);
                             await _message.Author.TrySendMessageAsync("What is the project length? (specify if not strict)");
                             _buildStage++;
                             break;
 
                         case 4:
-                            _projectLength = _message.Content;
+                            _fields.TryAdd("projectLength", _message.Content);
                             await _message.Author.TrySendMessageAsync("What specific responsibilities will the person being hired will have ? (*Ie.Implementing physics system, writing character backstories etc.*)");
                             _buildStage++;
                             break;
 
                         case 5:
-                            _responsibilities = _message.Content;
+                            _fields.TryAdd("responsibilities", _message.Content);
                             await _message.Author.TrySendMessageAsync("Please describe your game.");
                             _buildStage++;
                             break;
 
                         case 6:
-                            _description = _message.Content;
+                            _fields.TryAdd("description", _message.Content);
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
                             FinalizeQuestionnaire();
                             await BuildHobbyHiringEmbed();
@@ -419,25 +411,25 @@ namespace BrackeysBot.Services
                 switch (_buildStage)
                 {
                     case 0:
-                        _projectName = _message.Content;
+                        _fields.TryAdd("projectName", _message.Content);
                         await _message.Author.TrySendMessageAsync("Which platform(s) is your game made for? (*Ie. Windows, Android etc.*)");
                         _buildStage++;
                         break;
 
                     case 1:
-                        _platforms = _message.Content;
+                        _fields.TryAdd("platforms", _message.Content);
                         await _message.Author.TrySendMessageAsync("Please describe your game.");
                         _buildStage++;
                         break;
 
                     case 2:
-                        _description = _message.Content;
+                        _fields.TryAdd("description", _message.Content);
                         await _message.Author.TrySendMessageAsync("Provide a download link for your game. (optional, reply with \"-\" if you don't have a link)");
                         _buildStage++;
                         break;
 
                     case 3:
-                        _link = _message.Content;
+                        _fields.TryAdd("link", _message.Content);
                         await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the gametest channel");
                         FinalizeQuestionnaire();
                         await BuildGametestEmbed();
@@ -477,19 +469,19 @@ namespace BrackeysBot.Services
                     switch (_buildStage)
                     {
                         case 0:
-                            _areasOfInterest = _message.Content;
-                            await _message.Author.TrySendMessageAsync("(Add a description:");
+                            _fields.TryAdd("areasOfInterest", _message.Content);
+                            await _message.Author.TrySendMessageAsync("Add a description:");
                             _buildStage++;
                             break;
 
                         case 1:
-                            _description = _message.Content;
+                            _fields.TryAdd("description", _message.Content);
                             await _message.Author.TrySendMessageAsync("How much are your rates? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                             break;
 
                         case 2:
-                            _compensation = _message.Content;
+                            _fields.TryAdd("compensation", _message.Content);
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
                             FinalizeQuestionnaire();
                             await BuildMentorEmbed();
@@ -501,19 +493,19 @@ namespace BrackeysBot.Services
                     switch (_buildStage)
                     {
                         case 0:
-                            _areasOfInterest = _message.Content;
+                            _fields.TryAdd("areasOfInterest", _message.Content);
                             await _message.Author.TrySendMessageAsync("Add a description:");
                             _buildStage++;
                             break;
 
                         case 1:
-                            _description = _message.Content;
+                            _fields.TryAdd("description", _message.Content);
                             await _message.Author.TrySendMessageAsync("How much are you willing to pay? (*Ie. \"**Free**\", \"**5€/h**\", \"**10$/h ~ 30$/h**\"*)");
                             _buildStage++;
                             break;
 
                         case 2:
-                            _compensation = _message.Content;
+                            _fields.TryAdd("compensation", _message.Content);
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
                             FinalizeQuestionnaire();
                             await BuildMentorEmbed();
@@ -526,25 +518,28 @@ namespace BrackeysBot.Services
             {
                 _collab.UpdateCollabTimeout(_message.Author);
                 _collab.DeactivateUser(_message.Author);
+                for (int i = 0; i < _fields.Count; i++)
+                {
+                    _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i).Value);
+                }
             }
 
             public async Task BuildPaidNotHiringEmbed()
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _fields["portfolio"] = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Looking for Work")
-                    .WithDescription(_description)
+                    .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Blue)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
-                    .AddField("My Role", _roles, true)
-                    .AddField("My Skills", _skills, true)
-                    .AddField("My Portfolio", _portfolio, false)
-                    .AddField("Experience in Field", _experience, true)
-                    .AddField("My Rates", _compensation, true)
+                    .AddField("My Role", _fields["roles"], true)
+                    .AddField("My Skills", _fields["skills"], true)
+                    .AddField("My Portfolio", _fields["portfolio"], false)
+                    .AddField("Experience in Field", _fields["experience"], true)
+                    .AddField("My Rates", _fields["compensation"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
@@ -553,21 +548,20 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _fields["portfolio"] = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Hiring")
-                    .WithDescription(_description)
+                    .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Green)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
-                    .AddField("Project Title", _projectName, true)
-                    .AddField("Role(s) required", _roles, true)
-                    .AddField("Previous Projects/Portfolio", _portfolio, false)
-                    .AddField("Current Team Size", _teamSize, true)
-                    .AddField("Project Length", _projectLength, true)
-                    .AddField("Compensation", _compensation, true)
-                    .AddField("Responsibilities", _responsibilities, true)
+                    .AddField("Project Title", _fields["projectName"], true)
+                    .AddField("Role(s) required", _fields["roles"], true)
+                    .AddField("Previous Projects/Portfolio", _fields["portfolio"], false)
+                    .AddField("Current Team Size", _fields["teamSize"], true)
+                    .AddField("Project Length", _fields["projectLength"], true)
+                    .AddField("Compensation", _fields["compensation"], true)
+                    .AddField("Responsibilities", _fields["responsibilities"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
@@ -576,18 +570,17 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _fields["portfolio"] = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Looking for work")
-                    .WithDescription(_description)
+                    .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Blue)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
-                    .AddField("My Role(s)", _roles, true)
-                    .AddField("My Skills", _skills, true)
-                    .AddField("Previous Projects/Portfolio", _portfolio, false)
-                    .AddField("Experience in the field", _experience, true)
+                    .AddField("My Role(s)", _fields["roles"], true)
+                    .AddField("My Skills", _fields["skills"], true)
+                    .AddField("Previous Projects/Portfolio", _fields["portfolio"], false)
+                    .AddField("Experience in the field", _fields["experience"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
@@ -596,37 +589,36 @@ namespace BrackeysBot.Services
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
-                string[] _portfolioArray = _portfolio.Split(' ');
-                _portfolio = string.Join('\n', _portfolioArray);
+                _fields["portfolio"] = MoveLinksToNewline();
 
                 await new EmbedBuilder().WithTitle("Hiring")
-                    .WithDescription(_description)
+                    .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Green)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
-                    .AddField("Project Title", _projectName, true)
-                    .AddField("Role(s) Required", _roles, true)
-                    .AddField("Previous Projects/Portfolio", _portfolio, false)
-                    .AddField("Current Team Size", _teamSize, true)
-                    .AddField("Project Length", _projectLength, true)
-                    .AddField("Responsibilities", _responsibilities, true)
+                    .AddField("Project Title", _fields["projectName"], true)
+                    .AddField("Role(s) Required", _fields["roles"], true)
+                    .AddField("Previous Projects/Portfolio", _fields["portfolio"], false)
+                    .AddField("Current Team Size", _fields["teamSize"], true)
+                    .AddField("Project Length", _fields["projectLength"], true)
+                    .AddField("Responsibilities", _fields["responsibilities"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
             }
             public async Task BuildGametestEmbed()
             {
-                bool hasLink = _link != "-" && _link != "\"-\"";
+                bool hasLink = _fields["link"] != "-" && _fields["link"] != "\"-\"";
 
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
 
-                await new EmbedBuilder().WithTitle(_projectName)
-                    .WithDescription(_description)
+                await new EmbedBuilder().WithTitle(_fields["projectName"])
+                    .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Orange)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
-                    .AddField("Platforms", _platforms, true)
-                    .AddFieldConditional(hasLink, "Download Link", _link, true)
+                    .AddField("Platforms", _fields["platforms"], true)
+                    .AddFieldConditional(hasLink, "Download Link", _fields["link"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
@@ -639,16 +631,45 @@ namespace BrackeysBot.Services
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
 
                 await new EmbedBuilder().WithTitle(title)
-                    .WithDescription(_description)
+                    .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(color)
                     .WithThumbnailUrl(_message.Author.EnsureAvatarUrl())
-                    .AddField("Areas of Interest", _areasOfInterest, true)
-                    .AddField("Rates", _compensation, true)
+                    .AddField("Areas of Interest", _fields["areasOfInterest"], true)
+                    .AddField("Rates", _fields["compensation"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build()
                     .SendToChannel(channel);
             }
-        }       
+
+            private string MoveLinksToNewline()
+            {
+                const string linkRegex = @"https?//|www\.|(\S\.\S)";
+                const string httpsRegex = @"https?";
+
+                string[] _portfolioArray = _fields["portfolio"].Split(' ');
+                for (int i = 0; i < _portfolioArray.Length; i++)
+                {
+                    // Is current iteration a link?
+                    if (Regex.Match(_portfolioArray[i], linkRegex).Success)
+                    {
+                        // Does current iteration include "https://" (required for the link to be displayed as hypertext in the embed)
+                        if (!Regex.Match(_portfolioArray[i], httpsRegex).Success)
+                        {
+                            _portfolioArray[i] = $"https://{_portfolioArray[i]}";
+                        }
+                        _portfolioArray[i] = $"\n{_portfolioArray[i]}\n";
+                    }
+                }
+
+                return string.Join(' ', _portfolioArray);
+            }
+            private static string SanitizeMarkdown(string text)
+            {
+                foreach (string unsafeChar in SensitiveCharacters)
+                    text = text.Replace(unsafeChar, $"\\{unsafeChar}");
+                return text;
+            }
+        }
     }
 }
