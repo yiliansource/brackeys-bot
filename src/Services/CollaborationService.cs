@@ -53,7 +53,7 @@ namespace BrackeysBot.Services
         {
             if (!_activeConversations.ContainsKey(user.Id))
             {
-                CollabConversation _conversation = new CollabConversation(_client, _data, this, _filterService);
+                CollabConversation _conversation = new CollabConversation(_client, _data, this);
                 _activeConversations.TryAdd(user.Id, _conversation);
                 return true;
             }
