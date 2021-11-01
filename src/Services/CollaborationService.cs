@@ -71,6 +71,12 @@ namespace BrackeysBot.Services
 
         public async Task Converse(SocketUserMessage message)
         {
+            if (_filterService.ContainsBlockedWord(message.Content))
+            {
+                await _message.Author.TrySendMessageAsync("Seems like you were using a blocked word! Please try again, but without rude words and racial slurs.");
+                return;
+            }
+        
             ulong userId = message.Author.Id;
             _activeConversations[userId].UpdateMessage(message);
             await _activeConversations[userId].HandleAnswer();
@@ -81,17 +87,15 @@ namespace BrackeysBot.Services
             private readonly DiscordSocketClient _client;
             private readonly DataService _data;
             private readonly CollaborationService _collab;
-            private readonly FilterService _filterService;
 
             // Characters which need escaping
             private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
 
-            public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab, FilterService filterService)
+            public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab)
             {
                 _client = client;
                 _data = data;
                 _collab = collab;
-                _filterService = filterService;
             }
 
             private enum CollabChannel
@@ -123,12 +127,6 @@ namespace BrackeysBot.Services
             {
                 if (_message == null)
                     return;
-
-                if (_filterService.ContainsBlockedWord(_message.Content))
-                {
-                    await _message.Author.TrySendMessageAsync("Seems like you were using a blocked word! Please try again, but without rude words and racial slurs.");
-                    return;
-                }
 
                 string uppercaseMessage = _message.Content.ToUpper();
 
