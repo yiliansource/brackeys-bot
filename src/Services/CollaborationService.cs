@@ -73,7 +73,7 @@ namespace BrackeysBot.Services
         {
             if (_filterService.ContainsBlockedWord(message.Content))
             {
-                await _message.Author.TrySendMessageAsync("Seems like you were using a blocked word! Please try again, but without rude words and racial slurs.");
+                await message.Author.TrySendMessageAsync("Seems like you were using a blocked word! Please try again, but without rude words and racial slurs.");
                 return;
             }
         
