@@ -672,10 +672,10 @@ namespace BrackeysBot.Services
 
                 return string.Join(' ', _portfolioArray);
             }
-            private static string SanitizeMarkdown(KeyValuePair<string, string> convo)
+            private static string SanitizeMarkdown(KeyValuePair<string, string> field)
             {
-                string text = convo.Value;
-                if (convo.Key == "portfolio")
+                string text = field.Value;
+                if (field.Key == "portfolio")
                 {
                     text = text.Replace("[", "\\[");
                     return text;
