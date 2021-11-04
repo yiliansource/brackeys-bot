@@ -678,7 +678,6 @@ namespace BrackeysBot.Services
                 if (convo.Key == "portfolio")
                 {
                     text = text.Replace("[", "\\[");
-                    Console.WriteLine("sanitized links");
                     return text;
                 }
                 foreach (string unsafeChar in SensitiveCharacters)
