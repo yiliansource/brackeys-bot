@@ -528,7 +528,7 @@ namespace BrackeysBot.Services
                 _collab.DeactivateUser(_message.Author);
                 for (int i = 0; i < _fields.Count; i++)
                 {
-                    _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i).Value);
+                    _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
                 }
             }
 
@@ -672,8 +672,15 @@ namespace BrackeysBot.Services
 
                 return string.Join(' ', _portfolioArray);
             }
-            private static string SanitizeMarkdown(string text)
+            private static string SanitizeMarkdown(KeyValuePair<string, string> convo)
             {
+                string text = convo.Value;
+                if (convo.Key == "portfolio")
+                {
+                    text = text.Replace("[", "\\[");
+                    Console.WriteLine("sanitized links");
+                    return text;
+                }
                 foreach (string unsafeChar in SensitiveCharacters)
                     text = text.Replace(unsafeChar, $"\\{unsafeChar}");
                 return text;
