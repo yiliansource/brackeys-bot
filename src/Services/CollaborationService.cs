@@ -538,7 +538,7 @@ namespace BrackeysBot.Services
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                await new EmbedBuilder().WithTitle("Looking for Work")
+                Embed embed = new EmbedBuilder().WithTitle("Looking for Work")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Blue)
@@ -549,8 +549,10 @@ namespace BrackeysBot.Services
                     .AddField("Experience in Field", _fields["experience"], true)
                     .AddField("My Rates", _fields["compensation"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build()
-                    .SendToChannel(channel);
+                    .Build();
+
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:",embed: embed);
+
             }
             public async Task BuildPaidHiringEmbed()
             {
@@ -558,7 +560,7 @@ namespace BrackeysBot.Services
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                await new EmbedBuilder().WithTitle("Hiring")
+                Embed embed =  new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Green)
@@ -571,8 +573,9 @@ namespace BrackeysBot.Services
                     .AddField("Compensation", _fields["compensation"], true)
                     .AddField("Responsibilities", _fields["responsibilities"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build()
-                    .SendToChannel(channel);
+                    .Build();
+
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
             }
             public async Task BuildHobbyNotHiringEmbed()
             {
@@ -580,7 +583,7 @@ namespace BrackeysBot.Services
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                await new EmbedBuilder().WithTitle("Looking for work")
+                Embed embed = new EmbedBuilder().WithTitle("Looking for work")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Blue)
@@ -590,8 +593,9 @@ namespace BrackeysBot.Services
                     .AddField("Previous Projects/Portfolio", _fields["portfolio"], false)
                     .AddField("Experience in the field", _fields["experience"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build()
-                    .SendToChannel(channel);
+                    .Build();
+
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
             }
             public async Task BuildHobbyHiringEmbed()
             {
@@ -599,7 +603,7 @@ namespace BrackeysBot.Services
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                await new EmbedBuilder().WithTitle("Hiring")
+                Embed embed = new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Green)
@@ -611,8 +615,9 @@ namespace BrackeysBot.Services
                     .AddField("Project Length", _fields["projectLength"], true)
                     .AddField("Responsibilities", _fields["responsibilities"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build()
-                    .SendToChannel(channel);
+                    .Build();
+
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
             }
             public async Task BuildGametestEmbed()
             {
@@ -620,7 +625,7 @@ namespace BrackeysBot.Services
 
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
 
-                await new EmbedBuilder().WithTitle(_fields["projectName"])
+                Embed embed = new EmbedBuilder().WithTitle(_fields["projectName"])
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Orange)
@@ -628,8 +633,9 @@ namespace BrackeysBot.Services
                     .AddField("Platforms", _fields["platforms"], true)
                     .AddFieldConditional(hasLink, "Download Link", _fields["link"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build()
-                    .SendToChannel(channel);
+                    .Build();
+
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
             }
             public async Task BuildMentorEmbed()
             {
@@ -638,7 +644,7 @@ namespace BrackeysBot.Services
 
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
 
-                await new EmbedBuilder().WithTitle(title)
+                Embed embed = new EmbedBuilder().WithTitle(title)
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(color)
@@ -646,8 +652,9 @@ namespace BrackeysBot.Services
                     .AddField("Areas of Interest", _fields["areasOfInterest"], true)
                     .AddField("Rates", _fields["compensation"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build()
-                    .SendToChannel(channel);
+                    .Build();
+
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
             }
 
             private string MoveLinksToNewline()
