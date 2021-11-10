@@ -44,7 +44,7 @@ namespace BrackeysBot.Services
             if (ContainsBlockedWord(content)) 
                 await DeleteMsgAndInfractUser(s as SocketUserMessage, content);
 
-            if (await ContainsBlockedInvite(content))
+            else if (await ContainsBlockedInvite(content))
                 await DeleteMsgAndInfractUser(s as SocketUserMessage, content); // ??
         }
         public async Task CheckEditedMessageAsync(Cacheable<IMessage, ulong> cacheable, SocketMessage s, ISocketMessageChannel channel)
