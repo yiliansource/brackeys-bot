@@ -87,6 +87,7 @@ namespace BrackeysBot.Services
             private readonly DiscordSocketClient _client;
             private readonly DataService _data;
             private readonly CollaborationService _collab;
+            private readonly SocketGuild _guild;
 
             // Characters which need escaping
             private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
@@ -96,6 +97,7 @@ namespace BrackeysBot.Services
                 _client = client;
                 _data = data;
                 _collab = collab;
+                _guild =_client.GetGuild(_data.Configuration.GuildID);
             }
 
             private enum CollabChannel
@@ -114,7 +116,8 @@ namespace BrackeysBot.Services
             }
 
             private SocketUserMessage _message;
-            
+            private Embed _embed;
+
             private int _buildStage = 0;
             private CollabChannel _collabChannel = CollabChannel.Unknown;
             private HiringStatus _hiring = HiringStatus.Unknown;
@@ -489,10 +492,39 @@ namespace BrackeysBot.Services
                             break;
 
                         case 2:
-                            _fields.TryAdd("compensation", _message.Content);
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
-                            FinalizeQuestionnaire();
-                            await BuildMentorEmbed();
+                            _fields.TryAdd("compensation", _message.Content);   // TO DO: Fix this spaghetti
+                            for (int i = 0; i < _fields.Count; i++)
+                            {
+                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                            }
+                            _embed = BuildMentorEmbed();
+                            await _message.Author.TrySendMessageAsync("This will be sent to the Mentor channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
+                            _buildStage++;
+                            break;
+
+                        case 3:
+                            if (_message.Content.ToUpper() == "YES")
+                            {
+                                IMessageChannel channel = _guild.GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;
+
+                                FinalizeQuestionnaire();
+
+                                await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
+                                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
+                            }
+                            else if (_message.Content.ToUpper() == "NO")
+                            {
+                                _collabChannel = CollabChannel.Unknown;
+                                _hiring = HiringStatus.Unknown;
+                                _fields = new ConcurrentDictionary<string, string>();
+                                _buildStage = 0;
+
+                                await _message.Author.TrySendMessageAsync($"**Process restarted!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor");
+                            }
+                            else
+                            {
+                                await _message.Author.TrySendMessageAsync("Input invalid. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.");
+                            }
                             break;
                     }
                 }
@@ -514,9 +546,38 @@ namespace BrackeysBot.Services
 
                         case 2:
                             _fields.TryAdd("compensation", _message.Content);
-                            await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
-                            FinalizeQuestionnaire();
-                            await BuildMentorEmbed();
+                            for (int i = 0; i < _fields.Count; i++)
+                            {
+                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                            }
+                            _embed = BuildMentorEmbed();
+                            await _message.Author.TrySendMessageAsync("This will be sent to the Mentor channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
+                            _buildStage++;
+                            break;
+
+                        case 3:
+                            if (_message.Content.ToUpper() == "YES")
+                            {
+                                IMessageChannel channel = _guild.GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;
+
+                                FinalizeQuestionnaire();
+
+                                await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
+                                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
+                            }
+                            else if (_message.Content.ToUpper() == "NO")
+                            {
+                                _collabChannel = CollabChannel.Unknown;
+                                _hiring = HiringStatus.Unknown;
+                                _fields = new ConcurrentDictionary<string, string>();
+                                _buildStage = 0;
+
+                                await _message.Author.TrySendMessageAsync($"**Process restarted!**\nPlease enter which channel you would like to post:\n1- Paid\n2- Hobby\n3- Gametest\n4- Mentor");
+                            }
+                            else
+                            {
+                                await _message.Author.TrySendMessageAsync("Input invalid. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.");
+                            }
                             break;
                     }
                 }
@@ -526,19 +587,16 @@ namespace BrackeysBot.Services
             {
                 _collab.UpdateCollabTimeout(_message.Author);
                 _collab.DeactivateUser(_message.Author);
-                for (int i = 0; i < _fields.Count; i++)
-                {
-                    _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
-                }
+                
             }
 
-            public async Task BuildPaidNotHiringEmbed()
+            private async Task BuildPaidNotHiringEmbed()
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                Embed embed = new EmbedBuilder().WithTitle("Looking for Work")
+                _embed = new EmbedBuilder().WithTitle("Looking for Work")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Blue)
@@ -551,16 +609,15 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build();
 
-                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:",embed: embed);
-
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:",embed: _embed);
             }
-            public async Task BuildPaidHiringEmbed()
+            private async Task BuildPaidHiringEmbed()
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                Embed embed =  new EmbedBuilder().WithTitle("Hiring")
+                _embed =  new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Green)
@@ -575,15 +632,15 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build();
 
-                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
             }
-            public async Task BuildHobbyNotHiringEmbed()
+            private async Task BuildHobbyNotHiringEmbed()
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                Embed embed = new EmbedBuilder().WithTitle("Looking for work")
+                _embed = new EmbedBuilder().WithTitle("Looking for work")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Blue)
@@ -595,15 +652,15 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build();
 
-                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
             }
-            public async Task BuildHobbyHiringEmbed()
+            private async Task BuildHobbyHiringEmbed()
             {
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
                 _fields["portfolio"] = MoveLinksToNewline();
 
-                Embed embed = new EmbedBuilder().WithTitle("Hiring")
+                _embed = new EmbedBuilder().WithTitle("Hiring")
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Green)
@@ -617,15 +674,15 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build();
 
-                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
             }
-            public async Task BuildGametestEmbed()
+            private async Task BuildGametestEmbed()
             {
                 bool hasLink = _fields["link"] != "-" && _fields["link"] != "\"-\"";
 
                 IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
 
-                Embed embed = new EmbedBuilder().WithTitle(_fields["projectName"])
+                _embed = new EmbedBuilder().WithTitle(_fields["projectName"])
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(Color.Orange)
@@ -635,16 +692,14 @@ namespace BrackeysBot.Services
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
                     .Build();
 
-                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
+                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
             }
-            public async Task BuildMentorEmbed()
+            private Embed BuildMentorEmbed()
             {
                 string title = _hiring == HiringStatus.Hiring ? "Looking for a mentor" : "Looking to mentor";
                 Color color = _hiring == HiringStatus.Hiring ? Color.Green : Color.Blue;
-
-                IMessageChannel channel = _client.GetGuild(_data.Configuration.GuildID).GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;                
-
-                Embed embed = new EmbedBuilder().WithTitle(title)
+                       
+                return new EmbedBuilder().WithTitle(title)
                     .WithDescription(_fields["description"])
                     .WithAuthor(_message.Author)
                     .WithColor(color)
@@ -652,9 +707,7 @@ namespace BrackeysBot.Services
                     .AddField("Areas of Interest", _fields["areasOfInterest"], true)
                     .AddField("Rates", _fields["compensation"], true)
                     .AddField("Contact via DM", MentionUtils.MentionUser(_message.Author.Id))
-                    .Build();
-
-                await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: embed);
+                    .Build();               
             }
 
             private string MoveLinksToNewline()
