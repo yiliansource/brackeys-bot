@@ -91,6 +91,9 @@ namespace BrackeysBot.Services
             // Characters which need escaping
             private static readonly string[] SensitiveCharacters = { "\\", "*", "_", "~", "`", "|", ">", "[", "(" };
 
+            const string linkRegex = @"https?//|www\.|(\S\.\S)";
+            const string httpsRegex = @"https?";
+
             public CollabConversation(DiscordSocketClient client, DataService data, CollaborationService collab)
             {
                 _client = client;
@@ -658,10 +661,7 @@ namespace BrackeysBot.Services
             }
 
             private string MoveLinksToNewline()
-            {
-                const string linkRegex = @"https?//|www\.|(\S\.\S)";
-                const string httpsRegex = @"https?";
-
+            {              
                 string[] _portfolioArray = _fields["portfolio"].Split(' ');
                 for (int i = 0; i < _portfolioArray.Length; i++)
                 {
@@ -681,15 +681,23 @@ namespace BrackeysBot.Services
             }
             private static string SanitizeMarkdown(KeyValuePair<string, string> field)
             {
-                string text = field.Value;
-                if (field.Key == "portfolio")
+                string[] words = field.Value.Split(' ');
+
+                for (int i = 0; i < words.Length; i++)
                 {
-                    text = text.Replace("[", "\\[");
-                    return text;
+                    // If the current word is a link we only want to sanitize the '[' character that enables hidden links
+                    // so rest of the link stays untouched if it includes any sensitive characters
+                    if (Regex.IsMatch(words[i], linkRegex))
+                    {
+                        words[i] = words[i].Replace("[", "\\[");
+                    }
+                    else
+                    {
+                        foreach (string unsafeChar in SensitiveCharacters)
+                            words[i] = words[i].Replace(unsafeChar, $"\\{unsafeChar}");
+                    }
                 }
-                foreach (string unsafeChar in SensitiveCharacters)
-                    text = text.Replace(unsafeChar, $"\\{unsafeChar}");
-                return text;
+                return string.Join(' ', words);
             }
         }
     }
