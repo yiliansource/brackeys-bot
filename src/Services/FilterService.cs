@@ -43,6 +43,9 @@ namespace BrackeysBot.Services
             
             if (ContainsBlockedWord(content)) 
                 await DeleteMsgAndInfractUser(s as SocketUserMessage, content);
+
+            else if (await ContainsBlockedInvite(content))
+                await DeleteMsgAndInfractUser(s as SocketUserMessage, content); // ??
         }
         public async Task CheckEditedMessageAsync(Cacheable<IMessage, ulong> cacheable, SocketMessage s, ISocketMessageChannel channel)
         {
@@ -60,6 +63,25 @@ namespace BrackeysBot.Services
                 return false;
 
             return blockedWords.Any(str => new Regex($".*{str}.*").IsMatch(msg.ToLowerInvariant()));
+        }
+
+        private async Task<bool> ContainsBlockedInvite(string msg)
+        {
+            const string linkRegex = @"discord(\.gg\/|\.com\/invite\/)\w+";
+            string link = Regex.Match(msg, linkRegex).Value;
+
+            if (link == string.Empty)
+                return false;
+
+            ulong[] blockedGuilds = _dataService.Configuration.BlockedGuildIds;
+            if (blockedGuilds == null)
+                return false;
+
+            var guildInvite = await _discord.GetInviteAsync(link);
+
+            var guildId = guildInvite?.GuildId;
+
+            return blockedGuilds.Any(x => x == guildId);
         }
 
         private bool CanUseFilteredWords(SocketUserMessage msg)

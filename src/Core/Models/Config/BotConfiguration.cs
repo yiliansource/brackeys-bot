@@ -123,6 +123,10 @@ namespace BrackeysBot
         [Description("A list of regex for words which should automatically be deleted.")]
         public string[] BlockedWords { get; set; }
         
+        [YamlMember(Alias = "blockedGuildIds")]
+        [Description("A list of guild IDs for guild invites which should automatically be deleted.")]
+        public ulong[] BlockedGuildIds { get; set; }
+
         [YamlMember(Alias = "clearMessageMaxHistory")]
         [Description("The maximum messages history count to fetch when clearing messages.")]
         public int ClearMessageMaxHistory { get; set; }
