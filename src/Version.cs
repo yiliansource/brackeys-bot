@@ -6,8 +6,8 @@ namespace BrackeysBot
     {
         public const int MAJOR = 3;
         public const int MINOR = 0;
-        public const int PATCH = 18;
-        public const int HOTFIX = 3;
+        public const int PATCH = 19;
+        public const int HOTFIX = 0;
 
         public static string ShortVersion = $"{MAJOR}.{MINOR}";
         public static string FullVersion => $"{MAJOR}.{MINOR}.{PATCH}.{HOTFIX}";
