@@ -38,7 +38,7 @@ namespace BrackeysBot.Commands
             else
             {
                 CollabService.DeactivateUser(Context.User);
-                await Context.Channel.SendMessageAsync("Process cancelled. You can run the command again to restart the process.");
+                await Context.Channel.SendMessageAsync("Process cancelled.");
             }          
         }	
     }
