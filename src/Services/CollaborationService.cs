@@ -131,27 +131,27 @@ namespace BrackeysBot.Services
                 if (_message == null)
                     return;
 
-                string uppercaseMessage = _message.Content.ToUpper();
+                string message = _message.Content;
 
                 // Channel Select
                 if (_collabChannel == CollabChannel.Unknown)
                 {
-                    if (uppercaseMessage.Contains("PAID") || _message.Content == "1")
+                    if (message.Contains("PAID", StringComparison.OrdinalIgnoreCase) || message == "1")
                     {
                         _collabChannel = CollabChannel.Paid;
                         await _message.Author.TrySendMessageAsync("Selected Channel: **Paid**.\nAre you looking for **work** or looking to **hire**?");
                     }
-                    else if (uppercaseMessage.Contains("HOBBY") || _message.Content == "2")
+                    else if (message.Contains("HOBBY", StringComparison.OrdinalIgnoreCase) || message == "2")
                     {
                         _collabChannel = CollabChannel.Hobby;
                         await _message.Author.TrySendMessageAsync("Selected Channel: **Hobby**.\nAre you looking for a **team** or looking for **people**?");
                     }
-                    else if (uppercaseMessage.Contains("GAMETEST") || _message.Content == "3")
+                    else if (message.Contains("GAMETEST", StringComparison.OrdinalIgnoreCase) || message == "3")
                     {
                         _collabChannel = CollabChannel.Gametest;
                         await _message.Author.TrySendMessageAsync("Selected Channel: **Gametest**.\nWhat is the name of your project?");
                     }
-                    else if (uppercaseMessage.Contains("MENTOR") || _message.Content == "4")
+                    else if (message.Contains("MENTOR", StringComparison.OrdinalIgnoreCase) || message == "4")
                     {
                         _collabChannel = CollabChannel.Mentor;
                         await _message.Author.TrySendMessageAsync("Selected Channel: **Mentor**.\nAre you looking **for** a mentor or looking **to** mentor people?");
@@ -163,11 +163,11 @@ namespace BrackeysBot.Services
                 }
                 else if (_collabChannel == CollabChannel.Paid)
                 {
-                    await HandlePaidAnswer(uppercaseMessage);
+                    await HandlePaidAnswer(message);
                 }
                 else if (_collabChannel == CollabChannel.Hobby)
                 {
-                    await HandleHobbyAnswer(uppercaseMessage);
+                    await HandleHobbyAnswer(message);
                 }
                 else if (_collabChannel == CollabChannel.Gametest)
                 {
@@ -175,20 +175,20 @@ namespace BrackeysBot.Services
                 }
                 else if (_collabChannel == CollabChannel.Mentor)
                 {
-                    await HandleMentorAnswer(uppercaseMessage);
+                    await HandleMentorAnswer(message);
                 }
             }
 
-            private async Task HandlePaidAnswer(string uppercaseMessage)
+            private async Task HandlePaidAnswer(string message)
             {
                 if (_hiring == HiringStatus.Unknown)
                 {
-                    if (uppercaseMessage.Contains("WORK"))
+                    if (message.Contains("WORK", StringComparison.OrdinalIgnoreCase))
                     {
                         _hiring = HiringStatus.NotHiring;
                         await _message.Author.TrySendMessageAsync("Selected: **Looking for work**.\nWhat is/are your role(s)?");
                     }
-                    else if (uppercaseMessage.Contains("HIRE"))
+                    else if (message.Contains("HIRE", StringComparison.OrdinalIgnoreCase))
                     {
                         _hiring = HiringStatus.Hiring;
                         await _message.Author.TrySendMessageAsync("Selected: **Looking to hire**.\nWhat is the name of your project?");
@@ -243,9 +243,9 @@ namespace BrackeysBot.Services
 
                         case 5:
                             _fields.TryAdd("compensation", _message.Content);
-                            for (int i = 0; i < _fields.Count; i++)
+                            foreach (var pair in _fields)
                             {
-                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                                _fields[pair.Key] = SanitizeMarkdown(pair);
                             }
                             _embed = BuildPaidNotHiringEmbed();
                             await _message.Author.TrySendMessageAsync("This will be sent to the paid channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -253,7 +253,7 @@ namespace BrackeysBot.Services
                             break;
 
                         case 6:
-                            if (_message.Content.ToUpper() == "YES")
+                            if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                             {
                                 IMessageChannel channel = _guild.GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
@@ -262,7 +262,7 @@ namespace BrackeysBot.Services
                                 await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
                                 await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                             }
-                            else if (_message.Content.ToUpper() == "NO")
+                            else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                             {
                                 _collabChannel = CollabChannel.Unknown;
                                 _hiring = HiringStatus.Unknown;
@@ -326,9 +326,9 @@ namespace BrackeysBot.Services
 
                         case 7:
                             _fields.TryAdd("responsibilities", _message.Content);
-                            for (int i = 0; i < _fields.Count; i++)
+                            foreach (var pair in _fields)
                             {
-                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                                _fields[pair.Key] = SanitizeMarkdown(pair);
                             }
                             _embed = BuildPaidHiringEmbed();
                             await _message.Author.TrySendMessageAsync("This will be sent to the paid channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -336,7 +336,7 @@ namespace BrackeysBot.Services
                             break;
 
                         case 8:
-                            if (_message.Content.ToUpper() == "YES")
+                            if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                             {
                                 IMessageChannel channel = _guild.GetChannel(_data.Configuration.PaidChannelId) as IMessageChannel;
 
@@ -345,7 +345,7 @@ namespace BrackeysBot.Services
                                 await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the paid channel");
                                 await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                             }
-                            else if (_message.Content.ToUpper() == "NO")
+                            else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                             {
                                 _collabChannel = CollabChannel.Unknown;
                                 _hiring = HiringStatus.Unknown;
@@ -362,16 +362,16 @@ namespace BrackeysBot.Services
                     }
                 }
             }              
-            private async Task HandleHobbyAnswer(string uppercaseMessage)
+            private async Task HandleHobbyAnswer(string message)
             {
                 if (_hiring == HiringStatus.Unknown)
                 {
-                    if (uppercaseMessage.Contains("TEAM"))
+                    if (message.Contains("TEAM", StringComparison.OrdinalIgnoreCase))
                     {
                         _hiring = HiringStatus.NotHiring;
                         await _message.Author.TrySendMessageAsync("Selected: **Looking for a team**.\nWhat is/are your role(s)?");
                     }
-                    else if (uppercaseMessage.Contains("PEOPLE"))
+                    else if (message.Contains("PEOPLE", StringComparison.OrdinalIgnoreCase))
                     {
                         _hiring = HiringStatus.Hiring;
                         await _message.Author.TrySendMessageAsync("Selected: **Looking for people**.\nWhat is the name of your project?");
@@ -420,9 +420,9 @@ namespace BrackeysBot.Services
 
                         case 4:
                             _fields.TryAdd("description", _message.Content);
-                            for (int i = 0; i < _fields.Count; i++)
+                            foreach (var pair in _fields)
                             {
-                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                                _fields[pair.Key] = SanitizeMarkdown(pair);
                             }
                             _embed = BuildHobbyNotHiringEmbed();
                             await _message.Author.TrySendMessageAsync("This will be sent to the hobby channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -430,7 +430,7 @@ namespace BrackeysBot.Services
                             break;
 
                         case 5:
-                            if (_message.Content.ToUpper() == "YES")
+                            if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                             {
                                 IMessageChannel channel = _guild.GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
@@ -439,7 +439,7 @@ namespace BrackeysBot.Services
                                 await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
                                 await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                             }
-                            else if (_message.Content.ToUpper() == "NO")
+                            else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                             {
                                 _collabChannel = CollabChannel.Unknown;
                                 _hiring = HiringStatus.Unknown;
@@ -497,9 +497,9 @@ namespace BrackeysBot.Services
 
                         case 6:
                             _fields.TryAdd("description", _message.Content);
-                            for (int i = 0; i < _fields.Count; i++)
+                            foreach (var pair in _fields)
                             {
-                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                                _fields[pair.Key] = SanitizeMarkdown(pair);
                             }
                             _embed = BuildHobbyHiringEmbed();
                             await _message.Author.TrySendMessageAsync("This will be sent to the hobby channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -507,7 +507,7 @@ namespace BrackeysBot.Services
                             break;
 
                         case 7:
-                            if (_message.Content.ToUpper() == "YES")
+                            if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                             {
                                 IMessageChannel channel = _guild.GetChannel(_data.Configuration.HobbyChannelId) as IMessageChannel;
 
@@ -516,7 +516,7 @@ namespace BrackeysBot.Services
                                 await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the hobby channel");
                                 await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                             }
-                            else if (_message.Content.ToUpper() == "NO")
+                            else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                             {
                                 _collabChannel = CollabChannel.Unknown;
                                 _hiring = HiringStatus.Unknown;
@@ -557,9 +557,9 @@ namespace BrackeysBot.Services
 
                     case 3:
                         _fields.TryAdd("link", _message.Content);
-                        for (int i = 0; i < _fields.Count; i++)
+                        foreach (var pair in _fields)
                         {
-                            _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                            _fields[pair.Key] = SanitizeMarkdown(pair);
                         }
                         _embed = BuildGametestEmbed();
                         await _message.Author.TrySendMessageAsync("This will be sent to the gametest channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -567,7 +567,7 @@ namespace BrackeysBot.Services
                         break;
 
                     case 4:
-                        if (_message.Content.ToUpper() == "YES")
+                        if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                         {
                             IMessageChannel channel = _guild.GetChannel(_data.Configuration.GametestChannelId) as IMessageChannel;
 
@@ -576,7 +576,7 @@ namespace BrackeysBot.Services
                             await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the gametest channel");
                             await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                         }
-                        else if (_message.Content.ToUpper() == "NO")
+                        else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                         {
                             _collabChannel = CollabChannel.Unknown;
                             _hiring = HiringStatus.Unknown;
@@ -592,16 +592,16 @@ namespace BrackeysBot.Services
                         break;
                 }
             }
-            private async Task HandleMentorAnswer(string uppercaseMessage)
+            private async Task HandleMentorAnswer(string message)
             {
                 if (_hiring == HiringStatus.Unknown)
                 {
-                    if (uppercaseMessage.Contains("TO"))
+                    if (message.Contains("TO", StringComparison.OrdinalIgnoreCase))
                     {
                         _hiring = HiringStatus.NotHiring;
                         await _message.Author.TrySendMessageAsync("Selected: **Looking to mentor**.\nOn which subjects are you interested in mentoring?");
                     }
-                    else if (uppercaseMessage.Contains("FOR"))
+                    else if (message.Contains("FOR", StringComparison.OrdinalIgnoreCase))
                     {
                         _hiring = HiringStatus.Hiring;
                         await _message.Author.TrySendMessageAsync("Selected: **Looking for a mentor**.\nOn which subjects are you interested in being mentored?");
@@ -638,9 +638,9 @@ namespace BrackeysBot.Services
 
                         case 2:
                             _fields.TryAdd("compensation", _message.Content);
-                            for (int i = 0; i < _fields.Count; i++)
+                            foreach (var pair in _fields)
                             {
-                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                                _fields[pair.Key] = SanitizeMarkdown(pair);
                             }
                             _embed = BuildMentorEmbed();
                             await _message.Author.TrySendMessageAsync("This will be sent to the mentor channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -648,7 +648,7 @@ namespace BrackeysBot.Services
                             break;
 
                         case 3:
-                            if (_message.Content.ToUpper() == "YES")
+                            if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                             {
                                 IMessageChannel channel = _guild.GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;
 
@@ -657,7 +657,7 @@ namespace BrackeysBot.Services
                                 await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
                                 await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                             }
-                            else if (_message.Content.ToUpper() == "NO")
+                            else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                             {
                                 _collabChannel = CollabChannel.Unknown;
                                 _hiring = HiringStatus.Unknown;
@@ -691,9 +691,9 @@ namespace BrackeysBot.Services
 
                         case 2:
                             _fields.TryAdd("compensation", _message.Content);
-                            for (int i = 0; i < _fields.Count; i++)
+                            foreach (var pair in _fields)
                             {
-                                _fields[_fields.ElementAt(i).Key] = SanitizeMarkdown(_fields.ElementAt(i));
+                                _fields[pair.Key] = SanitizeMarkdown(pair);
                             }
                             _embed = BuildMentorEmbed();
                             await _message.Author.TrySendMessageAsync("This will be sent to the mentor channel. Reply with \"**Yes**\" to approve, or \"**No**\" to restart the process.", embed: _embed);
@@ -701,7 +701,7 @@ namespace BrackeysBot.Services
                             break;
 
                         case 3:
-                            if (_message.Content.ToUpper() == "YES")
+                            if (_message.Content.Equals("YES", StringComparison.OrdinalIgnoreCase))
                             {
                                 IMessageChannel channel = _guild.GetChannel(_data.Configuration.MentorChannelId) as IMessageChannel;
 
@@ -710,7 +710,7 @@ namespace BrackeysBot.Services
                                 await _message.Author.TrySendMessageAsync("Complete! Your embed will be sent to the mentor channel");
                                 await channel.SendMessageAsync(text: $"Submitted by {_message.Author.Mention}:", embed: _embed);
                             }
-                            else if (_message.Content.ToUpper() == "NO")
+                            else if (_message.Content.Equals("NO", StringComparison.OrdinalIgnoreCase))
                             {
                                 _collabChannel = CollabChannel.Unknown;
                                 _hiring = HiringStatus.Unknown;
