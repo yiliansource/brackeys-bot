@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 using Discord;
@@ -153,6 +153,10 @@ namespace BrackeysBot.Services
                 return;
             }           
             else if (!msg.HasStringPrefix(_dataService.Configuration.Prefix, ref argPos))
+                return;
+            
+            if ((msg.Content.Contains("@everyone") || msg.Content.Contains("@here"))
+                && (msg.Author as IGuildUser).GetPermissionLevel(_dataService.Configuration) < PermissionLevel.Administrator)
                 return;
 
             var context = new BrackeysBotContext(msg, _provider);
