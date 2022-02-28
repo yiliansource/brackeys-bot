@@ -48,7 +48,10 @@ namespace BrackeysBot.Commands
 
             if (commandInfo == null && moduleInfo == null)
             {
-                await ReplyAsync($"A command or module with the name **{identifier}** could not be found.");
+                await ReplyAsync(embed: new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithDescription($"A command or module with the name **{identifier}** could not be found.")
+                    .Build());
             }
 
             if (commandInfo != null && moduleInfo == null)
