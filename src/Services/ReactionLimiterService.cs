@@ -26,7 +26,7 @@ namespace BrackeysBot.Services
             _discord.ReactionAdded += CheckReactionAsync;
         }
 
-        public async Task CheckReactionAsync(Cacheable<IUserMessage, ulong> cacheable, ISocketMessageChannel channel, SocketReaction reaction) 
+        private async Task CheckReactionAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
         {
             Dictionary<ulong, List<string>> restricted = _dataService.Configuration.EmoteRestrictions;
 
@@ -37,7 +37,7 @@ namespace BrackeysBot.Services
                 if (limitedToEmotes != null && limitedToEmotes.Count > 0 && !limitedToEmotes.Contains(reaction.Emote.StringVal())) 
                 {
                     ulong messageId = reaction.MessageId;
-                    IUserMessage message = await channel.GetMessageAsync(messageId) as IUserMessage;
+                    IUserMessage message = (await channel.GetOrDownloadAsync()).GetMessageAsync(messageId) as IUserMessage;
 
                     await message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
                 }

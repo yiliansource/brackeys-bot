@@ -85,7 +85,7 @@ namespace BrackeysBot.Services
                 code = ExtractCodeblockContent(code, out lang);
             }
 
-            var langRes = await PasteMystLanguage.IdentifyByNameAsync(lang);
+            var langRes = await PasteMystLanguage.GetLanguageByNameAsync(lang);
 
             if (langRes == null)
             {
@@ -95,7 +95,7 @@ namespace BrackeysBot.Services
             var paste = new PasteMystPasteForm
             {
                 Title = $"paste by {msg.Author.Username}#{msg.Author.Discriminator} [BrackeysBot]",
-                ExpireDuration = PasteMystExpiration.Never,
+                // ExpireDuration = "never", // default is "never"
                 Pasties = new[]
                 {
                     new PasteMystPastyForm

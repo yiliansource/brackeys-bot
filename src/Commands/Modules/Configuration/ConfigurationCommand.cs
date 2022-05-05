@@ -32,7 +32,7 @@ namespace BrackeysBot.Commands
             await _lastConfigMessage.AddReactionsAsync(emojis);
 		}
 
-		public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel originChannel, SocketReaction reaction)
+		public async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> originChannel, SocketReaction reaction)
 		{
             var message = await cachedMessage.GetOrDownloadAsync();
             if (message is null || 
