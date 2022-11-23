@@ -72,11 +72,16 @@ namespace BrackeysBot.Services
                     } 
                     else 
                     {
-                        await new EmbedBuilder()
-                            .WithColor(Color.Red)
-                            .WithDescription($"Command {SanitizeMarkdown(customCommandName)} does not exist!")
-                            .Build()
-                            .SendToChannel(context.Channel);
+                        // Zombie code is my favourite code 🧟
+                        // Nah but seriously, we don't need this anymore because it will conflict with Marco's macro listening.
+                        // But I'd rather not just outright delete it because reasons that I don't really have the energy to list.
+                        // Anyway, here's Wonderwall.
+
+                        // await new EmbedBuilder()
+                        //     .WithColor(Color.Red)
+                        //     .WithDescription($"Command {SanitizeMarkdown(customCommandName)} does not exist!")
+                        //     .Build()
+                        //     .SendToChannel(context.Channel);
                     }
                 }
                 else if (result.Error == CommandError.UnmetPrecondition)
